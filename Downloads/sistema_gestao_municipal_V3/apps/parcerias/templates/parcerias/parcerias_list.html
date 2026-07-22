@@ -1,0 +1,188 @@
+{% extends 'base.html' %}
+
+{% block main %}
+    <table class="table-fluid table-bordered  table-striped table-hover table-condesed">
+        <tr>
+            <td colspan="20" style="text-align: CENTER; padding-left: 0px">
+                <h5>ACOMPANHAMENTO DE AUDITORIAS</h5>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" style="text-align: center;">
+                <h6><strong>Nº Termo</strong></h6>
+            </td>
+            <td colspan="2" style="text-align: center;">
+                <h6><strong>Nome OSC</strong></h6>
+            </td>
+            <td colspan="1" style="text-align: center;">
+                <h6><strong>Nº<br>RA</strong></h6>
+            </td>
+            <td colspan="1" style="text-align: center;">
+                <h6><strong>Nº<br>Ofício RA</strong></h6>
+            </td>
+            <td colspan="1" style="text-align: center;">
+                <h6><strong>Data<br>Entrada RA</strong></h6>
+            </td>
+            <td colspan="1" style="text-align: center;">
+                <h6><strong>Nº<br> RE</strong></h6>
+            </td>
+            <td colspan="1" style="text-align: center;">
+                <h6><strong>Nº<br>Ofício RE</strong></h6>
+            </td>
+            <td colspan="1" style="text-align: center;">
+                <h6><strong>Data<br>Entrada RE</strong></h6>
+            </td>
+            <td colspan="1" style="text-align: center;">
+                <h6><strong>Prazo<br>Final</strong></h6>
+            </td>
+            <td colspan="1" style="text-align: center;">
+                <h6><strong>Prazo<br>Decorrido</strong></h6>
+            </td>
+            <td colspan="1" style="text-align: center;">
+                <h6><strong>Prazo<br>Restante</strong></h6>
+            </td>
+            <td colspan="1" style="text-align: center;">
+                <h6><strong>Status</strong></h6>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" style="text-align: center; padding-left: 3px">
+                <h6>{% for parcerias in object_list %}
+                    <a style="text-align: left; padding-left: 3px; border-bottom: 1px solid black; display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(var(--column-width-min), 1fr));" href="{% url 'update_parceria' parcerias.id %}">
+                        {{ parcerias.numtermo}}<br>
+                    </a>
+                    {% endfor %}
+                </h6>
+            </td>
+            <td colspan="2" style="text-align: left; padding-left: 3px">
+                <h6>{% for parcerias in object_list %}
+                    <a style="text-align: left; padding-left: 3px; border-bottom: 1px solid black; display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(var(--column-width-min), 1fr));">
+                        {{ parcerias.nomeOSC}}<br>
+                    </a>
+                    {% endfor %}
+                </h6>
+            </td>
+            <td colspan="1" style="text-align: right; padding-left: 3px">
+                <h6>{% for parcerias in object_list %}
+                    <a style="text-align: center; padding-left: 3px; border-bottom: 1px solid black; display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(var(--column-width-min), 1fr));">
+                        {{ parcerias.numRA}}<br>
+                    </a>
+                    {% endfor %}
+                </h6>
+            </td>
+            <td colspan="1" style="text-align: center; padding-left: 3px">
+                <h6>{% for parcerias in object_list %}
+                    <a style="text-align: left; padding-left: 3px; border-bottom: 1px solid black; display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(var(--column-width-min), 1fr));">
+                        {{ parcerias.numOficioRA}}<br>
+                    </a>
+                    {% endfor %}
+                </h6>
+            </td>
+            <td colspan="1" style="text-align: center; padding-left: 3px">
+                <h6>{% for parcerias in object_list %}
+                    <a style="text-align: center; padding-left: 3px; border-bottom: 1px solid black; display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(var(--column-width-min), 1fr));">
+                        {{ parcerias.dtRaSMDS}}<br>
+                    </a>
+                    {% endfor %}
+                </h6>
+            </td>
+            <td colspan="1" style="text-align: center; padding-left: 3px">
+                <h6>{% for parcerias in object_list %}
+                    <a style="text-align: center; padding-left: 3px; border-bottom: 1px solid black; display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(var(--column-width-min), 1fr));">
+                        {{ parcerias.numRE}}<br>
+                    </a>
+                    {% endfor %}
+                </h6>
+            </td>
+            <td colspan="1" style="text-align: right; padding-left: 3px">
+                <h6>{% for parcerias in object_list %}
+                    <a style="text-align: left; padding-left: 3px; border-bottom: 1px solid black; display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(var(--column-width-min), 1fr));">
+                        {{ parcerias.numOficioRE}}<br>
+                    </a>
+                    {% endfor %}
+                </h6>
+            </td>
+            <td colspan="1" style="text-align: right; padding-left: 3px">
+                <h6>{% for parcerias in object_list %}
+                    <a style="text-align: center; padding-left: 3px; border-bottom: 1px solid black; display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(var(--column-width-min), 1fr));">
+                    {{parcerias.dtReSMDS }}<br>
+                    </a>
+                    {% endfor %}
+                </h6>
+            </td>
+            <td colspan="1" style="text-align: right; padding-left: 3px">
+                <h6>{% for parcerias in object_list %}
+                    <a style="text-align: center; padding-left: 3px; border-bottom: 1px solid black; display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(var(--column-width-min), 1fr));">
+                        {{ parcerias.prazoFinal}}
+                    </a>
+
+                    {% endfor %}
+                </h6>
+            </td>
+            <td colspan="1" style="text-align: center; padding-left: 3px">
+                <h6>{% for parcerias in object_list %}
+                    <a style="text-align: center; padding-left: 3px; border-bottom: 1px solid black; display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(var(--column-width-min), 1fr));">
+                        {{ parcerias.prazoDecorrido}}
+                    </a>
+                    {% endfor %}
+                </h6>
+            </td>
+            <td colspan="1" style="text-align: center; padding-left: 3px">
+                <h6>{% for parcerias in object_list %}
+                    <a style="text-align: center; padding-left: 3px; border-bottom: 1px solid black; display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(var(--column-width-min), 1fr));">
+                        {{ parcerias.prazoRestante}}
+                    </a>
+                    {% endfor %}
+                </h6>
+            </td>
+            <td colspan="1" style="text-align: center; padding-left: 3px">
+                <h6>{% for parcerias in object_list %}
+                    <a style="text-align: left; padding-left: 3px; border-bottom: 1px solid black; display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(var(--column-width-min), 1fr));">
+                        {{ parcerias.status}}
+                    </a>
+                    {% endfor %}
+                </h6>
+            </td>
+    <!--		<div class="col-auto">
+                <div class="form-check mb-2">
+                    <label class="form-check-label">
+                        <input type="checkbox" class="form-check-input" name="remember"> Remember me
+                    </label>
+                </div>
+            </div> -->
+        </tr>
+
+    </table>
+    <br><br>
+    <div class="container" >
+      <ul class="pagination" style="text-align: center; padding-left: 35%">
+        <li class="page-item"><a class="page-link" href="#">Previous</a></li>
+        <li class="page-item"><a class="page-link" href="#">1</a></li>
+        <li class="page-item active"><a class="page-link" href="#">2</a></li>
+        <li class="page-item"><a class="page-link" href="#">3</a></li>
+        <li class="page-item"><a class="page-link" href="#">Next</a></li>
+      </ul>
+    </div>
+
+            <a href="{% url 'create_parceria' %}" class="btn btn-info">
+                Novo
+            </a>
+            <a href="{% url 'auditoria' %}" class="btn btn-success">
+                Voltar
+            </a>
+            <a href="{% url 'logout' %}" class="btn btn-danger">
+                Sair
+            </a><br><br>
+{% endblock %}

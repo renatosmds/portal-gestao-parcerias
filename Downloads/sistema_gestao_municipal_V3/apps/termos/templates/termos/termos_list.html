@@ -1,0 +1,346 @@
+{% extends 'base.html' %}
+{% load l10n %}
+{% load humanize %}
+{% block main %}
+    <table class="table-fluid table-bordered  table-striped table-hover table-condesed">
+	<thead>
+	<tr>
+		<th colspan="14" style="text-align: CENTER; padding-left: 0px"><h5>CONTROLE DE PARCERIAS</h5>
+		</th>
+	</tr>
+	<tr>
+		<th colspan="1" style="text-align: center;">
+			<h6><strong>Tipo </strong></h6>
+		</th>
+		<th colspan="2" style="text-align: center;">
+			<h6><strong>Termo</strong></h6>
+		</th>
+		<th colspan="2" style="text-align: center;">
+			<h6><strong>Apelido</strong></h6>
+		</th>
+		<th colspan="1" style="text-align: center;">
+			<h6><strong>Início<br>Vigência</strong></h6>
+		</th>
+		<th colspan="1" style="text-align: center;">
+			<h6><strong>Término<br>Vigência</strong></h6>
+		</th>
+		<th colspan="1" style="text-align: center;">
+			<h6><strong>Analista</strong></h6>
+		</th>
+		<th colspan="1" style="text-align: center;">
+			<h6><strong>Status</strong></h6>
+		</th>
+		<th colspan="1" style="text-align: center;">
+			<h6><strong>Saldo <br>Dashboard</strong></h6>
+		</th>
+		<th colspan="1" style="text-align: center;">
+			<h6><strong>Saldo Conta<br>Síntese Despesas </strong></h6>
+		</th>
+		<th colspan="2" style="text-align: center;">
+			<h6><strong>Rendimento</strong></h6>
+		</th>
+		<th colspan="2" style="text-align: center;">
+			<h6><strong>Saldo Conta<br>Síntese Mov. Financ. </strong></h6>
+		</th>
+		<th colspan="1" style="text-align: center;">
+			<h6><strong>Valor<br>Devolvido</strong></h6>
+		</th>
+		<th colspan="1" style="text-align: center;">
+			<h6><strong>Saldo<br>Final</strong></h6>
+		</th>
+		<th colspan="1" style="text-align: center;">
+			<h6><strong>Total<br>Lançamentos</strong></h6>
+		</th>
+		<th colspan="1" style="text-align: center;">
+			<h6><strong>Lançamentos<br>Regulares</strong></h6>
+		</th>
+		<th colspan="1" style="text-align: center;">
+			<h6><strong>Lançamentos<br>Irregulares</strong></h6>
+		</th>
+		<th colspan="1" style="text-align: center;">
+			<h6><strong>Lançamentos<br>Glosados</strong></h6>
+		</th>
+		<th colspan="1" style="text-align: center;">
+			<h6><strong>Lançamentos<br>Não Enviados</strong></h6>
+		</th>
+		<th colspan="1" style="text-align: center;">
+			<h6><strong>Lançamentos<br>Analisados</strong></h6>
+		</th>
+		<th colspan="1" style="text-align: center;">
+			<h6><strong>Total</strong></h6>
+		</th>
+		<th colspan="1" style="text-align: center;">
+			<h6><strong>Extratos<br>Bancários</strong></h6>
+		</th>
+		<th colspan="1" style="text-align: center;">
+			<h6><strong>Pendências<br>OFX</strong></h6>
+		</th>
+		<th colspan="1" style="text-align: center;">
+			<h6><strong>Valores<br>Glosados</strong></h6>
+		</th>
+		<th colspan="1" style="text-align: center;">
+			<h6><strong>Glosas<br>Restituídas</strong></h6>
+		</th>
+		<th colspan="1" style="text-align: center;">
+			<h6><strong>Saldo<br>Glosas</strong></h6>
+		</th>
+	</tr>
+	</thead>
+	<tbody>
+	<tr class="table-active">
+		<th colspan="1" style="text-align: left; padding-left: 3px">
+			<h6>{% for termos in object_list %}
+				<a style="text-align: left; padding-left: 3px; border-bottom: 1px solid black; display: grid;">
+<!--				<a href="{% url 'update_tipo' tipo.id %}">-->
+					{{ termos.tipo}} <br>
+				</a>
+				{% endfor %}
+			</h6>
+		</th><br>
+		<td colspan="2" style="text-align: left; padding-left: 3px">
+			<h6>{% for termos in object_list %}
+				<a style="text-align: left; padding-left: 3px; border-bottom: 1px solid black; display: grid;">
+				<a href="{% url 'update_termo' termo.id %}">
+					{{ termos.termo}}<br>
+				</a>
+
+				{% endfor %}
+			</h6>
+		</td>
+		<td colspan="2" style="text-align: left; padding-left: 3px">
+			<h6>{% for termos in object_list %}
+				<a style="text-align: left; padding-left: 3px; border-bottom: 1px solid black; display: grid;">
+
+					{{ termos.apelido}}<br>
+				</a>
+
+				{% endfor %}
+			</h6>
+		</td>
+		<td colspan="1" style="text-align: left; padding-left: 3px">
+			<h6>{% for termos in object_list %}
+				<a style="text-align: left; padding-left: 3px; border-bottom: 1px solid black; display: grid;">
+
+					{{ termos.inicioVigencia}}<br>
+				</a>
+				{% endfor %}
+			</h6>
+		</td>
+		<td colspan="1" style="text-align: right; padding-left: 3px">
+			<h6>{% for termos in object_list %}
+				<a style="text-align: right; padding-left: 3px; border-bottom: 1px solid black; display: grid;">
+
+					{{ termos.terminoVigencia }}<br>
+				</a>
+				{% endfor %}
+			</h6>
+		</td>
+		<td colspan="1" style="text-align: right; padding-left: 3px">
+			<h6>{% for termos in object_list %}
+				<a style="text-align: right; padding-left: 3px; border-bottom: 1px solid black; display: grid;">
+
+				{{ termos.analista }}<br>
+				</a>
+				{% endfor %}
+			</h6>
+		</td>
+		<td colspan="1" style="text-align: right; padding-left: 3px">
+			<h6>{% for termos in object_list %}
+				<a style="text-align: right; padding-left: 3px; border-bottom: 1px solid black; display: grid;">
+
+					{{ termos.status }}<br>
+				</a>
+				{% endfor %}
+			</h6>
+		</td>
+		<td colspan="1" style="text-align: center; padding-left: 3px">
+			<h6>{% for termos in object_list %}
+				<a style="text-align: center; padding-left: 3px; border-bottom: 1px solid black; display: grid;">
+
+					{{ termos.saldoDashboard}}<br>
+				</a>
+				{% endfor %}
+			</h6>
+		</td>
+		<th colspan="1" style="text-align: left; padding-left: 3px">
+			<h6>{% for termos in object_list %}
+				<a style="text-align: left; padding-left: 3px; border-bottom: 1px solid black; display: grid;">
+					{{ termos.saldoContaSinteseDespesas}} <br>
+				</a>
+				{% endfor %}
+			</h6>
+		</th><br>
+		<td colspan="2" style="text-align: left; padding-left: 3px">
+			<h6>{% for termos in object_list %}
+				<a style="text-align: left; padding-left: 3px; border-bottom: 1px solid black; display: grid;">
+
+					{{ termos.rendimento}}<br>
+				</a>
+
+				{% endfor %}
+			</h6>
+		</td>
+		<td colspan="2" style="text-align: left; padding-left: 3px">
+			<h6>{% for termos in object_list %}
+				<a style="text-align: left; padding-left: 3px; border-bottom: 1px solid black; display: grid;">
+
+					{{ termos.saldoContaSinteseMovFinanceira}}<br>
+				</a>
+
+				{% endfor %}
+			</h6>
+		</td>
+		<td colspan="1" style="text-align: left; padding-left: 3px">
+			<h6>{% for termos in object_list %}
+				<a style="text-align: left; padding-left: 3px; border-bottom: 1px solid black; display: grid;">
+
+					{{ termos.valorDevolvido}}<br>
+				</a>
+				{% endfor %}
+			</h6>
+		</td>
+		<td colspan="1" style="text-align: right; padding-left: 3px">
+			<h6>{% for termos in object_list %}
+				<a style="text-align: right; padding-left: 3px; border-bottom: 1px solid black; display: grid;">
+
+					{{ termos.saldoFinal }}<br>
+				</a>
+				{% endfor %}
+			</h6>
+		</td>
+		<td colspan="1" style="text-align: right; padding-left: 3px">
+			<h6>{% for termos in object_list %}
+				<a style="text-align: right; padding-left: 3px; border-bottom: 1px solid black; display: grid;">
+
+				{{ termos.totalDeLacamentos }}<br>
+				</a>
+				{% endfor %}
+			</h6>
+		</td>
+		<td colspan="1" style="text-align: right; padding-left: 3px">
+			<h6>{% for termos in object_list %}
+				<a style="text-align: right; padding-left: 3px; border-bottom: 1px solid black; display: grid;">
+
+					{{ termos.lacamentosRegulares }}<br>
+				</a>
+				{% endfor %}
+			</h6>
+		</td>
+		<td colspan="1" style="text-align: center; padding-left: 3px">
+			<h6>{% for termos in object_list %}
+				<a style="text-align: center; padding-left: 3px; border-bottom: 1px solid black; display: grid;">
+
+					{{ termos.lacamentosIrregulares}}<br>
+				</a>
+				{% endfor %}
+			</h6>
+		</td>
+		<th colspan="1" style="text-align: left; padding-left: 3px">
+			<h6>{% for termos in object_list %}
+				<a style="text-align: left; padding-left: 3px; border-bottom: 1px solid black; display: grid;">
+
+					{{ termos.lacamentosGlosados}} <br>
+				</a>
+				{% endfor %}
+			</h6>
+		</th><br>
+		<td colspan="2" style="text-align: left; padding-left: 3px">
+			<h6>{% for termos in object_list %}
+				<a style="text-align: left; padding-left: 3px; border-bottom: 1px solid black; display: grid;">
+
+					{{ termos.lacamentosNaoEnviados}}<br>
+				</a>
+
+				{% endfor %}
+			</h6>
+		</td>
+		<td colspan="2" style="text-align: left; padding-left: 3px">
+			<h6>{% for termos in object_list %}
+				<a style="text-align: left; padding-left: 3px; border-bottom: 1px solid black; display: grid;">
+
+					{{ termos.naoanalisados}}<br>
+				</a>
+
+				{% endfor %}
+			</h6>
+		</td>
+		<td colspan="1" style="text-align: left; padding-left: 3px">
+			<h6>{% for termos in object_list %}
+				<a style="text-align: left; padding-left: 3px; border-bottom: 1px solid black; display: grid;">
+
+					{{ termos.total}}<br>
+				</a>
+				{% endfor %}
+			</h6>
+		</td>
+		<td colspan="1" style="text-align: right; padding-left: 3px">
+			<h6>{% for termos in object_list %}
+				<a style="text-align: right; padding-left: 3px; border-bottom: 1px solid black; display: grid;">
+
+					{{ termos.extratosBancarios }}<br>
+				</a>
+				{% endfor %}
+			</h6>
+		</td>
+		<td colspan="1" style="text-align: right; padding-left: 3px">
+			<h6>{% for termos in object_list %}
+				<a style="text-align: right; padding-left: 3px; border-bottom: 1px solid black; display: grid;">
+
+				{{ termos.pendenciasOfx }}<br>
+				</a>
+				{% endfor %}
+			</h6>
+		</td>
+		<td colspan="1" style="text-align: right; padding-left: 3px">
+			<h6>{% for termos in object_list %}
+				<a style="text-align: right; padding-left: 3px; border-bottom: 1px solid black; display: grid;">
+
+					{{ termos.valoresGlosados }}<br>
+				</a>
+				{% endfor %}
+			</h6>
+		</td>
+		<td colspan="1" style="text-align: center; padding-left: 3px">
+			<h6>{% for termos in object_list %}
+				<a style="text-align: center; padding-left: 3px; border-bottom: 1px solid black; display: grid;">
+
+					{{ termos.glosasRestituidas}}<br>
+				</a>
+				{% endfor %}
+			</h6>
+		</td>
+		<td colspan="1" style="text-align: center; padding-left: 3px">
+			<h6>{% for termos in object_list %}
+				<a style="text-align: center; padding-left: 3px; border-bottom: 1px solid black; display: grid;">
+
+					{{ termos.saldoGlosas}}<br>
+				</a>
+				{% endfor %}
+			</h6>
+		</td>
+	</tr>
+	</tbody>
+</table><br><br>
+<div class="container" >
+  <ul class="pagination" style="text-align: center; padding-left: 35%">
+    <li class="page-item"><a class="page-link" href="#">Previous</a></li>
+    <li class="page-item"><a class="page-link" href="#">1</a></li>
+    <li class="page-item active"><a class="page-link" href="#">2</a></li>
+    <li class="page-item"><a class="page-link" href="#">3</a></li>
+    <li class="page-item"><a class="page-link" href="#">Next</a></li>
+  </ul>
+</div>
+		<!-- <a href="{% url 'create_termos' %}" class="btn btn-info">
+			Novo
+		</a>
+		<a href="{% url 'convocacao' %}" class="btn btn-success">
+			Voltar
+		</a> -->
+            <a href="{% url 'list_prestacao' %}" class="btn btn-dark">
+                Repasses
+            </a>
+            <a href="https://sistema-gestao-municipal.herokuapp.com/admin/prestacao/prestacao/?" class="btn btn-warning">
+                Lançamentos
+            </a>
+<br><br>
+{% endblock %}

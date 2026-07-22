@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load l10n %}
+{% load humanize %}
+{% load bootstrap %}
+
+{% block main %}
+<html>
+<head>
+    <title>Receitas</title>
+    <meta charset="utf-8">
+    <!-- CSS -->
+    <link href="public/css/bootstrap.min.css" rel="stylesheet">
+    <link href="http://cdn.datatables.net/1.10.19/css/jquery.datatables.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container-fluid">
+    <form method="post" enctype="multipart/form-data">
+        <table id="minhaTabela" class="display" style="width:50%; text-align: left; font-size: 18px">
+            {% csrf_token %}
+            {{ form }}
+        </table>
+        <div class="col">
+            <button type="submit" class="btn btn-info">
+                Salvar
+            </button>
+            <a href="{% url 'list_receitas' %}" class="btn btn-success">
+                Voltar
+            </a>
+        </div>
+    </form>
+</div>
+<br>
+<br>
+<footer>
+    <!-- CSS -->
+    <script src="public/js/jquery.js"></script>
+    <script src="public/js/bootstrap.bundle.min.js"></script>
+    <script src="http://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready( function () {
+            $('#minhaTabela').DataTable();
+           } );
+    </script>
+</footer>
+</body>
+</html>
+{% endblock %}

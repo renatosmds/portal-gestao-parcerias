@@ -1,0 +1,52 @@
+SISTEMA DE GESTÃO MUNICIPAL V3
+
+Esta versão foi criada a partir do ZIP atual da V2, sem alterar a sua pasta original.
+
+PRINCIPAIS AJUSTES DA V3
+- Correção definitiva do router da API de funcionários com basename explícito.
+- Isolamento da API de funcionários pela empresa autenticada.
+- Criação pela API força a empresa do usuário autenticado.
+- Listagem, edição, exclusão e relatórios de funcionários continuam filtrados por empresa.
+- Interface moderna do módulo Funcionários preservada.
+- Componentes de template preservados dentro do app.
+- CSS e JavaScript de Funcionários colocados nos caminhos esperados:
+  static/css/funcionarios-v2.css
+  static/js/funcionarios-v2.js
+- Organização correta do Django staticfiles:
+  static = arquivos-fonte
+  staticfiles = destino do collectstatic
+- Scripts iniciar_v3.bat e verificar_v3.bat.
+
+COMO INSTALAR
+1. Extraia a pasta sistema_gestao_municipal_V3 em local separado da V2.
+2. Abra a pasta que contém manage.py no PyCharm.
+3. Use o mesmo interpretador/ambiente virtual que já funciona na V2.
+4. Execute verificar_v3.bat.
+5. Depois execute iniciar_v3.bat.
+6. Acesse http://127.0.0.1:8000/
+
+COMANDOS MANUAIS
+python manage.py check
+python manage.py runserver
+
+ARQUIVOS ESTÁTICOS
+Durante o desenvolvimento, normalmente não é necessário collectstatic.
+Para produção:
+python manage.py collectstatic --noinput
+
+BANCO DE DADOS
+A V3 contém uma cópia do db.sqlite3 recebido no ZIP.
+Nenhuma migration nova foi criada nesta etapa.
+
+TESTES IMPORTANTES
+- Login.
+- Dashboard.
+- /funcionarios/
+- Novo funcionário.
+- Editar funcionário.
+- Excluir funcionário.
+- Relatório de funcionários.
+- API autenticada de funcionários.
+
+SEGURANÇA
+Não publique o ZIP ou o banco SQLite em repositório público. O projeto recebido contém dados e configurações de uso local.

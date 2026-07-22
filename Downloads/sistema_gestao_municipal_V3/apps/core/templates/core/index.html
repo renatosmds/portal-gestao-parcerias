@@ -1,0 +1,278 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}Dashboard | Sistema de Gestão Municipal{% endblock %}
+{% block page_name %}Dashboard Executivo{% endblock %}
+
+{% block main %}
+<section class="sgm-dashboard">
+
+    <div class="sgm-page-header">
+        <div>
+            <span class="sgm-eyebrow">VISÃO GERAL</span>
+            <h1>Painel de Gestão Municipal</h1>
+            <p>
+                Acompanhe os principais indicadores administrativos, financeiros
+                e operacionais da organização.
+            </p>
+        </div>
+
+        <div class="sgm-page-header-meta">
+            <span class="sgm-status-dot"></span>
+            <div>
+                <small>Usuário conectado</small>
+                <strong>{{ user.get_full_name|default:user.get_username }}</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="sgm-shortcuts">
+        <a href="{% url 'list_funcionarios' %}" class="sgm-shortcut">
+            <span class="sgm-shortcut-icon bg-soft-green">
+                <i class="fa fa-users"></i>
+            </span>
+            <span>
+                <strong>Empregados</strong>
+                <small>Cadastros e documentos</small>
+            </span>
+            <i class="fa fa-angle-right sgm-shortcut-arrow"></i>
+        </a>
+
+        <a href="{% url 'list_hora_extra' %}" class="sgm-shortcut">
+            <span class="sgm-shortcut-icon bg-soft-blue">
+                <i class="fa fa-clock-o"></i>
+            </span>
+            <span>
+                <strong>Banco de Horas</strong>
+                <small>Créditos e utilizações</small>
+            </span>
+            <i class="fa fa-angle-right sgm-shortcut-arrow"></i>
+        </a>
+
+        <a href="{% url 'list_conferencia3' %}" class="sgm-shortcut">
+            <span class="sgm-shortcut-icon bg-soft-purple">
+                <i class="fa fa-check-square-o"></i>
+            </span>
+            <span>
+                <strong>Execução</strong>
+                <small>Ordens e conferências</small>
+            </span>
+            <i class="fa fa-angle-right sgm-shortcut-arrow"></i>
+        </a>
+
+        <a href="{% url 'list_receitas' %}" class="sgm-shortcut">
+            <span class="sgm-shortcut-icon bg-soft-yellow">
+                <i class="fa fa-money"></i>
+            </span>
+            <span>
+                <strong>Financeiro</strong>
+                <small>Receitas e conciliação</small>
+            </span>
+            <i class="fa fa-angle-right sgm-shortcut-arrow"></i>
+        </a>
+    </div>
+
+    <div class="sgm-section-heading">
+        <div>
+            <span class="sgm-eyebrow">INDICADORES</span>
+            <h2>Resumo operacional</h2>
+        </div>
+    </div>
+
+    <div class="sgm-metric-grid">
+        <article class="sgm-metric-card">
+            <div class="sgm-metric-card-top">
+                <span class="sgm-metric-icon bg-soft-green">
+                    <i class="fa fa-users"></i>
+                </span>
+                <span class="sgm-badge">Pessoal</span>
+            </div>
+            <span class="sgm-metric-label">Total de funcionários</span>
+            <strong class="sgm-metric-value">{{ total_funcionarios|default:0 }}</strong>
+            <div class="sgm-metric-details">
+                <span><b>{{ total_funcionarios_ferias|default:0 }}</b> de férias</span>
+                <span><b>{{ total_funcionarios_doc_pendente|default:0 }}</b> com pendência</span>
+                <span><b>{{ total_funcionarios_doc_ok|default:0 }}</b> regulares</span>
+            </div>
+        </article>
+
+        <article class="sgm-metric-card">
+            <div class="sgm-metric-card-top">
+                <span class="sgm-metric-icon bg-soft-blue">
+                    <i class="fa fa-clock-o"></i>
+                </span>
+                <span class="sgm-badge">Horas</span>
+            </div>
+            <span class="sgm-metric-label">Banco de horas total</span>
+            <strong class="sgm-metric-value">{{ total_hora_extra|default:0 }}</strong>
+            <div class="sgm-metric-details">
+                <span><b>{{ total_hora_extra_utilizadas|default:0 }}</b> utilizadas</span>
+                <span><b>{{ total_hora_extra_pendente|default:0 }}</b> pendentes</span>
+            </div>
+        </article>
+
+        <article class="sgm-metric-card">
+            <div class="sgm-metric-card-top">
+                <span class="sgm-metric-icon bg-soft-purple">
+                    <i class="fa fa-check-square-o"></i>
+                </span>
+                <span class="sgm-badge">Prestação</span>
+            </div>
+            <span class="sgm-metric-label">Ordens cadastradas</span>
+            <strong class="sgm-metric-value">{{ totalOrdens|default:0 }}</strong>
+            <div class="sgm-metric-details">
+                <span><b>{{ ordensConferir|default:0 }}</b> a conferir</span>
+                <span><b>R$ {{ ordensValor|default:0|floatformat:2 }}</b> em despesas</span>
+            </div>
+        </article>
+
+        <article class="sgm-metric-card">
+            <div class="sgm-metric-card-top">
+                <span class="sgm-metric-icon bg-soft-yellow">
+                    <i class="fa fa-handshake-o"></i>
+                </span>
+                <span class="sgm-badge">Parcerias</span>
+            </div>
+            <span class="sgm-metric-label">Valor global contratado</span>
+            <strong class="sgm-metric-value sgm-currency">
+                R$ {{ valorglobaltotal|default:0|floatformat:2 }}
+            </strong>
+            <div class="sgm-metric-details">
+                <span><b>R$ {{ valorRepasseTotal|default:0|floatformat:2 }}</b> repassado</span>
+                <span><b>R$ {{ valorSaldoTotal|default:0|floatformat:2 }}</b> saldo</span>
+            </div>
+        </article>
+    </div>
+
+    <div class="sgm-dashboard-columns">
+        <section class="sgm-panel">
+            <div class="sgm-panel-header">
+                <div>
+                    <span class="sgm-eyebrow">FINANCEIRO</span>
+                    <h2>Conciliação bancária</h2>
+                </div>
+                <a href="{% url 'list_receitas' %}" class="btn btn-sm btn-outline-primary">
+                    Ver movimentações
+                </a>
+            </div>
+
+            <div class="sgm-finance-summary">
+                <div class="sgm-finance-item">
+                    <span>Total de receitas</span>
+                    <strong>R$ {{ receitaTotal|default:0|floatformat:2 }}</strong>
+                </div>
+                <div class="sgm-finance-item">
+                    <span>Total de despesas</span>
+                    <strong>R$ {{ despesaTotal|default:0|floatformat:2 }}</strong>
+                </div>
+                <div class="sgm-finance-item">
+                    <span>Saldo da aplicação</span>
+                    <strong>R$ {{ saldoContaAplicacao|default:0|floatformat:2 }}</strong>
+                </div>
+                <div class="sgm-finance-item emphasis">
+                    <span>Saldo bancário</span>
+                    <strong>R$ {{ saldoFinanceiro|default:0|floatformat:2 }}</strong>
+                </div>
+            </div>
+        </section>
+
+        <section class="sgm-panel">
+            <div class="sgm-panel-header">
+                <div>
+                    <span class="sgm-eyebrow">ACOMPANHAMENTO</span>
+                    <h2>Auditoria e parcerias</h2>
+                </div>
+                <a href="{% url 'list_parcerias' %}" class="btn btn-sm btn-outline-primary">
+                    Abrir módulo
+                </a>
+            </div>
+
+            <div class="sgm-audit-list">
+                <div class="sgm-audit-item">
+                    <span class="sgm-audit-icon bg-soft-purple">
+                        <i class="fa fa-search"></i>
+                    </span>
+                    <div>
+                        <small>Auditorias cadastradas</small>
+                        <strong>{{ auditoriasQtd|default:0 }}</strong>
+                    </div>
+                </div>
+
+                <div class="sgm-audit-item">
+                    <span class="sgm-audit-icon bg-soft-yellow">
+                        <i class="fa fa-hourglass-half"></i>
+                    </span>
+                    <div>
+                        <small>Auditorias abertas</small>
+                        <strong>{{ auditoriasAbertas|default:0 }}</strong>
+                    </div>
+                </div>
+
+                <div class="sgm-audit-item">
+                    <span class="sgm-audit-icon bg-soft-green">
+                        <i class="fa fa-handshake-o"></i>
+                    </span>
+                    <div>
+                        <small>Saldo das parcerias</small>
+                        <strong>R$ {{ valorSaldoTotal|default:0|floatformat:2 }}</strong>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <section class="sgm-panel sgm-financial-table-panel">
+        <div class="sgm-panel-header">
+            <div>
+                <span class="sgm-eyebrow">DETALHAMENTO</span>
+                <h2>Controle financeiro consolidado</h2>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table sgm-financial-table">
+                <thead>
+                <tr>
+                    <th>Repasse</th>
+                    <th>Depósito OSC</th>
+                    <th>Rendimento</th>
+                    <th>Crédito autorizado</th>
+                    <th>Resgate autorizado</th>
+                    <th>Estorno</th>
+                    <th>Total receitas</th>
+                    <th>Aplicação</th>
+                    <th>Débito autorizado</th>
+                    <th>Despesa bancária</th>
+                    <th>Imposto de renda</th>
+                    <th>I.O.F.</th>
+                    <th>Despesas operacionais</th>
+                    <th>Total despesas</th>
+                    <th>Saldo aplicação</th>
+                    <th>Saldo bancário</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>R$ {{ saldoRepasse|default:0|floatformat:2 }}</td>
+                    <td>R$ {{ saldoDepositoOsc|default:0|floatformat:2 }}</td>
+                    <td>R$ {{ saldoRendimento|default:0|floatformat:2 }}</td>
+                    <td>R$ {{ saldoCreditoAutorizado|default:0|floatformat:2 }}</td>
+                    <td>R$ {{ saldoResgateAutomatico|default:0|floatformat:2 }}</td>
+                    <td>R$ {{ saldoEstorno|default:0|floatformat:2 }}</td>
+                    <td class="sgm-table-total">R$ {{ receitaTotal|default:0|floatformat:2 }}</td>
+                    <td>R$ {{ saldoAplicacao|default:0|floatformat:2 }}</td>
+                    <td>R$ {{ saldoDebitoAutorizado|default:0|floatformat:2 }}</td>
+                    <td>R$ {{ saldoDespesaBancaria|default:0|floatformat:2 }}</td>
+                    <td>R$ {{ saldoImpostoRenda|default:0|floatformat:2 }}</td>
+                    <td>R$ {{ saldoIof|default:0|floatformat:2 }}</td>
+                    <td>R$ {{ ordensValor|default:0|floatformat:2 }}</td>
+                    <td class="sgm-table-total">R$ {{ despesaTotal|default:0|floatformat:2 }}</td>
+                    <td class="sgm-table-total">R$ {{ saldoContaAplicacao|default:0|floatformat:2 }}</td>
+                    <td class="sgm-table-total">R$ {{ saldoFinanceiro|default:0|floatformat:2 }}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</section>
+{% endblock %}

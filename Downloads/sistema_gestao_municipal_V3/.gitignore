@@ -1,0 +1,27 @@
+.idea
+*.sqlite3
+*.pyc
+.DS_Store
+.env
+venv
+gestao_rh/__pycache__/
+gestao_rh.pem
+media
+static
+uwsgi.ini
+uwsgi_params
+*.bak
+*.dat
+*.pid
+*.dir
+local_settings.py
+# V3 local
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.idea/
+staticfiles/
+*.sqlite3.sqbpro
+.env

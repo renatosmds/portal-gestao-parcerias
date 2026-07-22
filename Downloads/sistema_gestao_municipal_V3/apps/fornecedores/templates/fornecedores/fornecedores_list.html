@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block main %}
+    <table class="table-fluid table-bordered  table-striped table-hover table-condesed">
+	<tr>
+		<td colspan="13" style="text-align: CENTER; padding-left: 0px">
+			<h5>RELAÇÃO DE FORNECEDORES</h5>
+		</td>
+	</tr>
+	<tr>
+		<td colspan="3" style="text-align: center;">
+			<h6><strong>Credor</strong></h6>
+		</td>
+		<td colspan="3" style="text-align: center;">
+			<h6><strong>Pessoa</strong></h6>
+		</td>
+		<td colspan="3" style="text-align: center;">
+			<h6><strong>Tipo</strong></h6>
+		</td>
+		<td colspan="3" style="text-align: center;">
+			<h6><strong>Telefone</strong></h6>
+		</td>
+	</tr>
+	<tr>
+		<td colspan="3" style="text-align: left; padding-left: 3px">
+			<h6>
+				{% for fornecedores in object_list %}
+				<a href="{% url 'update_fornecedor' fornecedores.id %}"
+				   style="text-align: left; padding-left: 3px; border-bottom: 1px solid gray; display: grid;
+				   grid-template-columns: repeat(auto-fit, minmax(var(--column-width-min), 1fr));">
+					{{ fornecedores.credor }}
+				</a>
+				{% endfor %}
+			</h6>
+		</td>
+		<td colspan="3" style="text-align: left; padding-left: 3px">
+			<h6>
+				{% for fornecedores in object_list %}
+				<a style="text-align: left; padding-left: 3px; border-bottom: 1px solid gray; display: grid;
+				 grid-template-columns: repeat(auto-fit, minmax(var(--column-width-min), 1fr));">
+					{{ fornecedores.pessoa }}<br>
+				</a>
+					{% endfor %}
+				</a>
+			</h6>
+		</td>
+		<td colspan="3" style="text-align: left; padding-left: 3px">
+			<h6>{% for fornecedores in object_list %}
+				<a style="text-align: left; padding-left: 3px; border-bottom: 1px solid gray; display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(var(--column-width-min), 1fr));">
+                    {{ fornecedores.tipo }}<br>
+					{% endfor %}
+				</a>
+			</h6>
+		</td>
+		<td colspan="3" style="text-align: left; padding-left: 3px">
+			<h6>{% for fornecedores in object_list %}
+				<a style="text-align: left; padding-left: 3px; border-bottom: 1px solid gray; display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(var(--column-width-min), 1fr));">
+                    {{ fornecedores.telefone}}<br>
+					{% endfor %}
+				</a>
+			</h6>
+		</td>
+	</tr>
+</table><br>
+		<a href="{% url 'create_fornecedor' %}" class="btn btn-info">
+			Novo
+		</a>
+		<a href="{% url 'cadastros_gerais' %}" class="btn btn-success">
+			Voltar
+		</a>
+		<a href="{% url 'logout' %}" class="btn btn-danger">
+			Sair
+		</a><br><br>
+{% endblock %}

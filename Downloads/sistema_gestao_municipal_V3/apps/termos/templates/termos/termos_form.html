@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% load bootstrap %}
+
+{% block main %}
+<html>
+<head>
+    <title>Termos</title>
+    <meta charset="utf-8">
+    <!-- CSS -->
+    <link href="public/css/bootstrap.min.css" rel="stylesheet">
+    <link href="http://cdn.datatables.net/1.10.19/css/jquery.datatables.min.css" rel="stylesheet">
+</head>
+<body>
+<h5> CADASTRO DE TERMOS</h5><br>
+<div class="container-fluid">
+    <form method="post" enctype="multipart/form-data">
+        <table class="display" style="width:32%; text-align: right; font-size: 18px">
+            {% csrf_token %}
+            {{ form }}
+        </table>
+        <div class="col">
+            <button type="submit" class="btn btn-info">
+                Salvar
+            </button>
+            <a href="{% url 'list_termos' %}" class="btn btn-success">
+                Voltar
+            </a>
+            <a href="{% url 'list_prestacao' %}" class="btn btn-dark">
+                Pagamentos
+            </a>
+        </div>
+    </form>
+</div>
+<br>
+<br>
+<div class="col">
+    <h5>INSERIR DOCUMENTOS</h5>
+    <h6>
+        {% for documento in object.documento_set.all %}
+        <a class="dropdown-item" href="{{ documento.arquivo.url }} "> {{ documento.descricao }}
+        </a>
+        {% endfor %}
+    </h6>
+    {% if object %}
+    <a href="{% url 'create_documento' object.id %}" class="btn btn-success">
+        Adicionar
+    </a>
+    {% endif %}
+    <br>
+</div><br><br>
+<footer>
+    <!-- CSS -->
+    <script src="public/js/jquery.js"></script>
+    <script src="public/js/bootstrap.bundle.min.js"></script>
+    <script src="http://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready( function () {
+            $('#minhaTabela').DataTable();
+           } );
+    </script>
+</footer>
+</body>
+</html>
+{% endblock %}

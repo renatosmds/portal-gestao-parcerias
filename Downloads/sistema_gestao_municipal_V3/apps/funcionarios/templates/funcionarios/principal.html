@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block main %}
+<table width="100%">
+	<tr style="background: white">
+		<th colspan="1" style="background: white" width="50%">
+			<h4 style="color: #662b7e">
+				<ul>
+					<lu><a href="{% url 'list_funcionarios' %}">Cadastro Geral</a></lu><br>
+					<lu><a href="{% url 'list_parceria' %}">Celebração de Parcerias / Convênios</a></lu><br>
+					<lu><a href="{% url 'list_receitas' %}">Transferência de Recursos</a></lu><br>
+					<lu><a href="{% url 'exportar_csv' %}">Prestação de Contas</a></lu><br>
+					<lu><a href="{% url 'list_prestacao' %}">Cumprimento de Metas e Objetivos</a></lu><br>
+					<lu><a href="{% url 'list_termos' %}">Relatórios Gerenciais</a></lu><br>
+					<button class="btn btn-danger"><a href="{% url 'logout' %}">Sair</a></button>
+					<br>
+					<br>
+				</ul>
+			</h4>
+		</th>
+	</tr>
+</table>
+{% endblock %}

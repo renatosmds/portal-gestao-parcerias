@@ -1,0 +1,196 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-br" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <title>{% block title %}Sistema de Gestão Municipal{% endblock %}</title>
+
+    <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}">
+    <link rel="stylesheet"
+          href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="{% static 'css/sgm-v2.css' %}">
+
+    {% block staticcss %}{% endblock %}
+</head>
+
+<body class="sgm-body">
+<div class="sgm-app">
+
+    <aside class="sgm-sidebar" id="sgmSidebar" aria-label="Menu principal">
+        <div class="sgm-brand">
+            <a href="{% url 'home' %}" class="sgm-brand-link">
+                <span class="sgm-brand-mark">SGM</span>
+                <span class="sgm-brand-text">
+                    <strong>Gestão Municipal</strong>
+                    <small>Prefeitura de Contagem</small>
+                </span>
+            </a>
+        </div>
+
+        <nav class="sgm-nav">
+            <span class="sgm-nav-label">VISÃO GERAL</span>
+
+            <a class="sgm-nav-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}"
+               href="{% url 'home' %}">
+                <i class="fa fa-dashboard" aria-hidden="true"></i>
+                <span>Dashboard</span>
+            </a>
+
+            <span class="sgm-nav-label">GESTÃO</span>
+
+            <a class="sgm-nav-item" href="{% url 'list_funcionarios' %}">
+                <i class="fa fa-users" aria-hidden="true"></i>
+                <span>Empregados</span>
+            </a>
+
+            <a class="sgm-nav-item" href="{% url 'list_hora_extra' %}">
+                <i class="fa fa-clock-o" aria-hidden="true"></i>
+                <span>Banco de Horas</span>
+            </a>
+
+            <a class="sgm-nav-item" href="{% url 'list_conferencia3' %}">
+                <i class="fa fa-check-square-o" aria-hidden="true"></i>
+                <span>Execução</span>
+            </a>
+
+            <a class="sgm-nav-item" href="{% url 'list_receitas' %}">
+                <i class="fa fa-money" aria-hidden="true"></i>
+                <span>Financeiro</span>
+            </a>
+
+            <a class="sgm-nav-item" href="{% url 'list_termos' %}">
+                <i class="fa fa-handshake-o" aria-hidden="true"></i>
+                <span>Parcerias</span>
+            </a>
+
+            <a class="sgm-nav-item" href="{% url 'list_curso' %}">
+                <i class="fa fa-graduation-cap" aria-hidden="true"></i>
+                <span>Cursos</span>
+            </a>
+
+            <span class="sgm-nav-label">LINKS INSTITUCIONAIS</span>
+
+            <a class="sgm-nav-item" target="_blank" rel="noopener noreferrer"
+               href="https://www.contagem.mg.gov.br/?se=doc">
+                <i class="fa fa-newspaper-o" aria-hidden="true"></i>
+                <span>Diário Oficial</span>
+            </a>
+
+            <a class="sgm-nav-item" target="_blank" rel="noopener noreferrer"
+               href="https://www.contagem.mg.gov.br/transparencia/public">
+                <i class="fa fa-eye" aria-hidden="true"></i>
+                <span>Transparência</span>
+            </a>
+
+            <a class="sgm-nav-item" target="_blank" rel="noopener noreferrer"
+               href="https://www.contagem.mg.gov.br/?se=legislacao">
+                <i class="fa fa-balance-scale" aria-hidden="true"></i>
+                <span>Legislação</span>
+            </a>
+        </nav>
+
+        <div class="sgm-sidebar-footer">
+            <small>Sistema de Gestão Municipal</small>
+            <span>Versão 2</span>
+        </div>
+    </aside>
+
+    <div class="sgm-overlay" id="sgmOverlay"></div>
+
+    <div class="sgm-main">
+        <header class="sgm-topbar">
+            <div class="sgm-topbar-left">
+                <button type="button" class="sgm-icon-button" id="sidebarToggle"
+                        aria-label="Abrir ou fechar menu">
+                    <i class="fa fa-bars" aria-hidden="true"></i>
+                </button>
+
+                <div class="sgm-page-identity">
+                    <span class="sgm-page-kicker">PREFEITURA DE CONTAGEM</span>
+                    <strong>{% block page_name %}Sistema de Gestão Municipal{% endblock %}</strong>
+                </div>
+            </div>
+
+            <div class="sgm-topbar-actions">
+                <button type="button" class="sgm-icon-button" id="themeToggle"
+                        aria-label="Alternar tema claro e escuro">
+                    <i class="fa fa-moon-o" aria-hidden="true"></i>
+                </button>
+
+                {% if user.is_authenticated %}
+                    <div class="dropdown">
+                        <button class="sgm-user-button dropdown-toggle" type="button"
+                                id="userMenu" data-toggle="dropdown"
+                                aria-haspopup="true" aria-expanded="false">
+                            <span class="sgm-avatar">
+                                {{ user.get_username|slice:":1"|upper }}
+                            </span>
+                            <span class="sgm-user-text">
+                                <strong>{{ user.get_full_name|default:user.get_username }}</strong>
+                                <small>Usuário autenticado</small>
+                            </span>
+                        </button>
+
+                        <div class="dropdown-menu dropdown-menu-right sgm-user-menu"
+                             aria-labelledby="userMenu">
+                            <div class="dropdown-header">
+                                <strong>{{ user.get_username }}</strong>
+                            </div>
+                            <a class="dropdown-item" href="{% url 'home' %}">
+                                <i class="fa fa-dashboard mr-2"></i>Dashboard
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item text-danger" href="{% url 'logout' %}">
+                                <i class="fa fa-sign-out mr-2"></i>Sair
+                            </a>
+                        </div>
+                    </div>
+                {% else %}
+                    <a class="btn btn-primary" href="{% url 'login' %}">
+                        <i class="fa fa-sign-in mr-1"></i> Entrar
+                    </a>
+                {% endif %}
+            </div>
+        </header>
+
+        <main class="sgm-content">
+            {% if messages %}
+                <div class="sgm-messages">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show"
+                             role="alert">
+                            {{ message }}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Fechar">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% block menu %}{% endblock %}
+            {% block main %}{% endblock %}
+        </main>
+
+        <footer class="sgm-footer">
+            <span>&copy; {% now "Y" %} Prefeitura de Contagem</span>
+            <span>Sistema de Gestão Municipal</span>
+        </footer>
+    </div>
+</div>
+
+{% block static %}
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+            integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+            crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
+            integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+            crossorigin="anonymous"></script>
+    <script src="{% static 'bootstrap/js/bootstrap.js' %}"></script>
+    <script src="{% static 'js/sgm-v2.js' %}"></script>
+{% endblock %}
+</body>
+</html>

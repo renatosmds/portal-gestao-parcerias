@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block main %}
+<th>
+    <div class="row">
+        <div class="col-1">
+        </div>
+        <div class="col">
+            <ul class="list-group">
+                <li class="list-group-item" style="background: #FFFFE0"> <!-- LightYellow / Código HTML #FFFFE0 |
+				 Código Java 255 255 255 -->
+                    <table width="100%">
+                        <tr>
+                            <th colspan="1" style="background: #FFFFE0" width="100%"> <!-- LightYellow /
+							Código HTML #FFFFE0 | Código Java 255 255 224 -->
+                                <h4 style="color: #FFFFE0F">
+                                    <ul>
+                                        <!-- Fase1: Grupo de Processos de Iniciação
+                                        4.1 - Desenvolver o Termo de Abertura do Projeto - TAP;
+                                        13.1 - Identificar as partes interessadas. -->
+                                        <lu><a href="{% url 'menu' %}">Dashboard</a></lu><br>
+                                        <lu><a href="{% url 'cadastros_gerais' %}">Cadastros Gerais</a></lu><br>
+                                        <lu><a href="{% url 'convocacao' %}">Convocação para Parceria</a></lu><br>
+
+                                        <!-- Fase2: Grupo de Procesos de Planejamento
+                                         4.2 - Desenvolver o Plano de Gerenciamento do Projeto;
+                                         5.1 - Planejar o Gerenciamento do Escopo;
+                                         5.2 - Coletar os requisitos;
+                                         5.3 - Definir o Escopo;
+                                         5.4 - Criar a Estrutura Analítica do Projeto (EAP);
+                                         6.1 - Planejar o Gerenciamento do Cronograma;
+                                         6.2 - Definir as atividades;
+                                         6.3 - Sequenciar as atividades;
+                                         6.4 - Estimar os recursos das atividades;
+                                         6.5 - Estimar as durações das atividades;
+                                         6.6 - Desenvolver o cronograma;
+                                         7.1 - Planejar o Gerenciamento dos Custos;
+                                         7.2 - Estimar os custos;
+                                         7.3 - Determinar o orçamento;
+                                         8.1 - Planejar o Gerenciamento da Qualidade;
+                                         9.1 - Planejar o Gerenciamento dos Recursos Humanos;
+                                         10.1 - Planejar o Gerenciamento das Comunicações;
+                                         11.1 - Planejar o Gerenciamento dos Riscos;
+                                         11.2 - Identificar os Riscos;
+                                         11.3 - Realizar a Análise Qualitativa dos Riscos;
+                                         11.4 - Realizar a Análise Quantitativa dos Riscos;
+                                         11.5 - Planejar as Respostas aos Riscos;
+                                         12.1 - Planejar o Gerenciamento das Aquisições;
+                                         13.2 - Planejar o Gerenciamento das partes interessadas. -->
+
+                                        <!-- Fase2: Planejamento Aprovar o Plano de Trabalho e a Documentação -->
+
+                                        <!-- Fase3: Grupo de Processos de Execução
+                                         4.3 - Orientar e gerenciar o trabalho do projeto;
+                                         8.2 - Realizar a garantia da qualidade;
+                                         9.2 - Mobilizar a equipe do Projeto;
+                                         9.3 - Desenvolver a equipe do projeto;
+                                         9.4 - Gerenciar a equipe do Projeto;
+                                         10.2 - Gerenciar as Comunicações;
+                                         12.2 - Conduzir as Aquisições;
+                                         13.3 - Gerenciar o Engajamento das Partes Interessadas. -->
+                                        <lu><a href="{% url 'execucao' %}">Execução da Parceria</a></lu><br>
+                                        <!-- Fase4: Grupo de Processos de Monitoramento e Controle
+                                         4.4 - Monitirar e controlar o trabalho do projeto;
+                                         4.5 - Realizar o controle integrado de mudanças;
+                                         5.5 - Validar o escopo;
+                                         5.6 - Controlar o escopo;
+                                         6.7 - Controlar o Cronograma;
+                                         7.4 - Controlar os Custos;
+                                         8.3 - Controlar a Qualidade;
+                                         10.3 - Controlar as Comunicações;
+                                         11.6 - Controlar os Riscos;
+                                         12.3 - Controlar as Aquisições;
+                                         13.4 - Controlar o Engajamento das Partes Interessadas. -->
+                                        <lu><a href="{% url 'monitoramento' %}">Monitoramento e Acompanhamento da Parceria</a></lu><br>
+                                        <!-- Fase5: Grupo de Processos de Encerramento
+                                         4.6 - Encerrar o projeto ou fase;
+                                         12.4 - encerrar as aquisições. -->
+                                        <lu><a href="{% url 'auditoria' %}">Auditoria da Parceria</a></lu><br><br>
+                                        <!--<a href="{% url 'logout' %}" class="btn btn-danger">
+                                            Sair -->
+                                        </a>
+                                    </ul>
+                                </h4>
+                            </th>
+                        </tr>
+                    </table>
+                </li>
+            </ul>
+        </div>
+    </div>
+</th>
+{% endblock %}

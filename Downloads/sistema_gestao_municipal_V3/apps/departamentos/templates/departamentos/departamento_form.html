@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% load bootstrap %}
+
+{% block main %}
+<html>
+<head>
+    <title>Funcionários</title>
+    <meta charset="utf-8">
+    <!-- CSS -->
+    <link href="public/css/bootstrap.min.css" rel="stylesheet">
+    <link href="http://cdn.datatables.net/1.10.19/css/jquery.datatables.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container-fluid">
+    <table id="minhaTabela" class="display" style="width:35%; text-align: right; font-size: 18px">
+        <h5>DEPARTAMENTOS</h5><br>
+        <form method="POST" >
+            {% csrf_token %}
+            {{ form|bootstrap }}
+        </form>
+    </table>
+    <button type="submit" class="bt n btn-info">Salvar</button>
+</div>
+                <div class="col">
+                    <h5>Documentos</h5>
+                    <h6>
+                        {% for documento in object.documento_set.all %}
+                        <a class="dropdown-item" href="{{ documento.arquivo.url }} "> {{ documento.descricao }}
+                        </a>
+                        {% endfor %}
+                    </h6>
+                    {% if object %}
+                    <a href="{% url 'create_documento' object.id %}" class="btn btn-success">
+                        Adicionar
+                    </a>
+                    {% endif %}
+                    <br>
+                </div>
+                <div class="col">
+                    <h5>Banco de Horas</h5><br>
+                    <h6>
+                        Acumuladas : {{ object.nome }}<br>
+                        A compensar : {{ object.nome }}<br>
+                        <strong>Saldo : {{ object.nome }}</strong><br><br>
+                        <a class="btn btn-success" href="{% url 'create_departamento' %}">Novo</a>
+                    </h6>
+                </div>
+                <div class="col">
+                    <h5>Relatórios</h5>
+                    <h6>
+                        <a class="dropdown-item" href="{% url 'exportar_csv' %}">Exportar para CSV</a>
+                        <a class="dropdown-item" href="{% url 'exportar_excel' %}">Exportar para Excel</a>
+                    </h6>
+                </div>
+
+{% endblock %}

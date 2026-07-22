@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% load l10n %}
+{% load humanize %}
+{% load bootstrap %}
+
+{% block main %}
+<html>
+<head>
+    <title>Fornecedores</title>
+    <meta charset="utf-8">
+    <!-- CSS -->
+    <link href="public/css/bootstrap.min.css" rel="stylesheet">
+    <link href="http://cdn.datatables.net/1.10.19/css/jquery.datatables.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container-fluid">
+    <form method="post" enctype="multipart/form-data">
+        <table id="minhaTabela" class="display" style="width:50%; text-align: left; font-size: 18px">
+            {% csrf_token %}
+            {{ form }}
+        </table>
+        <div class="col">
+            <button type="submit" class="btn btn-info">
+                Salvar
+            </button>
+            <a href="{% url 'list_fornecedores' %}" class="btn btn-success">
+                Voltar
+            </a>
+        </div>
+    </form>
+</div>
+<div class="col ">
+    <h5>Documentos</h5>
+    <h6>
+        {% for documento in object.documento_set.all %}
+        <a class="dropdown-item" href="{{ documento.arquivo.url }} "> {{ documento.descricao }}
+        </a>
+        {% endfor %}
+    </h6>
+    {% if object %}
+    <a href="{% url 'create_documento' object.id %}" class="btn btn-success">
+        Adicionar
+    </a>
+    {% endif %}
+    <br>
+</div>
+<div class="col">
+    <h5>Banco de Horas</h5><br>
+    <h6>
+        Acumuladas : {{ object.total_horas_extra }}<br>
+        A compensar : {{ object.total_horas_extra }}<br>
+        <strong>Saldo : {{ object.total_horas_extra }}</strong><br><br>
+        <a class="btn btn-success" href="{% url 'create_registro_hora_extra' %}">Novo</a>
+    </h6>
+</div>
+<div class="col">
+    <h5>Relatórios</h5>
+    <h6>
+        <a class="dropdown-item" href="{% url 'exportar_csv' %}">Exportar para CSV</a>
+        <a class="dropdown-item" href="{% url 'exportar_excel' %}">Exportar para Excel</a>
+    </h6>
+</div>
+{% endblock %}

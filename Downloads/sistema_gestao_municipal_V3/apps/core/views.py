@@ -1,0 +1,249 @@
+# coding=utf-8
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from apps.funcionarios.models import Funcionario
+#from apps.parcerias.models import Parcerias  # ok
+from apps.conferencia3.models import Conferencia3  # ok
+from apps.receitas.models import Receitas
+from apps.termos.models import Termos
+from apps.parcerias.models import Parcerias
+
+from django.contrib.auth.models import User, Group
+from rest_framework import viewsets
+from apps.core.serializers import UserSerializer, GroupSerializer
+from apps.registro_hora_extra.models import RegistroHoraExtra
+#from apps.departamentos.models import Departamento
+from django.core import serializers
+from django.http import HttpResponse
+from .tasks import send_relatorio
+from django.db.models import Sum
+
+
+@login_required
+def home(request):
+    data = {'usuario': request.user}  # ok
+    funcionario = request.user.funcionario
+
+    # CARD EMPREGADOS #
+    data['total_funcionarios'] = funcionario.empresa.total_funcionarios
+    data['total_funcionarios_ferias'] = funcionario.empresa.total_funcionarios_ferias
+    data['total_funcionarios_doc_pendente'] = funcionario.empresa.total_funcionarios_doc_pendente
+    data['total_funcionarios_doc_ok'] = funcionario.empresa.total_funcionarios_doc_ok
+    #data['total_funcionarios_rg'] = 10
+
+    # CARD BANCO DE HORAS#
+    # data['total_hora_extra'] = funcionario.empresa.total_hora_extra
+    data['total_hora_extra_utilizadas'] = RegistroHoraExtra.objects.filter(
+        funcionario__empresa=funcionario.empresa, utilizada=True).aggregate(Sum('horas'))['horas__sum'] or 0
+    data['total_hora_extra_pendente'] = RegistroHoraExtra.objects.filter(
+        funcionario__empresa=funcionario.empresa, utilizada=False).aggregate(Sum('horas'))['horas__sum'] or 0
+
+    # CARD EXECUÇÂO #
+    #data['ordensValor'] = Conferencia3.objects.filter(funcionario__empresa=funcionario.empresa, utilizada=True).aggregate(Sum('valor'))['valor__sum'] or 0
+
+    data['totalOrdens'] = funcionario.empresa.totalOrdens
+    data['ordensValor'] = funcionario.empresa.ordensValor
+    data['ordensConferir'] = funcionario.empresa.ordensConferir
+    # data['valorTotalExecucao'] = funcionario.empresa.valorTotalExecucao
+
+    # CARD FINANCEIRO #
+    # data['totalReceitas'] = funcionario.empresa.totalReceitas
+    data['saldoRepasse'] = funcionario.empresa.saldoRepasse
+    data['saldoDepositoOsc'] = funcionario.empresa.saldoDepositoOsc
+    data['saldoRendimento'] = funcionario.empresa.saldoRendimento
+    data['saldoCreditoAutorizado'] = funcionario.empresa.saldoCreditoAutorizado
+    data['saldoResgateAutomatico'] = funcionario.empresa.saldoResgateAutomatico
+    data['saldoEstorno'] = funcionario.empresa.saldoEstorno
+    data['receitaTotal'] = funcionario.empresa.receitaTotal
+    data['saldoAplicacao'] = funcionario.empresa.saldoAplicacao
+    data['saldoDebitoAutorizado'] = funcionario.empresa.saldoDebitoAutorizado
+    data['saldoDespesaBancaria'] = funcionario.empresa.saldoDespesaBancaria
+    data['saldoImpostoRenda'] = funcionario.empresa.saldoImpostoRenda
+    data['saldoIof'] = funcionario.empresa.saldoIof
+    # data['saldoDespesas'] = funcionario.empresa.saldoDespesas
+    data['despesaTotal'] = funcionario.empresa.despesaTotal
+    data['saldoContaAplicacao'] = funcionario.empresa.saldoContaAplicacao
+    data['saldoFinanceiro'] = funcionario.empresa.saldoFinanceiro
+
+    # CARD PARCERIAS #
+    # data['totalOrdens'] = funcionario.empresa.totalOrdens
+    # data['ordensConferir'] = funcionario.empresa.ordensConferir
+    # data['ordensValor'] = funcionario.empresa.ordensValor
+
+    # CARD TERMOS #
+    data['valorglobaltotal'] = funcionario.empresa.valorglobaltotal
+    data['valorRepasseTotal'] = funcionario.empresa.valorRepasseTotal
+    data['valorSaldoTotal'] = funcionario.empresa.valorSaldoTotal
+
+    # CARD AUDITORIA #
+    data['auditoriasQtd'] = funcionario.empresa.auditoriasQtd
+    data['auditoriasAbertas'] = funcionario.empresa.auditoriasAbertas
+
+
+    # data['analise'] = funcionario.empresa.analise
+
+    return render(request, 'core/index.html', data)  # ok
+
+
+def menu(request):
+    return render(request, 'core/principal1.html')
+
+
+def execucao(request):
+    return render(request, 'core/execucao.html')
+
+
+def cadastros_gerais(request):
+    return render(request, 'core/cadastros_gerais.html')
+
+
+def funcionograma(request):
+    return render(request, 'core/funcionograma.html')
+
+
+def fornecedor(request):
+    return render(request, 'core/cadastros_gerais/fornecedor.html')
+
+
+def convocacao(request):
+    return render(request, 'core/convocacao.html')
+
+
+def form_convocacao(request):
+    return render(request, 'core/form_convocacao.html')
+
+
+def form_requerimento(request):
+    return render(request, 'core/form_requerimento.html')
+
+
+def form_habilitacao(request):
+    return render(request, 'core/form_habilitacao.html')
+
+
+def form_aprovacao(request):
+    return render(request, 'core/form_aprovacao.html')
+
+
+def monitoramento(request):
+    return render(request, 'core/monitoramento.html')
+
+
+def relatorio_gestor(request):
+    return render(request, 'core/relatorio_gestor.html')
+
+
+def relatorio_comissao(request):
+    return render(request, 'core/relatorio_comissao.html')
+
+
+def auditoria(request):
+    return render(request, 'core/auditoria.html')
+
+
+def analise_auditoria(request):
+    return render(request, 'core/analise_auditoria.html')
+
+
+def acompanhamento_auditorias(request):
+    return render(request, 'core/acompanhamento_auditorias.html')
+
+
+def tomada_contas(request):
+    return render(request, 'core/tomada_contas.html')
+
+
+def celery():
+    send_relatorio.delay()
+    return HttpResponse('Tarefa incluida na fila para execucao')
+
+
+def departamentos_ajax(request):
+    departamentos = Departamento.objects.all()
+    return render(request, 'departamentos_ajax.html', {'departamentos': departamentos})
+
+
+def filtra_funcionarios(request):
+    func = request.GET['outro_param']
+    funcionario = Departamento.objects.get(id=func)
+
+    qs_json = serializers.serialize('json', funcionario.funcionario_set.all())
+    return HttpResponse(qs_json, content_type='application/json')
+
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all().order_by('-date_joined')
+    serializer_class = UserSerializer
+
+
+class GroupViewSet(viewsets.ModelViewSet):
+    queryset = Group.objects.all()
+    serializer_class = GroupSerializer
+
+
+def filtra_termos(request):
+    term = request.GET['outro_param']
+    termos = Departamento.objects.get(id=term)
+
+    qs_json = serializers.serialize('json', termos.funcionario_set.all())
+    return HttpResponse(qs_json, content_type='application/json')
+
+
+def filtra_prestacao(request):
+    prest = request.GET['outro_param']
+    prestacao = Departamento.objects.get(id=prest)
+
+    qs_json = serializers.serialize('json', prestacao.funcionario_set.all())
+    return HttpResponse(qs_json, content_type='application/json')
+
+
+def filtra_conferencia3(request):
+    confer = request.GET['outro_param']
+    conferencia3 = Departamento.objects.get(id=confer)
+
+    qs_json = serializers.serialize('json', conferencia3.funcionario_set.all())
+    return HttpResponse(qs_json, content_type='application/json')
+
+
+def conferencia3_list(request):
+    data = {'usuario': request.user}
+    funcionario = request.user.funcionario
+    data['result'] = funcionario.empresa.total_funcionarios
+    data['total_funcionarios'] = funcionario.empresa.total_funcionarios
+    data['result1'] = funcionario.empresa.total_funcionarios_ferias
+    data['total_funcionarios_ferias'] = funcionario.empresa.total_funcionarios_ferias
+    data['result2'] = funcionario.empresa.total_funcionarios_doc_pendente
+    data['total_funcionarios_doc_pendente'] = funcionario.empresa.total_funcionarios_doc_pendente
+    data['result3'] = funcionario.empresa.total_funcionarios_doc_ok
+    data['total_funcionarios_doc_ok'] = funcionario.empresa.total_funcionarios_doc_ok
+    data['total_funcionarios_rg'] = 10
+    data['result4'] = RegistroHoraExtra.objects.filter(
+        funcionario__empresa=funcionario.empresa, utilizada=True).aggregate(Sum('horas'))['horas__sum'] or 0
+    data['total_hora_extra_utilizadas'] = RegistroHoraExtra.objects.filter(
+        funcionario__empresa=funcionario.empresa, utilizada=True).aggregate(Sum('horas'))['horas__sum'] or 0
+    data['result5'] = RegistroHoraExtra.objects.filter(
+        funcionario__empresa=funcionario.empresa, utilizada=False).aggregate(Sum('horas'))['horas__sum'] or 0
+    data['total_hora_extra_pendente'] = RegistroHoraExtra.objects.filter(
+        funcionario__empresa=funcionario.empresa, utilizada=False).aggregate(Sum('horas'))['horas__sum'] or 0
+
+    return render(request, 'core/clientes_list.html', data)
+
+
+def filtra_parcerias(request):
+    parcer = request.GET['outro_param']
+    parcerias = Departamento.objects.get(id=parcer)
+
+    qs_json = serializers.serialize('json', parcerias.funcionario_set.all())
+    return HttpResponse(qs_json, content_type='application/json')
+
+
+def filtra_receitas(request):
+    receit = request.GET['outro_param']
+    receitas = Departamento.objects.get(id=receit)
+
+    qs_json = serializers.serialize('json', receitas.funcionario_set.all())
+    return HttpResponse(qs_json, content_type='application/json')
+
+
+def analise(request):
+    return self.Analise_set.all().count()

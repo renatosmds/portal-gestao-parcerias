@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% load l10n %}
+
+{% block main %}
+    <table class="table-fluid table-bordered  table-striped table-hover table-condesed">
+	<tr>
+		<td colspan="18" style="text-align: CENTER; padding-left: 0px">
+			<h5>
+				REPASSES FINANCEIROS
+			</h5>
+		</td>
+	</tr>
+	<tr>
+		<td colspan="1" style="text-align: center;">
+			<h6><strong>Tipo<br>Termo</strong></h6>
+		</td>
+		<td colspan="1" style="text-align: center;">
+			<h6><strong>Nº<br>Termo</strong></h6>
+		</td>
+		<td colspan="1" style="text-align: center;">
+			<h6><strong>Termo<br>Aditivo</strong></h6>
+		</td>
+		<td colspan="1" style="text-align: center;">
+			<h6><strong>Credor</strong></h6>
+		</td>
+		<td colspan="1" style="text-align: center;">
+			<h6><strong>Fonte</strong></h6>
+		</td>
+		<td colspan="1" style="text-align: center;">
+			<h6><strong>Gestor</strong></h6>
+		</td>
+		<td colspan="1" style="text-align: center;">
+			<h6><strong>Reduzida</strong></h6>
+		</td>
+			</td>
+		<td colspan="1" style="text-align: center;">
+			<h6><strong>Concluída</strong></h6>
+		</td>
+	</tr>
+	<tr>
+		<td colspan="1'" style="text-align: center; padding-left: 3px">
+			<h6>{% for prestacao in object_list %}
+				<a style="text-align: left; padding-left: 3px; border-bottom: 1px solid black; display: grid;">
+                    {{ prestacao.tipoTermo}}<br>
+				</a>
+                		{% endfor %}
+                </h6>
+		</td>
+		<td colspan="1" style="text-align: left; padding-left: 3px">
+			<h6>{% for prestacao in object_list %}
+				<a style="text-align: left; padding-left: 3px; border-bottom: 1px solid black; display: grid;"></a>
+                <a href="{% url 'update_prestacao' prestacao.id %}">
+                {{ prestacao.numtermo}}<br>
+				</a>
+                		{% endfor %}
+                </h6>
+		</td>
+		<td colspan="1" style="text-align: center; padding-left: 3px">
+			<h6>{% for prestacao in object_list %}
+				<a style="text-align: center; padding-left: 3px; border-bottom: 1px solid black; display: grid;">
+                {{ prestacao.termoAditivo}}<br>
+				</a>
+                		{% endfor %}
+                </h6>
+		</td>
+		<td colspan="1" style="text	-align: left; padding-left: 3px">
+			<h6>{% for prestacao in object_list %}
+				<a style="text-align: left; padding-right: 3px; border-bottom: 1px solid black; display: grid;">
+                {{ prestacao.credor}}<br>
+				</a>
+                		{% endfor %}
+                </h6>
+		</td>
+		<td colspan="1" style="text-align: left; padding-left: 3px">
+			<h6>{% for prestacao in object_list %}
+				<a style="text-align: right; padding-left: 3px; border-bottom: 1px solid black; display: grid;">
+                {{ prestacao.fonte}}<br>
+				</a>
+                		{% endfor %}
+                </h6>
+		</td>
+		<td colspan="1" style="text-align: center; padding-left: 3px">
+			<h6>{% for prestacao in object_list %}
+				<a style="text-align: left; padding-left: 3px; border-bottom: 1px solid black; display: grid;">
+
+                {{ prestacao.cod_reduz}}<br>
+				</a>
+                		{% endfor %}
+                </h6>
+		<td colspan="1" style="text-align: center; padding-left: 3px">
+			<h6>{% for prestacao in object_list %}
+				<a style="text-align: right; padding-left: 3px; border-bottom: 1px solid black; display: grid;">
+					{{ prestacao.gestora}}<br>
+				</a>
+				{% endfor %}
+            </h6>
+		</td>
+		<td colspan="1" style="text-align: center; padding-left: 3px">
+			<h6>{% for prestacao in object_list %}
+				<a style="text-align: right; padding-left: 3px; border-bottom: 1px solid black; display: grid;">
+
+					{{ prestacao.concluida}}<br>
+				</a>
+				{% endfor %}
+            </h6>
+		</td>
+	</tr>
+</table><br><br>
+<div class="container" >
+  <ul class="pagination" style="text-align: center; padding-left: 35%">
+    <li class="page-item"><a class="page-link" href="#">Previous</a></li>
+    <li class="page-item"><a class="page-link" href="#">1</a></li>
+    <li class="page-item active"><a class="page-link" href="#">2</a></li>
+    <li class="page-item"><a class="page-link" href="#">3</a></li>
+    <li class="page-item"><a class="page-link" href="#">Next</a></li>
+  </ul>
+</div>
+
+		<!-- <a href="{% url 'create_prestacao' %}" class="btn btn-info">
+			Novo
+		</a>
+		<a href="{% url 'execucao' %}" class="btn btn-success">
+			Voltar
+		</a> -->
+            <a href="{% url 'list_termos' %}" class="btn btn-dark">
+                Termos
+            </a>
+            <a href="https://sistema-gestao-municipal.herokuapp.com/admin/prestacao/prestacao/?" class="btn btn-warning">
+                Lançamentos
+            </a>
+<br><br>
+{% endblock %}
