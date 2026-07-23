@@ -41,13 +41,20 @@
 
             <span class="sgm-nav-label">GESTÃO</span>
 
-            {% if perms.funcionarios.view_funcionario or user.is_superuser %}
-                <a class="sgm-nav-item" href="{% url 'list_funcionarios' %}">
-                    <i class="fa fa-users" aria-hidden="true"></i>
-                    <span>Empregados</span>
-                </a>
+            {% if perms.empresas.view_empresa or user.is_superuser %}
+            <a class="sgm-nav-item {% if request.resolver_match.url_name == 'list_empresas' or request.resolver_match.url_name == 'detail_empresa' or request.resolver_match.url_name == 'create_empresa' or request.resolver_match.url_name == 'edit_empresa' or request.resolver_match.url_name == 'delete_empresa' %}active{% endif %}"
+               href="{% url 'list_empresas' %}">
+                <i class="fa fa-building-o" aria-hidden="true"></i>
+                <span>Empresas</span>
+            </a>
             {% endif %}
 
+            {% if perms.funcionarios.view_funcionario or user.is_superuser %}
+            <a class="sgm-nav-item" href="{% url 'list_funcionarios' %}">
+                <i class="fa fa-users" aria-hidden="true"></i>
+                <span>Empregados</span>
+            </a>
+            {% endif %}
             <a class="sgm-nav-item" href="{% url 'list_hora_extra' %}">
                 <i class="fa fa-clock-o" aria-hidden="true"></i>
                 <span>Banco de Horas</span>
@@ -123,67 +130,67 @@
                 </button>
 
                 {% if user.is_authenticated %}
-                    <div class="dropdown">
-                        <button class="sgm-user-button dropdown-toggle" type="button"
-                                id="userMenu" data-toggle="dropdown"
-                                aria-haspopup="true" aria-expanded="false">
+                <div class="dropdown">
+                    <button class="sgm-user-button dropdown-toggle" type="button"
+                            id="userMenu" data-toggle="dropdown"
+                            aria-haspopup="true" aria-expanded="false">
                             <span class="sgm-avatar">
                                 {{ user.get_username|slice:":1"|upper }}
                             </span>
-                            <span class="sgm-user-text">
+                        <span class="sgm-user-text">
                                 <strong>{{ user.get_full_name|default:user.get_username }}</strong>
                                 <small>
                                     {{ perfil_usuario|default:"Usuário autenticado" }}
                                     {% if empresa_usuario %} · {{ empresa_usuario }}{% endif %}
                                 </small>
                             </span>
-                        </button>
+                    </button>
 
-                        <div class="dropdown-menu dropdown-menu-right sgm-user-menu"
-                             aria-labelledby="userMenu">
-                            <div class="dropdown-header">
-                                <strong>{{ user.get_username }}</strong>
-                            </div>
-                            <a class="dropdown-item" href="{% url 'home' %}">
-                                <i class="fa fa-dashboard mr-2"></i>Dashboard
-                            </a>
-                            {% if user.is_staff %}
-                                <a class="dropdown-item" href="{% url 'admin:index' %}">
-                                    <i class="fa fa-users-cog mr-2"></i>Administrar usuários e perfis
-                                </a>
-                            {% endif %}
-                            <div class="dropdown-divider"></div>
-                            <form method="post" action="{% url 'logout' %}" class="m-0">
-                                {% csrf_token %}
-                                <button type="submit"
-                                        class="dropdown-item text-danger border-0 bg-transparent">
-                                    <i class="fa fa-sign-out mr-2"></i>
-                                    Sair
-                                </button>
-                            </form>
+                    <div class="dropdown-menu dropdown-menu-right sgm-user-menu"
+                         aria-labelledby="userMenu">
+                        <div class="dropdown-header">
+                            <strong>{{ user.get_username }}</strong>
                         </div>
+                        <a class="dropdown-item" href="{% url 'home' %}">
+                            <i class="fa fa-dashboard mr-2"></i>Dashboard
+                        </a>
+                        {% if user.is_staff %}
+                        <a class="dropdown-item" href="{% url 'admin:index' %}">
+                            <i class="fa fa-users-cog mr-2"></i>Administrar usuários e perfis
+                        </a>
+                        {% endif %}
+                        <div class="dropdown-divider"></div>
+                        <form method="post" action="{% url 'logout' %}" class="m-0">
+                            {% csrf_token %}
+                            <button type="submit"
+                                    class="dropdown-item text-danger border-0 bg-transparent">
+                                <i class="fa fa-sign-out mr-2"></i>
+                                Sair
+                            </button>
+                        </form>
                     </div>
+                </div>
                 {% else %}
-                    <a class="btn btn-primary" href="{% url 'login' %}">
-                        <i class="fa fa-sign-in mr-1"></i> Entrar
-                    </a>
+                <a class="btn btn-primary" href="{% url 'login' %}">
+                    <i class="fa fa-sign-in mr-1"></i> Entrar
+                </a>
                 {% endif %}
             </div>
         </header>
 
         <main class="sgm-content">
             {% if messages %}
-                <div class="sgm-messages">
-                    {% for message in messages %}
-                        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show"
-                             role="alert">
-                            {{ message }}
-                            <button type="button" class="close" data-dismiss="alert" aria-label="Fechar">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                    {% endfor %}
+            <div class="sgm-messages">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show"
+                     role="alert">
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Fechar">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
                 </div>
+                {% endfor %}
+            </div>
             {% endif %}
 
             {% block menu %}{% endblock %}
@@ -198,14 +205,14 @@
 </div>
 
 {% block static %}
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
-            integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
-            crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
-            integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
-            crossorigin="anonymous"></script>
-    <script src="{% static 'bootstrap/js/bootstrap.js' %}"></script>
-    <script src="{% static 'js/sgm-v2.js' %}"></script>
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
+        integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+        crossorigin="anonymous"></script>
+<script src="{% static 'bootstrap/js/bootstrap.js' %}"></script>
+<script src="{% static 'js/sgm-v2.js' %}"></script>
 {% endblock %}
 </body>
 </html>
