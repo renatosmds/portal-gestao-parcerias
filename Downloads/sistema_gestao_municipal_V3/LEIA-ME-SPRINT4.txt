@@ -1,0 +1,46 @@
+SGM V3 — SPRINT 4: LOGIN DEFINITIVO E LIMPEZA DOS AVISOS
+
+O QUE ESTA ENTREGA CORRIGE
+- Substitui definitivamente o login antigo do Django.
+- Atualiza também o login alternativo do django-allauth.
+- Remove o cabeçalho, menu lateral e botão Entrar da própria tela de login.
+- Mantém a autenticação Django existente.
+- Define DEFAULT_AUTO_FIELD como AutoField, preservando compatibilidade
+  com os models e migrations legados.
+- Elimina os avisos models.W042 relacionados ao campo primário automático.
+
+COMO APLICAR
+1. Faça backup:
+   git add .
+   git commit -m "Backup antes da Sprint 4 de login"
+
+2. Extraia o ZIP.
+
+3. Copie e mescle estas pastas na raiz da V3:
+   gestao_rh
+   templates
+   static
+
+4. Confirme a substituição dos arquivos.
+
+5. Não apague:
+   .env
+   db.sqlite3
+   media
+   manage.py
+
+6. Execute:
+   python manage.py check
+   python manage.py runserver
+
+7. No navegador:
+   Ctrl + F5
+   http://127.0.0.1:8000/accounts/login/
+
+RESULTADO ESPERADO
+- Login em tela cheia, sem o layout interno do sistema.
+- Logout retorna para essa nova tela.
+- O manage.py check deixa de mostrar os avisos DEFAULT_AUTO_FIELD/W042.
+
+OBSERVAÇÃO
+Esta Sprint não altera models nem banco de dados. Não exige makemigrations.

@@ -219,6 +219,7 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # MEDIA_ROOT = 'media'
 
+LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'home'
 
 LOGOUT_REDIRECT_URL = 'login'
@@ -293,3 +294,8 @@ USE_THOUSAND_SEPARATOR = True
 # DATE_INPUT_FORMAT = ["%d/%m/%Y"]
 
 DATE_FORMAT = 'd/m/y'
+
+
+# Mantém compatibilidade com os models e migrations legados do projeto.
+# Evita a criação automática de BigAutoField e elimina os avisos W042.
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
