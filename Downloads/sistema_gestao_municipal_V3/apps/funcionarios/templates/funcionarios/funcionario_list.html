@@ -29,10 +29,12 @@
                 <i class="fa fa-file-pdf-o mr-1" aria-hidden="true"></i>
                 Relatório PDF
             </a>
-            <a href="{% url 'create_funcionario' %}" class="btn btn-primary">
-                <i class="fa fa-plus mr-1" aria-hidden="true"></i>
-                Novo funcionário
-            </a>
+            {% if perms.funcionarios.add_funcionario %}
+                <a href="{% url 'create_funcionario' %}" class="btn btn-primary">
+                    <i class="fa fa-plus mr-1" aria-hidden="true"></i>
+                    Novo funcionário
+                </a>
+            {% endif %}
         </div>
     </div>
 
@@ -157,18 +159,22 @@
 
                         <td class="text-right">
                             <div class="employee-actions">
-                                <a href="{% url 'update_funcionario' funcionario.id %}"
-                                   class="employee-action"
-                                   title="Editar funcionário"
-                                   aria-label="Editar {{ funcionario.nome }}">
-                                    <i class="fa fa-pencil"></i>
-                                </a>
-                                <a href="{% url 'delete_funcionario' funcionario.id %}"
-                                   class="employee-action employee-action--danger"
-                                   title="Excluir funcionário"
-                                   aria-label="Excluir {{ funcionario.nome }}">
-                                    <i class="fa fa-trash"></i>
-                                </a>
+                                {% if perms.funcionarios.change_funcionario %}
+                                    <a href="{% url 'update_funcionario' funcionario.id %}"
+                                       class="employee-action"
+                                       title="Editar funcionário"
+                                       aria-label="Editar {{ funcionario.nome }}">
+                                        <i class="fa fa-pencil"></i>
+                                    </a>
+                                {% endif %}
+                                {% if perms.funcionarios.delete_funcionario %}
+                                    <a href="{% url 'delete_funcionario' funcionario.id %}"
+                                       class="employee-action employee-action--danger"
+                                       title="Excluir funcionário"
+                                       aria-label="Excluir {{ funcionario.nome }}">
+                                        <i class="fa fa-trash"></i>
+                                    </a>
+                                {% endif %}
                             </div>
                         </td>
                     </tr>

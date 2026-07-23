@@ -1,6 +1,6 @@
 from rest_framework import viewsets
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import DjangoModelPermissions, IsAuthenticated
 
 from apps.funcionarios.api.serializers import FuncionarioSerializer
 from apps.funcionarios.models import Funcionario
@@ -12,7 +12,7 @@ class FuncionarioViewSet(viewsets.ModelViewSet):
 
     serializer_class = FuncionarioSerializer
     authentication_classes = (TokenAuthentication,)
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated, DjangoModelPermissions)
 
     def get_queryset(self):
         empresa = get_empresa_do_usuario(self.request.user)

@@ -143,9 +143,14 @@
                                 <i class="fa fa-dashboard mr-2"></i>Dashboard
                             </a>
                             <div class="dropdown-divider"></div>
-                            <a class="dropdown-item text-danger" href="{% url 'logout' %}">
-                                <i class="fa fa-sign-out mr-2"></i>Sair
-                            </a>
+                            <form method="post" action="{% url 'logout' %}" class="m-0">
+                                {% csrf_token %}
+                                <button type="submit"
+                                        class="dropdown-item text-danger border-0 bg-transparent">
+                                    <i class="fa fa-sign-out mr-2"></i>
+                                    Sair
+                                </button>
+                            </form>
                         </div>
                     </div>
                 {% else %}

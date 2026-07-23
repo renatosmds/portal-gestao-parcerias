@@ -13,12 +13,13 @@ from django.views.generic.base import View
 from reportlab.pdfgen import canvas
 
 from .forms import FuncionarioForm
-from .mixins import EmpresaAtualMixin, FuncionarioPorEmpresaMixin
+from .mixins import EmpresaAtualMixin, FuncionarioPorEmpresaMixin, PermissaoFuncionarioMixin
 from .models import Funcionario
 from .services import criar_usuario_para_funcionario, get_empresa_do_usuario
 
 
-class FuncionariosList(FuncionarioPorEmpresaMixin, ListView):
+class FuncionariosList(PermissaoFuncionarioMixin, FuncionarioPorEmpresaMixin, ListView):
+    permission_required = "funcionarios.view_funcionario"
     model = Funcionario
     paginate_by = 15
 
@@ -28,18 +29,21 @@ class FuncionariosList(FuncionarioPorEmpresaMixin, ListView):
         return context
 
 
-class FuncionarioEdit(FuncionarioPorEmpresaMixin, UpdateView):
+class FuncionarioEdit(PermissaoFuncionarioMixin, FuncionarioPorEmpresaMixin, UpdateView):
+    permission_required = "funcionarios.change_funcionario"
     model = Funcionario
     form_class = FuncionarioForm
     success_url = reverse_lazy("list_funcionarios")
 
 
-class FuncionarioDelete(FuncionarioPorEmpresaMixin, DeleteView):
+class FuncionarioDelete(PermissaoFuncionarioMixin, FuncionarioPorEmpresaMixin, DeleteView):
+    permission_required = "funcionarios.delete_funcionario"
     model = Funcionario
     success_url = reverse_lazy("list_funcionarios")
 
 
-class FuncionarioCreate(EmpresaAtualMixin, CreateView):
+class FuncionarioCreate(PermissaoFuncionarioMixin, EmpresaAtualMixin, CreateView):
+    permission_required = "funcionarios.add_funcionario"
     model = Funcionario
     form_class = FuncionarioForm
     success_url = reverse_lazy("list_funcionarios")
@@ -57,6 +61,9 @@ class FuncionarioCreate(EmpresaAtualMixin, CreateView):
 
 @login_required
 def relatorio_funcionario(request):
+    if not request.user.has_perm("funcionarios.view_funcionario"):
+        from django.core.exceptions import PermissionDenied
+        raise PermissionDenied
     empresa = get_empresa_do_usuario(request.user)
 
     response = HttpResponse(content_type="application/pdf")
@@ -114,7 +121,8 @@ class Render:
         return HttpResponse("Erro ao gerar PDF.", status=400)
 
 
-class Pdf(EmpresaAtualMixin, View):
+class Pdf(PermissaoFuncionarioMixin, EmpresaAtualMixin, View):
+    permission_required = "funcionarios.view_funcionario"
     def get(self, request):
         funcionarios = Funcionario.objects.filter(empresa=self.empresa_atual)
         params = {
@@ -130,7 +138,8 @@ class Pdf(EmpresaAtualMixin, View):
         )
 
 
-class PdfDebug(EmpresaAtualMixin, TemplateView):
+class PdfDebug(PermissaoFuncionarioMixin, EmpresaAtualMixin, TemplateView):
+    permission_required = "funcionarios.view_funcionario"
     template_name = "funcionarios/relatorio.html"
 
     def get_context_data(self, **kwargs):
