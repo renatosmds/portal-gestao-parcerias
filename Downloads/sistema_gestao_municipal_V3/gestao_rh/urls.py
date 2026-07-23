@@ -94,6 +94,7 @@ urlpatterns = [
                   path('grappelli/', include('grappelli.urls')),  # grappelli URLS
                   # path('admin/', admin.site.urls),  # admin site
                   path('login/', include('apps.core.urls')),
+                  path('accounts/', include('django.contrib.auth.urls')),
                   path('conferencia3/', include('apps.conferencia3.urls')),
                   #path('bpm/', include('apps.bpm.urls')),
                   path('termos/', include('apps.termos.urls')),
