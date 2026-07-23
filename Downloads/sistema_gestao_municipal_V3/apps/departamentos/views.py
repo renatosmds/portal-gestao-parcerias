@@ -1,123 +1,196 @@
-import io
-
-from django.contrib.auth.models import User
+from django.contrib import messages
+from django.db.models import Count, Q
 from django.urls import reverse_lazy
-from django.views.generic import (
-    ListView,
-    UpdateView,
-    DeleteView,
-    CreateView
-)
-from django.views.generic.base import View, TemplateView
-from reportlab.pdfgen import canvas
-from django.utils.translation import gettext as _
-from django.http import HttpResponse
-from django.template.loader import get_template
-import xhtml2pdf.pisa as pisa
+from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
+
+from apps.empresas.models import Empresa
+
+from .forms import DepartamentoForm
+from .mixins import DepartamentoEscopoMixin, DepartamentoPermissaoMixin
 from .models import Departamento
 
 
-class DepartamentosList(ListView):
+class DepartamentosList(
+    DepartamentoPermissaoMixin,
+    DepartamentoEscopoMixin,
+    ListView,
+):
     model = Departamento
+    template_name = "departamentos/departamento_list.html"
+    context_object_name = "departamentos"
+    permission_required = "departamentos.view_departamento"
+    paginate_by = 15
 
-    success_url = reverse_lazy('list_departamentos')
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        termo = (self.request.GET.get("q") or "").strip()
+        empresa_id = (self.request.GET.get("empresa") or "").strip()
+
+        if termo:
+            queryset = queryset.filter(nome__icontains=termo)
+
+        if empresa_id and self.request.user.is_superuser:
+            queryset = queryset.filter(empresa_id=empresa_id)
+
+        return queryset.annotate(
+            quantidade_funcionarios=Count("funcionario", distinct=True),
+            quantidade_ativos=Count(
+                "funcionario",
+                filter=Q(funcionario__ativo=True),
+                distinct=True,
+            ),
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['report_button'] = _("Employee report")
+        context["termo_busca"] = (self.request.GET.get("q") or "").strip()
+        context["empresa_filtro"] = (self.request.GET.get("empresa") or "").strip()
+        context["total_departamentos"] = self.get_queryset().count()
+
+        if self.request.user.is_superuser:
+            context["empresas_disponiveis"] = Empresa.objects.order_by("nome")
+        else:
+            context["empresas_disponiveis"] = Empresa.objects.none()
+
         return context
 
-    def get_queryset(self):
-        empresa_logada = self.request.user.funcionario.empresa
-        return Departamento.objects.filter(empresa=empresa_logada)
 
-
-class DepartamentoUpdate(UpdateView):
+class DepartamentoDetail(
+    DepartamentoPermissaoMixin,
+    DepartamentoEscopoMixin,
+    DetailView,
+):
     model = Departamento
-    fields = ['nome']
-    success_url = reverse_lazy('list_departamentos')
+    template_name = "departamentos/departamento_detail.html"
+    context_object_name = "departamento"
+    permission_required = "departamentos.view_departamento"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        funcionarios = self.object.funcionario_set.all().order_by("nome")
+        context["funcionarios"] = funcionarios[:12]
+        context["total_funcionarios"] = funcionarios.count()
+        context["total_ativos"] = funcionarios.filter(ativo=True).count()
+        context["total_ferias"] = funcionarios.filter(de_ferias=True).count()
+        return context
 
 
-class DepartamentoDelete(DeleteView):
+class DepartamentoCreate(
+    DepartamentoPermissaoMixin,
+    CreateView,
+):
     model = Departamento
-    success_url = reverse_lazy('list_departamentos')
+    form_class = DepartamentoForm
+    template_name = "departamentos/departamento_form.html"
+    permission_required = "departamentos.add_departamento"
 
-class DepartamentoCreate(CreateView):
-    model = Departamento
-    fields = ['nome']
+    def get_empresa_destino(self):
+        if self.request.user.is_superuser:
+            empresa_id = self.request.GET.get("empresa") or self.request.POST.get("empresa")
+            if empresa_id:
+                return Empresa.objects.filter(pk=empresa_id).first()
+            return None
 
-    success_url = reverse_lazy('list_departamentos')
+        try:
+            return self.request.user.funcionario.empresa
+        except Exception:
+            return None
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["empresa"] = self.get_empresa_destino()
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["empresa_destino"] = self.get_empresa_destino()
+        context["empresas_disponiveis"] = (
+            Empresa.objects.order_by("nome")
+            if self.request.user.is_superuser
+            else Empresa.objects.none()
+        )
+        return context
 
     def form_valid(self, form):
-        funcionario = form.save(commit=False)
-        username = funcionario.nome.split(' ')[0]
-        funcionario.empresa = self.request.user.funcionario.empresa
-        funcionario.user = User.objects.create(username=username)
-        funcionario.save()
-        return super(DepartamentoCreate, self).form_valid(form)
+        empresa = self.get_empresa_destino()
+
+        if not empresa:
+            form.add_error(
+                None,
+                "Selecione uma empresa válida para o departamento.",
+            )
+            return self.form_invalid(form)
+
+        departamento = form.save(commit=False)
+        departamento.empresa = empresa
+        departamento.save()
+        self.object = departamento
+
+        messages.success(
+            self.request,
+            f"Departamento “{departamento.nome}” cadastrado com sucesso.",
+        )
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy(
+            "detail_departamento",
+            kwargs={"pk": self.object.pk},
+        )
 
 
-def relatorio_departamento(request):
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename="mypdf.pdf"'
+class DepartamentoUpdate(
+    DepartamentoPermissaoMixin,
+    DepartamentoEscopoMixin,
+    UpdateView,
+):
+    model = Departamento
+    form_class = DepartamentoForm
+    template_name = "departamentos/departamento_form.html"
+    permission_required = "departamentos.change_departamento"
 
-    buffer = io.BytesIO()
-    p = canvas.Canvas(buffer)
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["empresa"] = self.object.empresa
+        return kwargs
 
-    p.drawString(200, 810, 'Relatorio de departamentos')
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["empresa_destino"] = self.object.empresa
+        context["empresas_disponiveis"] = Empresa.objects.none()
+        return context
 
-    departamentos = Departamento.objects.filter(
-        empresa=request.user.funcionario.empresa)
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(
+            self.request,
+            f"Departamento “{self.object.nome}” atualizado com sucesso.",
+        )
+        return response
 
-    str_ = 'Nome: %s | Hora Extra: %.2f'
-
-    p.drawString(0, 800, '_' * 150)
-
-    y = 750
-    for departamentos in departamentos:
-        p.drawString(10, y, str_ % (
-            departamentos.nome, departamentos.total_horas_extra))
-        y -= 20
-
-    p.showPage()
-    p.save()
-
-    pdf = buffer.getvalue()
-    buffer.close()
-    response.write(pdf)
-
-    return response
-
-
-class Render:
-    @staticmethod
-    def render(path: str, params: dict, filename: str):
-        template = get_template(path)
-        html = template.render(params)
-        response = io.BytesIO()
-        pdf = pisa.pisaDocument(
-            io.BytesIO(html.encode("UTF-8")), response)
-        if not pdf.err:
-            response = HttpResponse(
-                response.getvalue(), content_type='application/pdf')
-            response['Content-Disposition'] = 'attachment;filename=%s.pdf' % filename
-            return response
-        else:
-            return HttpResponse("Error Rendering PDF", status=400)
+    def get_success_url(self):
+        return reverse_lazy(
+            "detail_departamento",
+            kwargs={"pk": self.object.pk},
+        )
 
 
-def get(request):
-    params = {
-        'today': 'Variavel today',
-        'sales': 'Variavel sales',
-        'request': request,
-    }
-    return Render.render('departamentos/relatorio.html', params, 'myfile')
+class DepartamentoDelete(
+    DepartamentoPermissaoMixin,
+    DepartamentoEscopoMixin,
+    DeleteView,
+):
+    model = Departamento
+    template_name = "departamentos/departamento_confirm_delete.html"
+    context_object_name = "departamento"
+    permission_required = "departamentos.delete_departamento"
+    success_url = reverse_lazy("list_departamentos")
 
-
-class Pdf(View):
-    pass
-
-
-class PdfDebug(TemplateView):
-    template_name = 'departamentos/relatorio.html'
+    def form_valid(self, form):
+        nome = self.object.nome
+        response = super().form_valid(form)
+        messages.success(
+            self.request,
+            f"Departamento “{nome}” excluído com sucesso.",
+        )
+        return response

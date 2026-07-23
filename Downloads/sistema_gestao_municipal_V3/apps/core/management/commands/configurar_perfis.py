@@ -16,6 +16,18 @@ PERFIS = {
             "delete_empresa",
             "view_empresa",
         },
+        "departamentos": {
+            "add_departamento",
+            "change_departamento",
+            "delete_departamento",
+            "view_departamento",
+        },
+        "fornecedores": {
+            "add_fornecedores",
+            "change_fornecedores",
+            "delete_fornecedores",
+            "view_fornecedores",
+        },
     },
     "Gestor": {
         "funcionarios": {
@@ -27,14 +39,28 @@ PERFIS = {
             "change_empresa",
             "view_empresa",
         },
+        "departamentos": {
+            "add_departamento",
+            "change_departamento",
+            "view_departamento",
+        },
+        "fornecedores": {
+            "add_fornecedores",
+            "change_fornecedores",
+            "view_fornecedores",
+        },
     },
     "Analista": {
         "funcionarios": {"view_funcionario"},
         "empresas": {"view_empresa"},
+        "departamentos": {"view_departamento"},
+        "fornecedores": {"view_fornecedores"},
     },
     "Usuário": {
         "funcionarios": set(),
         "empresas": {"view_empresa"},
+        "departamentos": {"view_departamento"},
+        "fornecedores": {"view_fornecedores"},
     },
 }
 
@@ -61,6 +87,7 @@ class Command(BaseCommand):
                 )
 
             grupo.permissions.set(permissoes.distinct())
+
             self.stdout.write(
                 self.style.SUCCESS(
                     f"Perfil '{nome}' atualizado com "
@@ -69,6 +96,7 @@ class Command(BaseCommand):
             )
 
         username = options.get("administrador")
+
         if username:
             try:
                 user = User.objects.get(username=username)
@@ -78,6 +106,7 @@ class Command(BaseCommand):
                 ) from exc
 
             user.groups.add(Group.objects.get(name="Administrador"))
+
             self.stdout.write(
                 self.style.SUCCESS(
                     f"Perfil Administrador atribuído a '{username}'."

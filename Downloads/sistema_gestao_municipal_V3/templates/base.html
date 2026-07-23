@@ -49,6 +49,22 @@
             </a>
             {% endif %}
 
+            {% if perms.departamentos.view_departamento or user.is_superuser %}
+            <a class="sgm-nav-item {% if request.resolver_match.url_name == 'list_departamentos' or request.resolver_match.url_name == 'detail_departamento' or request.resolver_match.url_name == 'create_departamento' or request.resolver_match.url_name == 'update_departamento' or request.resolver_match.url_name == 'delete_departamento' %}active{% endif %}"
+               href="{% url 'list_departamentos' %}">
+                <i class="fa fa-sitemap" aria-hidden="true"></i>
+                <span>Departamentos</span>
+            </a>
+            {% endif %}
+
+            {% if perms.fornecedores.view_fornecedores or user.is_superuser %}
+            <a class="sgm-nav-item {% if request.resolver_match.url_name == 'list_fornecedores' or request.resolver_match.url_name == 'detail_fornecedor' or request.resolver_match.url_name == 'create_fornecedor' or request.resolver_match.url_name == 'update_fornecedor' or request.resolver_match.url_name == 'delete_fornecedor' %}active{% endif %}"
+               href="{% url 'list_fornecedores' %}">
+                <i class="fa fa-truck" aria-hidden="true"></i>
+                <span>Fornecedores</span>
+            </a>
+            {% endif %}
+
             {% if perms.funcionarios.view_funcionario or user.is_superuser %}
             <a class="sgm-nav-item" href="{% url 'list_funcionarios' %}">
                 <i class="fa fa-users" aria-hidden="true"></i>

@@ -29,6 +29,13 @@
         </div>
 
         <div class="company-detail-actions">
+
+        {% if perms.departamentos.view_departamento %}
+            <a href="{% url 'list_departamentos' %}?empresa={{ empresa.pk }}"
+               class="btn btn-outline-primary">
+                <i class="fa fa-sitemap mr-1"></i> Departamentos
+            </a>
+        {% endif %}
             {% if perms.empresas.change_empresa %}
                 <a href="{% url 'edit_empresa' empresa.pk %}" class="btn btn-primary">
                     <i class="fa fa-pencil mr-1"></i> Editar

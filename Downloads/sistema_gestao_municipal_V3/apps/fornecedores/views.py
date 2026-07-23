@@ -1,124 +1,195 @@
-import io
-from django.contrib.auth.models import User
+from django.contrib import messages
+from django.db.models import Q
 from django.urls import reverse_lazy
-from django.views.generic import ListView, CreateView, UpdateView, DeleteView
-from django.views.generic.base import View, TemplateView
-from reportlab.pdfgen import canvas
-from django.http import HttpResponse
-from django.template.loader import get_template
-import xhtml2pdf.pisa as pisa
-from django.utils.translation import gettext as _
+from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
+
+from apps.empresas.models import Empresa
+
+from .forms import FornecedorForm
+from .mixins import FornecedorEscopoMixin, FornecedorPermissaoMixin
 from .models import Fornecedores
 
 
-class FornecedoresList(ListView):
+class FornecedoresList(
+    FornecedorPermissaoMixin,
+    FornecedorEscopoMixin,
+    ListView,
+):
     model = Fornecedores
+    template_name = "fornecedores/fornecedores_list.html"
+    context_object_name = "fornecedores"
+    permission_required = "fornecedores.view_fornecedores"
+    paginate_by = 15
 
-    success_url = reverse_lazy('list_fornecedores')
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        termo = (self.request.GET.get("q") or "").strip()
+        pessoa = (self.request.GET.get("pessoa") or "").strip()
+        empresa_id = (self.request.GET.get("empresa") or "").strip()
 
-    #    paginate_by = 100 # if pagination is desired
+        if termo:
+            queryset = queryset.filter(
+                Q(credor__icontains=termo)
+                | Q(razao__icontains=termo)
+                | Q(fantasia__icontains=termo)
+                | Q(numero__icontains=termo)
+                | Q(email__icontains=termo)
+            )
 
-    # @property
-    # def get_queryset(self):
-    #    empresa_logada = self.request.user.funcionario.empresa
-    #    return Fornecedores.objects.filter(empresa=empresa_logada)
+        if pessoa:
+            queryset = queryset.filter(pessoa=pessoa)
+
+        if empresa_id and self.request.user.is_superuser:
+            queryset = queryset.filter(empresa_id=empresa_id)
+
+        return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['report_button'] = _("Employee report")
+        queryset = self.get_queryset()
+
+        context["termo_busca"] = (self.request.GET.get("q") or "").strip()
+        context["pessoa_filtro"] = (self.request.GET.get("pessoa") or "").strip()
+        context["empresa_filtro"] = (self.request.GET.get("empresa") or "").strip()
+        context["total_fornecedores"] = queryset.count()
+        context["total_pf"] = queryset.filter(pessoa="física").count()
+        context["total_pj"] = queryset.filter(pessoa="jurídica").count()
+        context["empresas_disponiveis"] = (
+            Empresa.objects.order_by("nome")
+            if self.request.user.is_superuser
+            else Empresa.objects.none()
+        )
         return context
 
 
-class FornecedorDelete(DeleteView):
+class FornecedorDetail(
+    FornecedorPermissaoMixin,
+    FornecedorEscopoMixin,
+    DetailView,
+):
     model = Fornecedores
-    success_url = reverse_lazy('list_fornecedores')
+    template_name = "fornecedores/fornecedor_detail.html"
+    context_object_name = "fornecedor"
+    permission_required = "fornecedores.view_fornecedores"
 
 
-class FornecedorCreate(CreateView):
+class FornecedorCreate(
+    FornecedorPermissaoMixin,
+    CreateView,
+):
     model = Fornecedores
-    fields = ['credor', 'pessoa', 'razao', 'tipo', 'numero', 'fantasia', 'endereco', 'bairro', 'cep', 'cidade',
-              'estado', 'email', 'telefone', 'iestadual', 'imunicipal'
-              ]
-    success_url = reverse_lazy('list_fornecedores')
+    form_class = FornecedorForm
+    template_name = "fornecedores/fornecedores_form.html"
+    permission_required = "fornecedores.add_fornecedores"
+
+    def get_empresa_destino(self):
+        if self.request.user.is_superuser:
+            empresa_id = self.request.GET.get("empresa") or self.request.POST.get("empresa")
+            if empresa_id:
+                return Empresa.objects.filter(pk=empresa_id).first()
+            return None
+
+        try:
+            return self.request.user.funcionario.empresa
+        except Exception:
+            return None
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["empresa"] = self.get_empresa_destino()
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["empresa_destino"] = self.get_empresa_destino()
+        context["empresas_disponiveis"] = (
+            Empresa.objects.order_by("nome")
+            if self.request.user.is_superuser
+            else Empresa.objects.none()
+        )
+        return context
 
     def form_valid(self, form):
-        funcionario = form.save(commit=False)
-        username = funcionario.credor.split(' ')[0]
-        funcionario.empresa = self.request.user.funcionario.empresa
-        funcionario.user = User.objects.create(username=username)
-        funcionario.save()
-        return super(FornecedorCreate, self).form_valid(form)
+        empresa = self.get_empresa_destino()
+
+        if not empresa:
+            form.add_error(
+                None,
+                "Selecione uma empresa válida para o fornecedor.",
+            )
+            return self.form_invalid(form)
+
+        fornecedor = form.save(commit=False)
+        fornecedor.empresa = empresa
+        fornecedor.save()
+        self.object = fornecedor
+
+        messages.success(
+            self.request,
+            f"Fornecedor “{fornecedor}” cadastrado com sucesso.",
+        )
+
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy(
+            "detail_fornecedor",
+            kwargs={"pk": self.object.pk},
+        )
 
 
-class FornecedorUpdate(UpdateView):
+class FornecedorUpdate(
+    FornecedorPermissaoMixin,
+    FornecedorEscopoMixin,
+    UpdateView,
+):
     model = Fornecedores
-    fields = ['credor', 'pessoa', 'razao', 'tipo', 'numero', 'fantasia', 'endereco', 'bairro', 'cep', 'cidade',
-              'estado', 'email', 'telefone', 'iestadual', 'imunicipal'
-              ]
-    success_url = reverse_lazy('list_fornecedores')
+    form_class = FornecedorForm
+    template_name = "fornecedores/fornecedores_form.html"
+    permission_required = "fornecedores.change_fornecedores"
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["empresa"] = self.object.empresa
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["empresa_destino"] = self.object.empresa
+        context["empresas_disponiveis"] = Empresa.objects.none()
+        return context
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(
+            self.request,
+            f"Fornecedor “{self.object}” atualizado com sucesso.",
+        )
+        return response
+
+    def get_success_url(self):
+        return reverse_lazy(
+            "detail_fornecedor",
+            kwargs={"pk": self.object.pk},
+        )
 
 
-def relatorio_fornecedor(request):  # feito com reportlab
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename="Relatório de Fornecedores.pdf"'
+class FornecedorDelete(
+    FornecedorPermissaoMixin,
+    FornecedorEscopoMixin,
+    DeleteView,
+):
+    model = Fornecedores
+    template_name = "fornecedores/fornecedores_confirm_delete.html"
+    context_object_name = "fornecedor"
+    permission_required = "fornecedores.delete_fornecedores"
+    success_url = reverse_lazy("list_fornecedores")
 
-    buffer = io.BytesIO()
-    p = canvas.Canvas(buffer)
-
-    p.drawString(200, 810, 'Relatorio de fornecedores')
-
-    fornecedores = Fornecedores.objects.filter(
-        empresa=request.user.funcionario.empresa)
-
-    str_ = 'Nome: %s | Hora Extra: %.2f'
-
-    p.drawString(0, 800, '_' * 150)
-
-    y = 750
-    for fornecedor in fornecedores:
-        p.drawString(10, y, str_ % (
-            fornecedor.nome, fornecedor.total_horas_extra))
-        y -= 20
-
-    p.showPage()
-    p.save()
-
-    pdf = buffer.getvalue()
-    buffer.close()
-    response.write(pdf)
-
-    return response
-
-
-class Render:
-    @staticmethod
-    def render(path: str, params: dict, filename: str):
-        template = get_template(path)
-        html = template.render(params)
-        response = io.BytesIO()
-        pdf = pisa.pisaDocument(
-            io.BytesIO(html.encode("UTF-8")), response)
-        if not pdf.err:
-            response = HttpResponse(
-                response.getvalue(), content_type='application/pdf')
-            response['Content-Disposition'] = 'attachment;filename=%s.pdf' % filename
-            return response
-        else:
-            return HttpResponse("Error Rendering PDF", status=400)
-
-
-def get(request):
-    params = {
-        'today': 'Variavel today',
-        'sales': 'Variavel sales',
-        'request': request,
-    }
-    return Render.render('fornecedores/relatorio.html', params, 'Relatório de Fornecedores')
-
-
-class Pdf(View):
-    pass
-
-
-class PdfDebug(TemplateView):
-    template_name = 'fornecedores/relatorio.html'
+    def form_valid(self, form):
+        nome = str(self.object)
+        response = super().form_valid(form)
+        messages.success(
+            self.request,
+            f"Fornecedor “{nome}” excluído com sucesso.",
+        )
+        return response

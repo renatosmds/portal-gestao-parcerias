@@ -1,0 +1,62 @@
+SGM V3 — SPRINT 7: MODERNIZAÇÃO DO MÓDULO DEPARTAMENTOS
+
+ENTREGA
+- Listagem moderna em cards.
+- Pesquisa por nome.
+- Filtro por empresa para superusuários.
+- Página de detalhes.
+- Cadastro e edição modernos.
+- Confirmação de exclusão.
+- Validação de nome duplicado dentro da mesma empresa.
+- Contagem de funcionários e ativos.
+- Escopo multitenant.
+- Permissões reais por perfil.
+- Menu Departamentos na barra lateral.
+- Atalho de Departamentos na página da Empresa.
+- Django Admin melhorado.
+- Testes básicos.
+
+REGRAS DE ACESSO
+Administrador:
+- visualiza todas as empresas;
+- cadastra, edita e exclui departamentos.
+
+Gestor:
+- visualiza, cadastra e edita departamentos da própria empresa.
+
+Analista:
+- visualiza departamentos da própria empresa.
+
+Usuário:
+- visualiza departamentos da própria empresa.
+
+ANTES DE APLICAR
+git add .
+git commit -m "Backup antes da Sprint 7 Departamentos"
+
+COMO APLICAR
+1. Extraia o ZIP.
+2. Mescle estas pastas na raiz da V3:
+   apps
+   templates
+   static
+3. Confirme a substituição dos arquivos.
+4. Preserve:
+   .env
+   db.sqlite3
+   media
+   manage.py
+
+COMANDOS
+python manage.py check
+python manage.py configurar_perfis
+python manage.py test apps.departamentos.tests.test_access
+python manage.py runserver
+
+ACESSO
+http://127.0.0.1:8000/departamentos/
+
+IMPORTANTE
+- Não altera o model Departamento.
+- Não exige makemigrations.
+- Não exige migrate.
