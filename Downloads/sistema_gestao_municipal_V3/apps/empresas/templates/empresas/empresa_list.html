@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Empresas | Sistema de Gestão Municipal{% endblock %}
+{% block page_name %}Gestão de Empresas{% endblock %}
+
+{% block staticcss %}
+<link rel="stylesheet" href="{% static 'css/empresas-v3.css' %}">
+{% endblock %}
+
+{% block main %}
+<section class="companies-page">
+    <header class="companies-header">
+        <div class="companies-title">
+            <span class="companies-title-icon">
+                <i class="fa fa-building-o"></i>
+            </span>
+            <div>
+                <span class="sgm-eyebrow">ESTRUTURA ORGANIZACIONAL</span>
+                <h1>Empresas</h1>
+                <p>Consulte e administre as empresas e entidades cadastradas.</p>
+            </div>
+        </div>
+
+        {% if perms.empresas.add_empresa %}
+            <a href="{% url 'create_empresa' %}" class="btn btn-primary">
+                <i class="fa fa-plus mr-1"></i> Nova empresa
+            </a>
+        {% endif %}
+    </header>
+
+    <div class="companies-summary">
+        <article class="companies-summary-card">
+            <span><i class="fa fa-building"></i></span>
+            <div>
+                <small>Empresas encontradas</small>
+                <strong>{{ total_empresas }}</strong>
+            </div>
+        </article>
+
+        <article class="companies-summary-card">
+            <span><i class="fa fa-users"></i></span>
+            <div>
+                <small>Escopo de acesso</small>
+                <strong>
+                    {% if user.is_superuser %}Todas{% else %}Empresa vinculada{% endif %}
+                </strong>
+            </div>
+        </article>
+    </div>
+
+    <form method="get" class="companies-toolbar">
+        <div class="companies-search">
+            <i class="fa fa-search"></i>
+            <input
+                type="search"
+                name="q"
+                class="form-control"
+                value="{{ termo_busca }}"
+                placeholder="Pesquisar empresa..."
+                autocomplete="off">
+        </div>
+
+        <button type="submit" class="btn btn-outline-primary">
+            Pesquisar
+        </button>
+
+        {% if termo_busca %}
+            <a href="{% url 'list_empresas' %}" class="btn btn-outline-secondary">
+                Limpar
+            </a>
+        {% endif %}
+    </form>
+
+    {% if empresas %}
+        <div class="companies-grid">
+            {% for empresa in empresas %}
+                <article class="company-card">
+                    <div class="company-card-header">
+                        <span class="company-avatar">
+                            {{ empresa.nome|slice:":1"|upper }}
+                        </span>
+
+                        <div class="company-card-actions">
+                            <a href="{% url 'detail_empresa' empresa.pk %}"
+                               class="company-icon-action"
+                               title="Visualizar empresa">
+                                <i class="fa fa-eye"></i>
+                            </a>
+
+                            {% if perms.empresas.change_empresa %}
+                                <a href="{% url 'edit_empresa' empresa.pk %}"
+                                   class="company-icon-action"
+                                   title="Editar empresa">
+                                    <i class="fa fa-pencil"></i>
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="company-card-body">
+                        <span class="sgm-eyebrow">EMPRESA</span>
+                        <h2>
+                            <a href="{% url 'detail_empresa' empresa.pk %}">
+                                {{ empresa.nome }}
+                            </a>
+                        </h2>
+
+                        <div class="company-metrics">
+                            <div>
+                                <strong>{{ empresa.quantidade_funcionarios }}</strong>
+                                <small>Funcionários</small>
+                            </div>
+                            <div>
+                                <strong>{{ empresa.quantidade_ativos }}</strong>
+                                <small>Ativos</small>
+                            </div>
+                            <div>
+                                <strong>{{ empresa.quantidade_ferias }}</strong>
+                                <small>Em férias</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <footer class="company-card-footer">
+                        <a href="{% url 'detail_empresa' empresa.pk %}">
+                            Abrir empresa <i class="fa fa-arrow-right ml-1"></i>
+                        </a>
+                    </footer>
+                </article>
+            {% endfor %}
+        </div>
+
+        {% if is_paginated %}
+            <nav class="companies-pagination" aria-label="Paginação">
+                {% if page_obj.has_previous %}
+                    <a href="?q={{ termo_busca|urlencode }}&page={{ page_obj.previous_page_number }}"
+                       class="btn btn-outline-secondary">
+                        <i class="fa fa-angle-left mr-1"></i> Anterior
+                    </a>
+                {% endif %}
+
+                <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+
+                {% if page_obj.has_next %}
+                    <a href="?q={{ termo_busca|urlencode }}&page={{ page_obj.next_page_number }}"
+                       class="btn btn-outline-secondary">
+                        Próxima <i class="fa fa-angle-right ml-1"></i>
+                    </a>
+                {% endif %}
+            </nav>
+        {% endif %}
+    {% else %}
+        <div class="sgm-panel companies-empty">
+            <span><i class="fa fa-building-o"></i></span>
+            <h2>Nenhuma empresa encontrada</h2>
+            <p>
+                {% if termo_busca %}
+                    Nenhum cadastro corresponde à pesquisa “{{ termo_busca }}”.
+                {% else %}
+                    Ainda não existem empresas disponíveis no seu escopo de acesso.
+                {% endif %}
+            </p>
+
+            {% if termo_busca %}
+                <a href="{% url 'list_empresas' %}" class="btn btn-outline-primary">
+                    Limpar pesquisa
+                </a>
+            {% elif perms.empresas.add_empresa %}
+                <a href="{% url 'create_empresa' %}" class="btn btn-primary">
+                    <i class="fa fa-plus mr-1"></i> Cadastrar empresa
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+</section>
+{% endblock %}

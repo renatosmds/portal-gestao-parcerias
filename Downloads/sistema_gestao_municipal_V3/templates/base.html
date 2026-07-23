@@ -41,10 +41,12 @@
 
             <span class="sgm-nav-label">GESTÃO</span>
 
-            <a class="sgm-nav-item" href="{% url 'list_funcionarios' %}">
-                <i class="fa fa-users" aria-hidden="true"></i>
-                <span>Empregados</span>
-            </a>
+            {% if perms.funcionarios.view_funcionario or user.is_superuser %}
+                <a class="sgm-nav-item" href="{% url 'list_funcionarios' %}">
+                    <i class="fa fa-users" aria-hidden="true"></i>
+                    <span>Empregados</span>
+                </a>
+            {% endif %}
 
             <a class="sgm-nav-item" href="{% url 'list_hora_extra' %}">
                 <i class="fa fa-clock-o" aria-hidden="true"></i>
@@ -94,7 +96,7 @@
 
         <div class="sgm-sidebar-footer">
             <small>Sistema de Gestão Municipal</small>
-            <span>Versão 2</span>
+            <span>Versão 3</span>
         </div>
     </aside>
 
@@ -130,7 +132,10 @@
                             </span>
                             <span class="sgm-user-text">
                                 <strong>{{ user.get_full_name|default:user.get_username }}</strong>
-                                <small>Usuário autenticado</small>
+                                <small>
+                                    {{ perfil_usuario|default:"Usuário autenticado" }}
+                                    {% if empresa_usuario %} · {{ empresa_usuario }}{% endif %}
+                                </small>
                             </span>
                         </button>
 
@@ -142,6 +147,11 @@
                             <a class="dropdown-item" href="{% url 'home' %}">
                                 <i class="fa fa-dashboard mr-2"></i>Dashboard
                             </a>
+                            {% if user.is_staff %}
+                                <a class="dropdown-item" href="{% url 'admin:index' %}">
+                                    <i class="fa fa-users-cog mr-2"></i>Administrar usuários e perfis
+                                </a>
+                            {% endif %}
                             <div class="dropdown-divider"></div>
                             <form method="post" action="{% url 'logout' %}" class="m-0">
                                 {% csrf_token %}

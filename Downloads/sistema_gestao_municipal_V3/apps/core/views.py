@@ -17,12 +17,24 @@ from django.core import serializers
 from django.http import HttpResponse
 from .tasks import send_relatorio
 from django.db.models import Sum
+from django.core.exceptions import PermissionDenied
 
 
 @login_required
 def home(request):
     data = {'usuario': request.user}  # ok
-    funcionario = request.user.funcionario
+
+    try:
+        funcionario = request.user.funcionario
+    except Exception as exc:
+        raise PermissionDenied(
+            "Seu usuário ainda não possui um funcionário vinculado."
+        ) from exc
+
+    if not funcionario or not funcionario.empresa_id:
+        raise PermissionDenied(
+            "Seu usuário ainda não possui uma empresa vinculada."
+        )
 
     # CARD EMPREGADOS #
     data['total_funcionarios'] = funcionario.empresa.total_funcionarios

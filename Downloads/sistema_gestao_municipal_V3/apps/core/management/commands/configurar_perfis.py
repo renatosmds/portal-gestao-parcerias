@@ -4,25 +4,43 @@ from django.core.management.base import BaseCommand, CommandError
 
 PERFIS = {
     "Administrador": {
-        "add_funcionario",
-        "change_funcionario",
-        "delete_funcionario",
-        "view_funcionario",
+        "funcionarios": {
+            "add_funcionario",
+            "change_funcionario",
+            "delete_funcionario",
+            "view_funcionario",
+        },
+        "empresas": {
+            "add_empresa",
+            "change_empresa",
+            "delete_empresa",
+            "view_empresa",
+        },
     },
     "Gestor": {
-        "add_funcionario",
-        "change_funcionario",
-        "view_funcionario",
+        "funcionarios": {
+            "add_funcionario",
+            "change_funcionario",
+            "view_funcionario",
+        },
+        "empresas": {
+            "change_empresa",
+            "view_empresa",
+        },
     },
     "Analista": {
-        "view_funcionario",
+        "funcionarios": {"view_funcionario"},
+        "empresas": {"view_empresa"},
     },
-    "Usuário": set(),
+    "Usuário": {
+        "funcionarios": set(),
+        "empresas": {"view_empresa"},
+    },
 }
 
 
 class Command(BaseCommand):
-    help = "Cria os perfis-padrão e pode atribuir Administrador a um usuário."
+    help = "Cria ou atualiza os perfis-padrão do SGM."
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -32,16 +50,21 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        for nome, codenames in PERFIS.items():
+        for nome, apps in PERFIS.items():
             grupo, _ = Group.objects.get_or_create(name=nome)
-            permissoes = Permission.objects.filter(
-                content_type__app_label="funcionarios",
-                codename__in=codenames,
-            )
-            grupo.permissions.set(permissoes)
+            permissoes = Permission.objects.none()
+
+            for app_label, codenames in apps.items():
+                permissoes = permissoes | Permission.objects.filter(
+                    content_type__app_label=app_label,
+                    codename__in=codenames,
+                )
+
+            grupo.permissions.set(permissoes.distinct())
             self.stdout.write(
                 self.style.SUCCESS(
-                    f"Perfil '{nome}' configurado com {permissoes.count()} permissão(ões)."
+                    f"Perfil '{nome}' atualizado com "
+                    f"{grupo.permissions.count()} permissão(ões)."
                 )
             )
 
@@ -50,17 +73,13 @@ class Command(BaseCommand):
             try:
                 user = User.objects.get(username=username)
             except User.DoesNotExist as exc:
-                raise CommandError(f"Usuário '{username}' não encontrado.") from exc
+                raise CommandError(
+                    f"Usuário '{username}' não encontrado."
+                ) from exc
 
             user.groups.add(Group.objects.get(name="Administrador"))
             self.stdout.write(
                 self.style.SUCCESS(
-                    f"Perfil Administrador atribuído ao usuário '{username}'."
+                    f"Perfil Administrador atribuído a '{username}'."
                 )
             )
-
-        self.stdout.write(
-            self.style.WARNING(
-                "Revise os usuários no Django Admin e atribua um dos quatro perfis."
-            )
-        )

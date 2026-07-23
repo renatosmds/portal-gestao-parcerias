@@ -14,6 +14,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
+from django.views.generic import RedirectView
 from django.contrib.auth import views as auth_views
 from rest_framework import routers
 
@@ -76,6 +77,7 @@ urlpatterns = [
                   path('empresa/', include('apps.empresas.urls')),
                   path('admin/', admin.site.urls),
                   path('accounts/', include('django.contrib.auth.urls')),
+                  path('login/', RedirectView.as_view(pattern_name='login', permanent=False), name='legacy_login'),
 
 
                   path('hello/', hello),
@@ -93,8 +95,7 @@ urlpatterns = [
                   # path('suit/', include('suit.urls')),  # suit URLS
                   path('grappelli/', include('grappelli.urls')),  # grappelli URLS
                   # path('admin/', admin.site.urls),  # admin site
-                  path('login/', include('apps.core.urls')),
-                  path('accounts/', include('django.contrib.auth.urls')),
+
                   path('conferencia3/', include('apps.conferencia3.urls')),
                   #path('bpm/', include('apps.bpm.urls')),
                   path('termos/', include('apps.termos.urls')),
