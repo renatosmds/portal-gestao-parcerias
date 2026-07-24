@@ -86,6 +86,14 @@
                 <span>Financeiro</span>
             </a>
 
+            {% if perms.termos.view_termos or user.is_superuser %}
+            <a class="sgm-nav-item {% if request.resolver_match.url_name == 'list_termos' or request.resolver_match.url_name == 'detail_termo' or request.resolver_match.url_name == 'create_termos' or request.resolver_match.url_name == 'update_termos' or request.resolver_match.url_name == 'delete_termos' %}active{% endif %}"
+               href="{% url 'list_termos' %}">
+                <i class="fa fa-file-text-o" aria-hidden="true"></i>
+                <span>Termos</span>
+            </a>
+            {% endif %}
+
             {% if perms.parcerias.view_parcerias or user.is_superuser %}
             <a class="sgm-nav-item {% if request.resolver_match.url_name == 'list_parcerias' or request.resolver_match.url_name == 'detail_parceria' or request.resolver_match.url_name == 'create_parceria' or request.resolver_match.url_name == 'update_parceria' or request.resolver_match.url_name == 'delete_parceria' %}active{% endif %}"
                href="{% url 'list_parcerias' %}">

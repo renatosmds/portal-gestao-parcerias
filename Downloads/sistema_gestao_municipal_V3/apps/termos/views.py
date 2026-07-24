@@ -1,136 +1,134 @@
-import io
-
-from django.contrib.auth.models import User
+from django.contrib import messages
+from django.db.models import Q
 from django.urls import reverse_lazy
-from django.views.generic import (
-    ListView,
-    UpdateView,
-    DeleteView,
-    CreateView
-)
-from django.views.generic.base import View, TemplateView
-from reportlab.pdfgen import canvas
-from django.utils.translation import gettext as _
-from django.http import HttpResponse
-from django.template.loader import get_template
-import xhtml2pdf.pisa as pisa
+from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
+
+from apps.empresas.models import Empresa
+
+from .forms import TermosForm
+from .mixins import TermoEscopoMixin, TermoPermissaoMixin
 from .models import Termos
 
 
-class TermosList(ListView):
+class TermosList(TermoPermissaoMixin, TermoEscopoMixin, ListView):
     model = Termos
+    template_name = "termos/termos_list.html"
+    context_object_name = "termos"
+    permission_required = "termos.view_termos"
+    paginate_by = 15
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        termo = (self.request.GET.get("q") or "").strip()
+        status = (self.request.GET.get("status") or "").strip()
+        empresa_id = (self.request.GET.get("empresa") or "").strip()
+
+        if termo:
+            queryset = queryset.filter(
+                Q(termo__icontains=termo)
+                | Q(numtermo__icontains=termo)
+                | Q(nomeosc__icontains=termo)
+                | Q(apelido__icontains=termo)
+                | Q(analista__icontains=termo)
+            )
+        if status:
+            queryset = queryset.filter(status__icontains=status)
+        if empresa_id and self.request.user.is_superuser:
+            queryset = queryset.filter(empresa_id=empresa_id)
+
+        return queryset.order_by("termo", "numtermo")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['report_button'] = _("Employee report")
+        queryset = self.get_queryset()
+        context["termo_busca"] = (self.request.GET.get("q") or "").strip()
+        context["status_filtro"] = (self.request.GET.get("status") or "").strip()
+        context["empresa_filtro"] = (self.request.GET.get("empresa") or "").strip()
+        context["total_termos"] = queryset.count()
+        context["empresas_disponiveis"] = (
+            Empresa.objects.order_by("nome")
+            if self.request.user.is_superuser
+            else Empresa.objects.none()
+        )
         return context
 
-    def get_queryset(self):
-        empresa_logada = self.request.user.funcionario.empresa
-        return Termos.objects.filter(empresa=empresa_logada)
 
-
-class TermosUpdate(UpdateView):
+class TermosDetail(TermoPermissaoMixin, TermoEscopoMixin, DetailView):
     model = Termos
-    fields = ['nomeosc', 'numtermo', 'numpa', 'vigencia', 'assinatura', 'valorglobal', 'valorrepasse',
-              'valorsaldo', 'parcelasAbertas',  'numdispensa', 'nomemunicipio', 'nomeintermediario', 'nomesecretario',
-              'nomerepresentante', 'tipo', 'termo', 'apelido', 'parceria', 'objeto', 'relatoriosDeSinteses',
-                  'inicioVigencia', 'terminoVigencia', 'analista', 'status', 'saldoDashboard',
-                  'saldoContaSinteseDespesas', 'rendimento', 'saldoContaSinteseMovFinanceira', 'valorDevolvido',
-                  'saldoFinal', 'totalDeLacamentos', 'lacamentosRegulares', 'lacamentosIrregulares',
-                  'lacamentosGlosados', 'lacamentosNaoEnviados', 'naoanalisados', 'total', 'extratosBancarios',
-                  'pendenciasOfx', 'valoresGlosados', 'glosasRestituidas', 'saldoGlosas', 'observacoes'
-              ]
+    template_name = "termos/termo_detail.html"
+    context_object_name = "termo_obj"
+    permission_required = "termos.view_termos"
 
 
-class TermosDelete(DeleteView):
+class TermosCreate(TermoPermissaoMixin, CreateView):
     model = Termos
-    success_url = reverse_lazy('list_termos')
+    form_class = TermosForm
+    template_name = "termos/termos_form.html"
+    permission_required = "termos.add_termos"
 
+    def get_empresa_destino(self):
+        if self.request.user.is_superuser:
+            empresa_id = self.request.GET.get("empresa") or self.request.POST.get("empresa")
+            return Empresa.objects.filter(pk=empresa_id).first() if empresa_id else None
+        try:
+            return self.request.user.funcionario.empresa
+        except Exception:
+            return None
 
-class TermosCreate(CreateView):
-    model = Termos
-    fields = ['nomeosc', 'numtermo', 'numpa', 'vigencia', 'assinatura', 'valorglobal', 'valorrepasse',
-              'valorsaldo', 'parcelasAbertas', 'numdispensa', 'nomemunicipio', 'nomeintermediario', 'nomesecretario',
-              'nomerepresentante', 'tipo', 'termo', 'apelido', 'parceria', 'objeto', 'relatoriosDeSinteses',
-                  'inicioVigencia', 'terminoVigencia', 'analista', 'status', 'saldoDashboard',
-                  'saldoContaSinteseDespesas', 'rendimento', 'saldoContaSinteseMovFinanceira', 'valorDevolvido',
-                  'saldoFinal', 'totalDeLacamentos', 'lacamentosRegulares', 'lacamentosIrregulares',
-                  'lacamentosGlosados', 'lacamentosNaoEnviados', 'naoanalisados', 'total', 'extratosBancarios',
-                  'pendenciasOfx', 'valoresGlosados', 'glosasRestituidas', 'saldoGlosas', 'observacoes'
-              ]
-    success_url = reverse_lazy('list_termos')
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["empresa"] = self.get_empresa_destino()
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["empresa_destino"] = self.get_empresa_destino()
+        context["empresas_disponiveis"] = (
+            Empresa.objects.order_by("nome")
+            if self.request.user.is_superuser
+            else Empresa.objects.none()
+        )
+        return context
 
     def form_valid(self, form):
-        funcionario = form.save(commit=False)
-        username = funcionario.numtermo.split(' ')[0]
-        funcionario.empresa = self.request.user.funcionario.empresa
-        funcionario.user = User.objects.create(username=username)
-        funcionario.save()
-        return super(TermosCreate, self).form_valid(form)
+        empresa = self.get_empresa_destino()
+        if not empresa:
+            form.add_error(None, "Selecione uma empresa válida para o termo.")
+            return self.form_invalid(form)
+
+        self.object = form.save(commit=False)
+        self.object.empresa = empresa
+        self.object.save()
+        messages.success(self.request, f"Termo “{self.object}” cadastrado com sucesso.")
+        return super().form_valid(form)
 
 
-def relatorio_termos(request):
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename="mypdf.pdf"'
+class TermosUpdate(TermoPermissaoMixin, TermoEscopoMixin, UpdateView):
+    model = Termos
+    form_class = TermosForm
+    template_name = "termos/termos_form.html"
+    permission_required = "termos.change_termos"
 
-    buffer = io.BytesIO()
-    p = canvas.Canvas(buffer)
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["empresa"] = self.object.empresa
+        return kwargs
 
-    p.drawString(200, 810, 'Relatorio de termos')
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["empresa_destino"] = self.object.empresa
+        context["empresas_disponiveis"] = Empresa.objects.none()
+        return context
 
-    termos = Termos.objects.filter(
-        empresa=request.user.funcionario.empresa)
-
-    str_ = 'Nome: %s | Hora Extra: %.2f'
-
-    p.drawString(0, 800, '_' * 150)
-
-    y = 750
-    for termos in termos:
-        p.drawString(10, y, str_ % (
-            termos.nome, termos.total_horas_extra))
-        y -= 20
-
-    p.showPage()
-    p.save()
-
-    pdf = buffer.getvalue()
-    buffer.close()
-    response.write(pdf)
-
-    return response
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, f"Termo “{self.object}” atualizado com sucesso.")
+        return response
 
 
-class Render:
-    @staticmethod
-    def render(path: str, params: dict, filename: str):
-        template = get_template(path)
-        html = template.render(params)
-        response = io.BytesIO()
-        pdf = pisa.pisaDocument(
-            io.BytesIO(html.encode("UTF-8")), response)
-        if not pdf.err:
-            response = HttpResponse(
-                response.getvalue(), content_type='application/pdf')
-            response['Content-Disposition'] = 'attachment;filename=%s.pdf' % filename
-            return response
-        else:
-            return HttpResponse("Error Rendering PDF", status=400)
-
-
-def get(request):
-    params = {
-        'today': 'Variavel today',
-        'sales': 'Variavel sales',
-        'request': request,
-    }
-    return Render.render('termos/relatorio.html', params, 'myfile')
-
-
-class Pdf(View):
-    pass
-
-
-class PdfDebug(TemplateView):
-    template_name = 'termos/relatorio.html'
+class TermosDelete(TermoPermissaoMixin, TermoEscopoMixin, DeleteView):
+    model = Termos
+    template_name = "termos/termos_confirm_delete.html"
+    context_object_name = "termo_obj"
+    permission_required = "termos.delete_termos"
+    success_url = reverse_lazy("list_termos")

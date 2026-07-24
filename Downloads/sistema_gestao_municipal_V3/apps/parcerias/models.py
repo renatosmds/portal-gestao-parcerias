@@ -164,7 +164,8 @@ class Parcerias(models.Model):
         on_delete=models.PROTECT,
         null=True,
         blank=True,
-        related_name="parcerias_vinculadas",
+        related_name="parcerias_empresa",
+        related_query_name="parceria_empresa",
         verbose_name="Empresa",
     )
 

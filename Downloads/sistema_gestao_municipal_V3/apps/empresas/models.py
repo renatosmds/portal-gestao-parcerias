@@ -8,7 +8,7 @@ from apps.termos.models import Termos
 #from apps.funcionarios.models import Funcionario
 from apps.receitas.models import Receitas
 from apps.curso.models import Curso
-from apps.parcerias.models import Parcerias
+
 from apps.prestacao.models import Prestacao
 #from apps.registro_hora_extra.models import RegistroHoraExtra
 from apps.conferencia3.models import Conferencia3
@@ -26,7 +26,16 @@ class Empresa(models.Model):  # ok
     termos = models.ForeignKey(Termos, on_delete=models.PROTECT, null=True, blank=True)
     prestacao = models.ForeignKey(Prestacao, on_delete=models.PROTECT, null=True, blank=True)
     conferencia3 = models.ForeignKey(Conferencia3, on_delete=models.PROTECT, null=True, blank=True)
-    parcerias = models.ForeignKey(Parcerias, on_delete=models.PROTECT, null=True, blank=True)
+    parcerias = models.ForeignKey(
+        "parcerias.Parcerias",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="empresas_legadas",
+        related_query_name="empresa_legada",
+        verbose_name="Parceria legada",
+    )
+
 
     # CARD EMPREGADOS #
     @property
@@ -192,9 +201,8 @@ class Empresa(models.Model):  # ok
         #return Parcerias.objects.all().count()
         return Parcerias.objects.filter(concluido=True).count()
 
-
-    def __str__(self):  # ok
-        return self.nome  # ok
+    def __str__(self):
+        return self.nome or f"Empresa #{self.pk}"
 
     @property
     def get_absolute_url(self):

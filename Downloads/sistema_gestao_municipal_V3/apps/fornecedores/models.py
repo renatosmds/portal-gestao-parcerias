@@ -130,7 +130,12 @@ class Fornecedores(models.Model):
     )
 
     def __str__(self):
-        return self.credor or self.razao or self.fantasia or f"Fornecedor #{self.pk}"
+        return (
+                self.credor
+                or self.razao
+                or self.fantasia
+                or f"Fornecedor #{self.pk}"
+        )
 
     def get_absolute_url(self):
         return reverse("detail_fornecedor", kwargs={"pk": self.pk})

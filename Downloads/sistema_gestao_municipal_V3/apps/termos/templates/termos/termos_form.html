@@ -1,64 +1,40 @@
-{% extends 'base.html' %}
-{% load bootstrap %}
-
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{% if object %}Editar termo{% else %}Novo termo{% endif %}{% endblock %}
+{% block page_name %}Gestão de Termos{% endblock %}
+{% block staticcss %}<link rel="stylesheet" href="{% static 'css/termos-v3.css' %}">{% endblock %}
 {% block main %}
-<html>
-<head>
-    <title>Termos</title>
-    <meta charset="utf-8">
-    <!-- CSS -->
-    <link href="public/css/bootstrap.min.css" rel="stylesheet">
-    <link href="http://cdn.datatables.net/1.10.19/css/jquery.datatables.min.css" rel="stylesheet">
-</head>
-<body>
-<h5> CADASTRO DE TERMOS</h5><br>
-<div class="container-fluid">
-    <form method="post" enctype="multipart/form-data">
-        <table class="display" style="width:32%; text-align: right; font-size: 18px">
-            {% csrf_token %}
-            {{ form }}
-        </table>
-        <div class="col">
-            <button type="submit" class="btn btn-info">
-                Salvar
-            </button>
-            <a href="{% url 'list_termos' %}" class="btn btn-success">
-                Voltar
-            </a>
-            <a href="{% url 'list_prestacao' %}" class="btn btn-dark">
-                Pagamentos
-            </a>
+<section class="terms-page">
+    <a href="{% if object %}{% url 'detail_termo' object.pk %}{% else %}{% url 'list_termos' %}{% endif %}" class="terms-back">Voltar</a>
+    <header class="terms-header"><div><h1>{% if object %}Editar termo{% else %}Novo termo{% endif %}</h1><p>Preencha os dados do instrumento.</p></div></header>
+
+    <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+
+        {% if user.is_superuser and not object %}
+            <div class="sgm-panel term-panel">
+                <label for="id_empresa">Empresa</label>
+                <select name="empresa" id="id_empresa" class="form-control" required>
+                    <option value="">Selecione</option>
+                    {% for empresa in empresas_disponiveis %}<option value="{{ empresa.pk }}">{{ empresa.nome }}</option>{% endfor %}
+                </select>
+            </div>
+        {% endif %}
+
+        <div class="sgm-panel term-panel term-form-grid">
+            {% for field in form %}
+                <div class="{% if field.name == 'objeto' or field.name == 'observacoes' %}term-field-wide{% endif %}">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% for error in field.errors %}<small class="text-danger">{{ error }}</small>{% endfor %}
+                </div>
+            {% endfor %}
+        </div>
+        <div class="term-actions">
+            <button class="btn btn-primary" type="submit">Salvar</button>
+            <a href="{% url 'list_termos' %}" class="btn btn-outline-secondary">Cancelar</a>
         </div>
     </form>
-</div>
-<br>
-<br>
-<div class="col">
-    <h5>INSERIR DOCUMENTOS</h5>
-    <h6>
-        {% for documento in object.documento_set.all %}
-        <a class="dropdown-item" href="{{ documento.arquivo.url }} "> {{ documento.descricao }}
-        </a>
-        {% endfor %}
-    </h6>
-    {% if object %}
-    <a href="{% url 'create_documento' object.id %}" class="btn btn-success">
-        Adicionar
-    </a>
-    {% endif %}
-    <br>
-</div><br><br>
-<footer>
-    <!-- CSS -->
-    <script src="public/js/jquery.js"></script>
-    <script src="public/js/bootstrap.bundle.min.js"></script>
-    <script src="http://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
-    <script type="text/javascript">
-        $(document).ready( function () {
-            $('#minhaTabela').DataTable();
-           } );
-    </script>
-</footer>
-</body>
-</html>
+</section>
 {% endblock %}

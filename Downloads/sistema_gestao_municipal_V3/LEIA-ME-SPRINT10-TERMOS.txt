@@ -1,0 +1,30 @@
+SGM V3 — SPRINT 10: MODERNIZAÇÃO DO MÓDULO TERMOS
+
+ENTREGAS
+- Listagem moderna, pesquisa e filtros.
+- Detalhes, cadastro, edição e exclusão.
+- Vínculo com empresa e isolamento multitenant.
+- Permissões por perfil.
+- Menu Termos no dashboard.
+- Correção definitiva do __str__.
+- Remoção de objects = None.
+- Remoção da criação automática indevida de usuários.
+- Django Admin e testes.
+
+ATENÇÃO: ALTERA O BANCO
+Esta Sprint adiciona o campo empresa ao model Termos.
+
+APLICAÇÃO
+1. Mescle apps, templates e static.
+2. Preserve .env, db.sqlite3, media e manage.py.
+3. Execute:
+   python manage.py check
+   python manage.py migrate
+   python manage.py configurar_perfis
+   python manage.py test apps.termos.tests.test_access
+   python manage.py runserver
+
+ACESSO
+http://127.0.0.1:8000/termos/
+
+Não execute makemigrations. A migration 0016 já está incluída.
