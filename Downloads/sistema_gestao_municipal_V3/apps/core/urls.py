@@ -30,6 +30,10 @@ urlpatterns = [
     path('filtra_conferencia3/', filtra_conferencia3, name='filtra_conferencia3'),
     path('filtra-parcerias/', filtra_parcerias, name='filtra_parcerias'),
     path('filtra-receitas/', filtra_receitas, name='filtra_receitas'),
-    path('analise/', analise, name='analise'),
+    path(
+        'analise-legado/',
+        analise,
+        name='analise_legado',
+    ),
     path('menu/', menu, name='menu'),
 ]

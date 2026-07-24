@@ -65,7 +65,11 @@ router.register(r'prestacao', PrestacaoViewSet)
 router.register(r'termos', TermosViewSet)
 router.register(r'clientes', ClientesViewSet)
 router.register(r'receitas', ReceitasViewSet)
-router.register(r'analise', AnaliseViewSet)
+router.register(
+    r'analise',
+    AnaliseViewSet,
+    basename='analise',
+)
 router.register(r'parcerias', ParceriasViewSet)
 router.register(r'conferencia3', Conferencia3ViewSet)
 #router.register(r'bpm', Conferencia3ViewSet)
