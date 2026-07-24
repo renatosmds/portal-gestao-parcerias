@@ -1,188 +1,203 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Parcerias | Sistema de Gestão Municipal{% endblock %}
+{% block page_name %}Gestão de Parcerias{% endblock %}
+
+{% block staticcss %}
+<link rel="stylesheet" href="{% static 'css/parcerias-v3.css' %}">
+{% endblock %}
 
 {% block main %}
-    <table class="table-fluid table-bordered  table-striped table-hover table-condesed">
-        <tr>
-            <td colspan="20" style="text-align: CENTER; padding-left: 0px">
-                <h5>ACOMPANHAMENTO DE AUDITORIAS</h5>
-            </td>
-        </tr>
-        <tr>
-            <td colspan="2" style="text-align: center;">
-                <h6><strong>Nº Termo</strong></h6>
-            </td>
-            <td colspan="2" style="text-align: center;">
-                <h6><strong>Nome OSC</strong></h6>
-            </td>
-            <td colspan="1" style="text-align: center;">
-                <h6><strong>Nº<br>RA</strong></h6>
-            </td>
-            <td colspan="1" style="text-align: center;">
-                <h6><strong>Nº<br>Ofício RA</strong></h6>
-            </td>
-            <td colspan="1" style="text-align: center;">
-                <h6><strong>Data<br>Entrada RA</strong></h6>
-            </td>
-            <td colspan="1" style="text-align: center;">
-                <h6><strong>Nº<br> RE</strong></h6>
-            </td>
-            <td colspan="1" style="text-align: center;">
-                <h6><strong>Nº<br>Ofício RE</strong></h6>
-            </td>
-            <td colspan="1" style="text-align: center;">
-                <h6><strong>Data<br>Entrada RE</strong></h6>
-            </td>
-            <td colspan="1" style="text-align: center;">
-                <h6><strong>Prazo<br>Final</strong></h6>
-            </td>
-            <td colspan="1" style="text-align: center;">
-                <h6><strong>Prazo<br>Decorrido</strong></h6>
-            </td>
-            <td colspan="1" style="text-align: center;">
-                <h6><strong>Prazo<br>Restante</strong></h6>
-            </td>
-            <td colspan="1" style="text-align: center;">
-                <h6><strong>Status</strong></h6>
-            </td>
-        </tr>
-        <tr>
-            <td colspan="2" style="text-align: center; padding-left: 3px">
-                <h6>{% for parcerias in object_list %}
-                    <a style="text-align: left; padding-left: 3px; border-bottom: 1px solid black; display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(var(--column-width-min), 1fr));" href="{% url 'update_parceria' parcerias.id %}">
-                        {{ parcerias.numtermo}}<br>
-                    </a>
-                    {% endfor %}
-                </h6>
-            </td>
-            <td colspan="2" style="text-align: left; padding-left: 3px">
-                <h6>{% for parcerias in object_list %}
-                    <a style="text-align: left; padding-left: 3px; border-bottom: 1px solid black; display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(var(--column-width-min), 1fr));">
-                        {{ parcerias.nomeOSC}}<br>
-                    </a>
-                    {% endfor %}
-                </h6>
-            </td>
-            <td colspan="1" style="text-align: right; padding-left: 3px">
-                <h6>{% for parcerias in object_list %}
-                    <a style="text-align: center; padding-left: 3px; border-bottom: 1px solid black; display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(var(--column-width-min), 1fr));">
-                        {{ parcerias.numRA}}<br>
-                    </a>
-                    {% endfor %}
-                </h6>
-            </td>
-            <td colspan="1" style="text-align: center; padding-left: 3px">
-                <h6>{% for parcerias in object_list %}
-                    <a style="text-align: left; padding-left: 3px; border-bottom: 1px solid black; display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(var(--column-width-min), 1fr));">
-                        {{ parcerias.numOficioRA}}<br>
-                    </a>
-                    {% endfor %}
-                </h6>
-            </td>
-            <td colspan="1" style="text-align: center; padding-left: 3px">
-                <h6>{% for parcerias in object_list %}
-                    <a style="text-align: center; padding-left: 3px; border-bottom: 1px solid black; display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(var(--column-width-min), 1fr));">
-                        {{ parcerias.dtRaSMDS}}<br>
-                    </a>
-                    {% endfor %}
-                </h6>
-            </td>
-            <td colspan="1" style="text-align: center; padding-left: 3px">
-                <h6>{% for parcerias in object_list %}
-                    <a style="text-align: center; padding-left: 3px; border-bottom: 1px solid black; display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(var(--column-width-min), 1fr));">
-                        {{ parcerias.numRE}}<br>
-                    </a>
-                    {% endfor %}
-                </h6>
-            </td>
-            <td colspan="1" style="text-align: right; padding-left: 3px">
-                <h6>{% for parcerias in object_list %}
-                    <a style="text-align: left; padding-left: 3px; border-bottom: 1px solid black; display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(var(--column-width-min), 1fr));">
-                        {{ parcerias.numOficioRE}}<br>
-                    </a>
-                    {% endfor %}
-                </h6>
-            </td>
-            <td colspan="1" style="text-align: right; padding-left: 3px">
-                <h6>{% for parcerias in object_list %}
-                    <a style="text-align: center; padding-left: 3px; border-bottom: 1px solid black; display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(var(--column-width-min), 1fr));">
-                    {{parcerias.dtReSMDS }}<br>
-                    </a>
-                    {% endfor %}
-                </h6>
-            </td>
-            <td colspan="1" style="text-align: right; padding-left: 3px">
-                <h6>{% for parcerias in object_list %}
-                    <a style="text-align: center; padding-left: 3px; border-bottom: 1px solid black; display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(var(--column-width-min), 1fr));">
-                        {{ parcerias.prazoFinal}}
-                    </a>
+<section class="partnerships-page">
+    <header class="partnerships-header">
+        <div class="partnerships-title">
+            <span class="partnerships-title-icon">
+                <i class="fa fa-handshake-o"></i>
+            </span>
+            <div>
+                <span class="sgm-eyebrow">GESTÃO DE INSTRUMENTOS</span>
+                <h1>Parcerias</h1>
+                <p>Acompanhe termos, OSCs, relatórios e prazos das parcerias.</p>
+            </div>
+        </div>
 
-                    {% endfor %}
-                </h6>
-            </td>
-            <td colspan="1" style="text-align: center; padding-left: 3px">
-                <h6>{% for parcerias in object_list %}
-                    <a style="text-align: center; padding-left: 3px; border-bottom: 1px solid black; display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(var(--column-width-min), 1fr));">
-                        {{ parcerias.prazoDecorrido}}
-                    </a>
-                    {% endfor %}
-                </h6>
-            </td>
-            <td colspan="1" style="text-align: center; padding-left: 3px">
-                <h6>{% for parcerias in object_list %}
-                    <a style="text-align: center; padding-left: 3px; border-bottom: 1px solid black; display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(var(--column-width-min), 1fr));">
-                        {{ parcerias.prazoRestante}}
-                    </a>
-                    {% endfor %}
-                </h6>
-            </td>
-            <td colspan="1" style="text-align: center; padding-left: 3px">
-                <h6>{% for parcerias in object_list %}
-                    <a style="text-align: left; padding-left: 3px; border-bottom: 1px solid black; display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(var(--column-width-min), 1fr));">
-                        {{ parcerias.status}}
-                    </a>
-                    {% endfor %}
-                </h6>
-            </td>
-    <!--		<div class="col-auto">
-                <div class="form-check mb-2">
-                    <label class="form-check-label">
-                        <input type="checkbox" class="form-check-input" name="remember"> Remember me
-                    </label>
-                </div>
-            </div> -->
-        </tr>
+        {% if perms.parcerias.add_parcerias %}
+            <a href="{% url 'create_parceria' %}" class="btn btn-primary">
+                <i class="fa fa-plus mr-1"></i> Nova parceria
+            </a>
+        {% endif %}
+    </header>
 
-    </table>
-    <br><br>
-    <div class="container" >
-      <ul class="pagination" style="text-align: center; padding-left: 35%">
-        <li class="page-item"><a class="page-link" href="#">Previous</a></li>
-        <li class="page-item"><a class="page-link" href="#">1</a></li>
-        <li class="page-item active"><a class="page-link" href="#">2</a></li>
-        <li class="page-item"><a class="page-link" href="#">3</a></li>
-        <li class="page-item"><a class="page-link" href="#">Next</a></li>
-      </ul>
+    <div class="partnerships-summary">
+        <article class="partnerships-summary-card">
+            <span><i class="fa fa-handshake-o"></i></span>
+            <div><small>Total encontrado</small><strong>{{ total_parcerias }}</strong></div>
+        </article>
+        <article class="partnerships-summary-card">
+            <span><i class="fa fa-hourglass-half"></i></span>
+            <div><small>Em andamento</small><strong>{{ total_andamento }}</strong></div>
+        </article>
+        <article class="partnerships-summary-card">
+            <span><i class="fa fa-check-circle"></i></span>
+            <div><small>Concluídas</small><strong>{{ total_concluidas }}</strong></div>
+        </article>
     </div>
 
-            <a href="{% url 'create_parceria' %}" class="btn btn-info">
-                Novo
+    <form method="get" class="partnerships-toolbar">
+        <div class="partnerships-search">
+            <i class="fa fa-search"></i>
+            <input type="search"
+                   name="q"
+                   class="form-control"
+                   value="{{ termo_busca }}"
+                   placeholder="Pesquisar termo, OSC, fornecedor ou status..."
+                   autocomplete="off">
+        </div>
+
+        <select name="situacao" class="form-control partnerships-filter">
+            <option value="">Todas as situações</option>
+            <option value="andamento" {% if situacao_filtro == "andamento" %}selected{% endif %}>
+                Em andamento
+            </option>
+            <option value="concluida" {% if situacao_filtro == "concluida" %}selected{% endif %}>
+                Concluída
+            </option>
+        </select>
+
+        {% if user.is_superuser %}
+            <select name="empresa" class="form-control partnerships-filter">
+                <option value="">Todas as empresas</option>
+                {% for empresa in empresas_disponiveis %}
+                    <option value="{{ empresa.pk }}"
+                            {% if empresa_filtro == empresa.pk|stringformat:"s" %}selected{% endif %}>
+                        {{ empresa.nome }}
+                    </option>
+                {% endfor %}
+            </select>
+        {% endif %}
+
+        <button type="submit" class="btn btn-outline-primary">Pesquisar</button>
+
+        {% if termo_busca or situacao_filtro or empresa_filtro %}
+            <a href="{% url 'list_parcerias' %}" class="btn btn-outline-secondary">
+                Limpar
             </a>
-            <a href="{% url 'auditoria' %}" class="btn btn-success">
-                Voltar
-            </a>
-            <a href="{% url 'logout' %}" class="btn btn-danger">
-                Sair
-            </a><br><br>
+        {% endif %}
+    </form>
+
+    {% if parcerias %}
+        <div class="partnerships-grid">
+            {% for parceria in parcerias %}
+                <article class="partnership-card">
+                    <div class="partnership-card-top">
+                        <span class="partnership-avatar">
+                            {{ parceria.nomeOSC|default:"P"|slice:":1"|upper }}
+                        </span>
+
+                        <div class="partnership-card-actions">
+                            <a href="{% url 'detail_parceria' parceria.pk %}"
+                               class="partnership-icon-action"
+                               title="Visualizar parceria">
+                                <i class="fa fa-eye"></i>
+                            </a>
+                            {% if perms.parcerias.change_parcerias %}
+                                <a href="{% url 'update_parceria' parceria.pk %}"
+                                   class="partnership-icon-action"
+                                   title="Editar parceria">
+                                    <i class="fa fa-pencil"></i>
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="partnership-card-body">
+                        <span class="partnership-company">
+                            <i class="fa fa-building-o mr-1"></i>
+                            {{ parceria.empresa.nome|default:"Sem empresa vinculada" }}
+                        </span>
+
+                        <h2>
+                            <a href="{% url 'detail_parceria' parceria.pk %}">
+                                {{ parceria.numtermo.termo|default:parceria.numtermo.numtermo|default:"Termo não informado" }}
+                            </a>
+                        </h2>
+
+                        <p class="partnership-osc">
+                            {{ parceria.nomeOSC|default:"OSC não informada" }}
+                        </p>
+
+                        <div class="partnership-meta">
+                            {% if parceria.concluido %}
+                                <span class="partnership-status partnership-status--success">
+                                    Concluída
+                                </span>
+                            {% else %}
+                                <span class="partnership-status">Em andamento</span>
+                            {% endif %}
+
+                            <span>
+                                <i class="fa fa-calendar-o mr-1"></i>
+                                Prazo: {{ parceria.prazoFinal|default:"não informado" }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <footer class="partnership-card-footer">
+                        <a href="{% url 'detail_parceria' parceria.pk %}">
+                            Abrir parceria <i class="fa fa-arrow-right ml-1"></i>
+                        </a>
+                    </footer>
+                </article>
+            {% endfor %}
+        </div>
+
+        {% if is_paginated %}
+            <nav class="partnerships-pagination">
+                {% if page_obj.has_previous %}
+                    <a href="?q={{ termo_busca|urlencode }}&situacao={{ situacao_filtro|urlencode }}&empresa={{ empresa_filtro|urlencode }}&page={{ page_obj.previous_page_number }}"
+                       class="btn btn-outline-secondary">
+                        <i class="fa fa-angle-left mr-1"></i> Anterior
+                    </a>
+                {% endif %}
+
+                <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+
+                {% if page_obj.has_next %}
+                    <a href="?q={{ termo_busca|urlencode }}&situacao={{ situacao_filtro|urlencode }}&empresa={{ empresa_filtro|urlencode }}&page={{ page_obj.next_page_number }}"
+                       class="btn btn-outline-secondary">
+                        Próxima <i class="fa fa-angle-right ml-1"></i>
+                    </a>
+                {% endif %}
+            </nav>
+        {% endif %}
+    {% else %}
+        <div class="sgm-panel partnerships-empty">
+            <span><i class="fa fa-handshake-o"></i></span>
+            <h2>Nenhuma parceria encontrada</h2>
+            <p>
+                {% if termo_busca or situacao_filtro or empresa_filtro %}
+                    Nenhum cadastro corresponde aos filtros informados.
+                {% else %}
+                    Ainda não existem parcerias disponíveis no seu escopo.
+                {% endif %}
+            </p>
+
+            {% if termo_busca or situacao_filtro or empresa_filtro %}
+                <a href="{% url 'list_parcerias' %}" class="btn btn-outline-primary">
+                    Limpar filtros
+                </a>
+            {% elif perms.parcerias.add_parcerias %}
+                <a href="{% url 'create_parceria' %}" class="btn btn-primary">
+                    <i class="fa fa-plus mr-1"></i> Cadastrar parceria
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+</section>
+{% endblock %}
+
+{% block static %}
+{{ block.super }}
+<script src="{% static 'js/parcerias-v3.js' %}"></script>
 {% endblock %}

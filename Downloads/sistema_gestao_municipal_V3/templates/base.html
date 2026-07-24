@@ -86,10 +86,13 @@
                 <span>Financeiro</span>
             </a>
 
-            <a class="sgm-nav-item" href="{% url 'list_termos' %}">
+            {% if perms.parcerias.view_parcerias or user.is_superuser %}
+            <a class="sgm-nav-item {% if request.resolver_match.url_name == 'list_parcerias' or request.resolver_match.url_name == 'detail_parceria' or request.resolver_match.url_name == 'create_parceria' or request.resolver_match.url_name == 'update_parceria' or request.resolver_match.url_name == 'delete_parceria' %}active{% endif %}"
+               href="{% url 'list_parcerias' %}">
                 <i class="fa fa-handshake-o" aria-hidden="true"></i>
                 <span>Parcerias</span>
             </a>
+            {% endif %}
 
             <a class="sgm-nav-item" href="{% url 'list_curso' %}">
                 <i class="fa fa-graduation-cap" aria-hidden="true"></i>

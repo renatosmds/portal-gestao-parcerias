@@ -1,47 +1,104 @@
-{% extends 'base.html' %}
-{% load l10n %}
-{% load humanize %}
-{% load bootstrap %}
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+    {% if object %}Editar parceria{% else %}Nova parceria{% endif %}
+    | Sistema de Gestão Municipal
+{% endblock %}
+{% block page_name %}Gestão de Parcerias{% endblock %}
+
+{% block staticcss %}
+<link rel="stylesheet" href="{% static 'css/parcerias-v3.css' %}">
+{% endblock %}
 
 {% block main %}
-<html>
-<head>
-    <title>Parcerias</title>
-    <meta charset="utf-8">
-    <!-- CSS -->
-    <link href="public/css/bootstrap.min.css" rel="stylesheet">
-    <link href="http://cdn.datatables.net/1.10.19/css/jquery.datatables.min.css" rel="stylesheet">
-</head>
-<body>
-<div class="container-fluid">
-    <form method="post" enctype="multipart/form-data">
-        <table id="minhaTabela" class="display" style="width:50%; text-align: left; font-size: 18px">
-            {% csrf_token %}
-            {{ form }}
-        </table>
-        <div class="col">
-            <button type="submit" class="btn btn-info">
-                Salvar
-            </button>
-            <a href="{% url 'list_parcerias' %}" class="btn btn-success">
-                Voltar
+<section class="partnerships-page">
+    <header class="partnership-form-header">
+        <div>
+            <a href="{% if object %}{% url 'detail_parceria' object.pk %}{% else %}{% url 'list_parcerias' %}{% endif %}"
+               class="partnerships-back">
+                <i class="fa fa-arrow-left mr-1"></i> Voltar
             </a>
+            <span class="sgm-eyebrow">GESTÃO DE INSTRUMENTOS</span>
+            <h1>{% if object %}Editar parceria{% else %}Nova parceria{% endif %}</h1>
+            <p>Preencha os dados do instrumento, acompanhamento e documentos.</p>
+        </div>
+    </header>
+
+    <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {% for error in form.non_field_errors %}<div>{{ error }}</div>{% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="partnership-form-layout">
+            <div class="partnership-form-main">
+                <section class="sgm-panel partnership-form-panel">
+                    {% if user.is_superuser and not object %}
+                        <div class="form-group">
+                            <label for="id_empresa">Empresa <span class="text-danger">*</span></label>
+                            <select name="empresa" id="id_empresa" class="form-control" required>
+                                <option value="">Selecione uma empresa</option>
+                                {% for empresa in empresas_disponiveis %}
+                                    <option value="{{ empresa.pk }}"
+                                            {% if empresa_destino and empresa_destino.pk == empresa.pk %}selected{% endif %}>
+                                        {{ empresa.nome }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    {% else %}
+                        <div class="partnership-company-readonly">
+                            <small>Empresa vinculada</small>
+                            <strong>{{ empresa_destino.nome|default:"Empresa não vinculada" }}</strong>
+                        </div>
+                    {% endif %}
+
+                    <div class="partnership-form-grid">
+                        {% for field in form %}
+                            <div class="form-group {% if field.name == 'status' or field.name == 'historico' %}partnership-field-wide{% endif %}">
+                                {% if field.name == "concluido" %}
+                                    <div class="form-check partnership-check">
+                                        {{ field }}
+                                        <label class="form-check-label" for="{{ field.id_for_label }}">
+                                            {{ field.label }}
+                                        </label>
+                                    </div>
+                                {% else %}
+                                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                    {{ field }}
+                                {% endif %}
+
+                                {% for error in field.errors %}
+                                    <small class="partnership-field-error">
+                                        <i class="fa fa-exclamation-circle mr-1"></i>{{ error }}
+                                    </small>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </section>
+            </div>
+
+            <aside class="sgm-panel partnership-form-panel partnership-form-actions">
+                <span class="sgm-eyebrow">AÇÕES</span>
+                <h2>Concluir cadastro</h2>
+                <p>Revise as informações e os documentos antes de salvar.</p>
+
+                <button type="submit" class="btn btn-primary btn-block">
+                    <i class="fa fa-check mr-1"></i>
+                    {% if object %}Salvar alterações{% else %}Cadastrar parceria{% endif %}
+                </button>
+
+                <a href="{% if object %}{% url 'detail_parceria' object.pk %}{% else %}{% url 'list_parcerias' %}{% endif %}"
+                   class="btn btn-outline-secondary btn-block">
+                    Cancelar
+                </a>
+            </aside>
         </div>
     </form>
-</div>
-<br>
-<br>
-<footer>
-    <!-- CSS -->
-    <script src="public/js/jquery.js"></script>
-    <script src="public/js/bootstrap.bundle.min.js"></script>
-    <script src="http://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
-    <script type="text/javascript">
-        $(document).ready( function () {
-            $('#minhaTabela').DataTable();
-           } );
-    </script>
-</footer>
-</body>
-</html>
+</section>
 {% endblock %}

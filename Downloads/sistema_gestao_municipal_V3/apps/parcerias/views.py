@@ -1,155 +1,202 @@
-import io
-from django.contrib.auth.models import User
+from django.contrib import messages
+from django.db.models import Q
 from django.urls import reverse_lazy
-from django.views.generic import (
-    ListView,
-    CreateView,
-    UpdateView,
-    DeleteView
-)
-from django.views.generic.base import View, TemplateView
-from reportlab.pdfgen import canvas
-from django.utils.translation import gettext as _
-from django.http import HttpResponse
-from django.template.loader import get_template
-import xhtml2pdf.pisa as pisa
+from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
+
+from apps.empresas.models import Empresa
+
+from .forms import ParceriasForm
+from .mixins import ParceriaEscopoMixin, ParceriaPermissaoMixin
 from .models import Parcerias
 
 
-class ParceriasList(ListView):
+class ParceriasList(
+    ParceriaPermissaoMixin,
+    ParceriaEscopoMixin,
+    ListView,
+):
     model = Parcerias
-    success_url = reverse_lazy('list_parcerias')
+    template_name = "parcerias/parcerias_list.html"
+    context_object_name = "parcerias"
+    permission_required = "parcerias.view_parcerias"
+    paginate_by = 15
 
-    # paginate_by = 100 # if pagination is desired
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        termo = (self.request.GET.get("q") or "").strip()
+        situacao = (self.request.GET.get("situacao") or "").strip()
+        empresa_id = (self.request.GET.get("empresa") or "").strip()
 
-    def parcerias_list(request):
-        data = {'usuario': request.user}
-        funcionario = request.user.funcionario
-        data['result'] = funcionario.empresa.total_funcionarios
-        data['total_funcionarios'] = funcionario.empresa.total_funcionarios
-        data['result1'] = funcionario.empresa.total_funcionarios_ferias
-        data['total_funcionarios_ferias'] = funcionario.empresa.total_funcionarios_ferias
-        data['result2'] = funcionario.empresa.total_funcionarios_doc_pendente
-        data['total_funcionarios_doc_pendente'] = funcionario.empresa.total_funcionarios_doc_pendente
-        data['result3'] = funcionario.empresa.total_funcionarios_doc_ok
-        data['total_funcionarios_doc_ok'] = funcionario.empresa.total_funcionarios_doc_ok
-        data['total_funcionarios_rg'] = 10
-        data['result4'] = RegistroHoraExtra.objects.filter(
-            funcionario__empresa=funcionario.empresa, utilizada=True).aggregate(Sum('horas'))['horas__sum'] or 0
-        data['total_hora_extra_utilizadas'] = RegistroHoraExtra.objects.filter(
-            funcionario__empresa=funcionario.empresa, utilizada=True).aggregate(Sum('horas'))['horas__sum'] or 0
-        data['result5'] = RegistroHoraExtra.objects.filter(
-            funcionario__empresa=funcionario.empresa, utilizada=False).aggregate(Sum('horas'))['horas__sum'] or 0
-        data['total_hora_extra_pendente'] = RegistroHoraExtra.objects.filter(
-            funcionario__empresa=funcionario.empresa, utilizada=False).aggregate(Sum('horas'))['horas__sum'] or 0
+        if termo:
+            queryset = queryset.filter(
+                Q(nomeOSC__icontains=termo)
+                | Q(numtermo__termo__icontains=termo)
+                | Q(numtermo__numtermo__icontains=termo)
+                | Q(credor__credor__icontains=termo)
+                | Q(status__icontains=termo)
+            )
 
-        return render(request, 'clientes/clientes_list.html', data)
+        if situacao == "concluida":
+            queryset = queryset.filter(concluido=True)
+        elif situacao == "andamento":
+            queryset = queryset.filter(concluido=False)
+
+        if empresa_id and self.request.user.is_superuser:
+            queryset = queryset.filter(empresa_id=empresa_id)
+
+        return queryset.order_by("concluido", "numtermo__termo", "nomeOSC")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['report_button'] = _("Employee report")
+        queryset = self.get_queryset()
+
+        context["termo_busca"] = (self.request.GET.get("q") or "").strip()
+        context["situacao_filtro"] = (
+            self.request.GET.get("situacao") or ""
+        ).strip()
+        context["empresa_filtro"] = (
+            self.request.GET.get("empresa") or ""
+        ).strip()
+        context["total_parcerias"] = queryset.count()
+        context["total_andamento"] = queryset.filter(concluido=False).count()
+        context["total_concluidas"] = queryset.filter(concluido=True).count()
+        context["empresas_disponiveis"] = (
+            Empresa.objects.order_by("nome")
+            if self.request.user.is_superuser
+            else Empresa.objects.none()
+        )
         return context
 
-    # @property
-    def get_queryset(self):
-       empresa_logada = self.request.user.funcionario.empresa
-       return Parcerias.objects.filter(empresa=empresa_logada)
 
-
-class ParceriaUpdate(UpdateView):
+class ParceriaDetail(
+    ParceriaPermissaoMixin,
+    ParceriaEscopoMixin,
+    DetailView,
+):
     model = Parcerias
-    fields = ['numtermo', 'nomeOSC', 'fileTC', 'numRA', 'numOficioRA', 'fileRA', 'fileOficioRA', 'dtRaSMDS',
-              'respRA', 'numRE', 'numOficioRE', 'fileRE', 'fileOficioRE', 'dtReSMDS', 'respRE', 'fileRRE',
-              'prazoFinal', 'status', 'prazoDecorrido', 'prazoRestante', 'historico', 'concluido', 'photo'
-              ]
-
-    success_url = reverse_lazy('list_parcerias')
+    template_name = "parcerias/parceria_detail.html"
+    context_object_name = "parceria"
+    permission_required = "parcerias.view_parcerias"
 
 
-class ParceriaDelete(DeleteView):
+class ParceriaCreate(
+    ParceriaPermissaoMixin,
+    CreateView,
+):
     model = Parcerias
-    success_url = reverse_lazy('list_parcerias')
+    form_class = ParceriasForm
+    template_name = "parcerias/parcerias_form.html"
+    permission_required = "parcerias.add_parcerias"
 
+    def get_empresa_destino(self):
+        if self.request.user.is_superuser:
+            empresa_id = (
+                self.request.GET.get("empresa")
+                or self.request.POST.get("empresa")
+            )
+            if empresa_id:
+                return Empresa.objects.filter(pk=empresa_id).first()
+            return None
 
-class ParceriaCreate(CreateView):
-    model = Parcerias
-    fields = ['numtermo', 'nomeOSC', 'fileTC', 'numRA', 'numOficioRA', 'fileRA', 'fileOficioRA', 'dtRaSMDS',
-              'respRA', 'numRE', 'numOficioRE', 'fileRE', 'fileOficioRE', 'dtReSMDS', 'respRE', 'fileRRE',
-              'prazoFinal', 'status', 'prazoDecorrido', 'prazoRestante', 'historico', 'concluido', 'photo'
-              ]
+        try:
+            return self.request.user.funcionario.empresa
+        except Exception:
+            return None
 
-    success_url = reverse_lazy('list_parcerias')
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["empresa"] = self.get_empresa_destino()
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["empresa_destino"] = self.get_empresa_destino()
+        context["empresas_disponiveis"] = (
+            Empresa.objects.order_by("nome")
+            if self.request.user.is_superuser
+            else Empresa.objects.none()
+        )
+        return context
 
     def form_valid(self, form):
-       funcionario = form.save(commit=False)
-       username = funcionario.numtermo.split(' ')[0]
-       funcionario.empresa = self.request.user.funcionario.empresa
-       funcionario.user = User.objects.create(username=username)
-       funcionario.save()
-       return super(ParceriaCreate, self).form_valid(form)
+        empresa = self.get_empresa_destino()
+        if not empresa:
+            form.add_error(
+                None,
+                "Selecione uma empresa válida para a parceria.",
+            )
+            return self.form_invalid(form)
+
+        parceria = form.save(commit=False)
+        parceria.empresa = empresa
+        parceria.save()
+        self.object = parceria
+
+        messages.success(
+            self.request,
+            f"Parceria “{parceria}” cadastrada com sucesso.",
+        )
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy(
+            "detail_parceria",
+            kwargs={"pk": self.object.pk},
+        )
 
 
-def relatorio_parcerias(request):  # feito com reportlab
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename="Relatório de Parcerias.pdf"'
+class ParceriaUpdate(
+    ParceriaPermissaoMixin,
+    ParceriaEscopoMixin,
+    UpdateView,
+):
+    model = Parcerias
+    form_class = ParceriasForm
+    template_name = "parcerias/parcerias_form.html"
+    permission_required = "parcerias.change_parcerias"
 
-    buffer = io.BytesIO()
-    p = canvas.Canvas(buffer)
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["empresa"] = self.object.empresa
+        return kwargs
 
-    p.drawString(200, 810, 'Relatorio de parcerias')
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["empresa_destino"] = self.object.empresa
+        context["empresas_disponiveis"] = Empresa.objects.none()
+        return context
 
-    parcerias = Parcerias.objects.filter(
-        empresa=request.user.funcionario.empresa)
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(
+            self.request,
+            f"Parceria “{self.object}” atualizada com sucesso.",
+        )
+        return response
 
-    str_ = 'Nome: %s | Hora Extra: %.2f'
-
-    p.drawString(0, 800, '_' * 150)
-
-    y = 750
-    for parcerias in parcerias:
-        p.drawString(10, y, str_ % (
-            parcerias.numParceria, parcerias.total_horas_extra))
-        y -= 20
-
-    p.showPage()
-    p.save()
-
-    pdf = buffer.getvalue()
-    buffer.close()
-    response.write(pdf)
-
-    return response
-
-
-class Render:
-    @staticmethod
-    def render(path: str, params: dict, filename: str):
-        template = get_template(path)
-        html = template.render(params)
-        response = io.BytesIO()
-        pdf = pisa.pisaDocument(
-            io.BytesIO(html.encode("UTF-8")), response)
-        if not pdf.err:
-            response = HttpResponse(
-                response.getvalue(), content_type='application/pdf')
-            response['Content-Disposition'] = 'attachment;filename=%s.pdf' % filename
-            return response
-        else:
-            return HttpResponse("Error Rendering PDF", status=400)
+    def get_success_url(self):
+        return reverse_lazy(
+            "detail_parceria",
+            kwargs={"pk": self.object.pk},
+        )
 
 
-def get(request):
-    params = {
-        'today': 'Variavel today',
-        'sales': 'Variavel sales',
-        'request': request,
-    }
-    return Render.render('parcerias/relatorio.html', params, 'Relatório de Parceiras')
+class ParceriaDelete(
+    ParceriaPermissaoMixin,
+    ParceriaEscopoMixin,
+    DeleteView,
+):
+    model = Parcerias
+    template_name = "parcerias/parcerias_confirm_delete.html"
+    context_object_name = "parceria"
+    permission_required = "parcerias.delete_parcerias"
+    success_url = reverse_lazy("list_parcerias")
 
-
-class Pdf(View):
-    pass
-
-
-class PdfDebug(TemplateView):
-    template_name = 'parcerias/relatorio.html'
+    def form_valid(self, form):
+        nome = str(self.object)
+        response = super().form_valid(form)
+        messages.success(
+            self.request,
+            f"Parceria “{nome}” excluída com sucesso.",
+        )
+        return response

@@ -4,63 +4,32 @@ from django.core.management.base import BaseCommand, CommandError
 
 PERFIS = {
     "Administrador": {
-        "funcionarios": {
-            "add_funcionario",
-            "change_funcionario",
-            "delete_funcionario",
-            "view_funcionario",
-        },
-        "empresas": {
-            "add_empresa",
-            "change_empresa",
-            "delete_empresa",
-            "view_empresa",
-        },
-        "departamentos": {
-            "add_departamento",
-            "change_departamento",
-            "delete_departamento",
-            "view_departamento",
-        },
-        "fornecedores": {
-            "add_fornecedores",
-            "change_fornecedores",
-            "delete_fornecedores",
-            "view_fornecedores",
-        },
+        "funcionarios": {"add_funcionario", "change_funcionario", "delete_funcionario", "view_funcionario"},
+        "empresas": {"add_empresa", "change_empresa", "delete_empresa", "view_empresa"},
+        "departamentos": {"add_departamento", "change_departamento", "delete_departamento", "view_departamento"},
+        "fornecedores": {"add_fornecedores", "change_fornecedores", "delete_fornecedores", "view_fornecedores"},
+        "parcerias": {"add_parcerias", "change_parcerias", "delete_parcerias", "view_parcerias"},
     },
     "Gestor": {
-        "funcionarios": {
-            "add_funcionario",
-            "change_funcionario",
-            "view_funcionario",
-        },
-        "empresas": {
-            "change_empresa",
-            "view_empresa",
-        },
-        "departamentos": {
-            "add_departamento",
-            "change_departamento",
-            "view_departamento",
-        },
-        "fornecedores": {
-            "add_fornecedores",
-            "change_fornecedores",
-            "view_fornecedores",
-        },
+        "funcionarios": {"add_funcionario", "change_funcionario", "view_funcionario"},
+        "empresas": {"change_empresa", "view_empresa"},
+        "departamentos": {"add_departamento", "change_departamento", "view_departamento"},
+        "fornecedores": {"add_fornecedores", "change_fornecedores", "view_fornecedores"},
+        "parcerias": {"add_parcerias", "change_parcerias", "view_parcerias"},
     },
     "Analista": {
         "funcionarios": {"view_funcionario"},
         "empresas": {"view_empresa"},
         "departamentos": {"view_departamento"},
         "fornecedores": {"view_fornecedores"},
+        "parcerias": {"view_parcerias"},
     },
     "Usuário": {
         "funcionarios": set(),
         "empresas": {"view_empresa"},
         "departamentos": {"view_departamento"},
         "fornecedores": {"view_fornecedores"},
+        "parcerias": {"view_parcerias"},
     },
 }
 
@@ -87,7 +56,6 @@ class Command(BaseCommand):
                 )
 
             grupo.permissions.set(permissoes.distinct())
-
             self.stdout.write(
                 self.style.SUCCESS(
                     f"Perfil '{nome}' atualizado com "
@@ -96,7 +64,6 @@ class Command(BaseCommand):
             )
 
         username = options.get("administrador")
-
         if username:
             try:
                 user = User.objects.get(username=username)
@@ -106,7 +73,6 @@ class Command(BaseCommand):
                 ) from exc
 
             user.groups.add(Group.objects.get(name="Administrador"))
-
             self.stdout.write(
                 self.style.SUCCESS(
                     f"Perfil Administrador atribuído a '{username}'."

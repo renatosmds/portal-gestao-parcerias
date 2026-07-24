@@ -3,8 +3,6 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.urls import reverse
 
-from apps.empresas.models import Empresa
-
 
 class Fornecedores(models.Model):
     class Meta:
@@ -124,7 +122,7 @@ class Fornecedores(models.Model):
     )
 
     empresa = models.ForeignKey(
-        Empresa,
+        "empresas.Empresa",
         on_delete=models.PROTECT,
         related_name="fornecedores",
         blank=True,
