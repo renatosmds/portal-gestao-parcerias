@@ -9,10 +9,10 @@ from django.db.models import Sum
 
 
 class Prestacao(models.Model):
-    objects = None
-
     class Meta:
         ordering = ["numtermo", "tipoTermo"]
+        verbose_name = "Prestação de contas"
+        verbose_name_plural = "Prestações de contas"
 
     TIPOTERMO_CHOICES = (u'TF', u'TF'), (u'TC', u'TC'), (u'CONVÊNIO', u'Convênio'), (u'ASSOCIAÇÃO', u'Associação')
     TIPO_CHOICES = (u'cnpj', u'CNPJ'), (u'cpf', u'CPF')
@@ -140,19 +140,26 @@ class Prestacao(models.Model):
     dataNapParcela12 = models.DateField(null=True, blank=True, verbose_name='Data Pagto NAP')
     concluida = models.BooleanField(default=False)
 
-    # user = models.OneToOneField(User, on_delete=models.PROTECT)
-    # departamentos = models.ManyToManyField(Departamento)
-    # empresa = models.ForeignKey(Empresa, on_delete=models.PROTECT, null=True, blank=True)
-    # numtermo = models.ForeignKey(Termos, on_delete=models.PROTECT, null=True, blank=True)
-    imagem = models.ImageField()
+    imagem = models.ImageField(blank=True, null=True)
     de_ferias = models.BooleanField(default=False)
 
-    def get_absolute_url():
-        return reverse('list_prestacao')
+    empresa = models.ForeignKey(
+        "empresas.Empresa",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="prestacoes_vinculadas",
+        related_query_name="prestacao_vinculada",
+        verbose_name="Empresa",
+    )
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.prestacao_set = None
+    def get_absolute_url(self):
+        return reverse("detail_prestacao", kwargs={"pk": self.pk})
 
     def __str__(self):
-        return self.credor
+        return (
+            self.numtermo
+            or self.credor
+            or self.CpfCnpj
+            or f"Prestação #{self.pk}"
+        )

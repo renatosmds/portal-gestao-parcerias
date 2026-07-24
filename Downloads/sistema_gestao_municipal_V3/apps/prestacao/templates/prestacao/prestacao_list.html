@@ -1,132 +1,70 @@
-{% extends 'base.html' %}
-{% load l10n %}
-
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Prestações de contas | SGM{% endblock %}
+{% block page_name %}Prestações de contas{% endblock %}
+{% block staticcss %}<link rel="stylesheet" href="{% static 'css/prestacoes-v3.css' %}">{% endblock %}
 {% block main %}
-    <table class="table-fluid table-bordered  table-striped table-hover table-condesed">
-	<tr>
-		<td colspan="18" style="text-align: CENTER; padding-left: 0px">
-			<h5>
-				REPASSES FINANCEIROS
-			</h5>
-		</td>
-	</tr>
-	<tr>
-		<td colspan="1" style="text-align: center;">
-			<h6><strong>Tipo<br>Termo</strong></h6>
-		</td>
-		<td colspan="1" style="text-align: center;">
-			<h6><strong>Nº<br>Termo</strong></h6>
-		</td>
-		<td colspan="1" style="text-align: center;">
-			<h6><strong>Termo<br>Aditivo</strong></h6>
-		</td>
-		<td colspan="1" style="text-align: center;">
-			<h6><strong>Credor</strong></h6>
-		</td>
-		<td colspan="1" style="text-align: center;">
-			<h6><strong>Fonte</strong></h6>
-		</td>
-		<td colspan="1" style="text-align: center;">
-			<h6><strong>Gestor</strong></h6>
-		</td>
-		<td colspan="1" style="text-align: center;">
-			<h6><strong>Reduzida</strong></h6>
-		</td>
-			</td>
-		<td colspan="1" style="text-align: center;">
-			<h6><strong>Concluída</strong></h6>
-		</td>
-	</tr>
-	<tr>
-		<td colspan="1'" style="text-align: center; padding-left: 3px">
-			<h6>{% for prestacao in object_list %}
-				<a style="text-align: left; padding-left: 3px; border-bottom: 1px solid black; display: grid;">
-                    {{ prestacao.tipoTermo}}<br>
-				</a>
-                		{% endfor %}
-                </h6>
-		</td>
-		<td colspan="1" style="text-align: left; padding-left: 3px">
-			<h6>{% for prestacao in object_list %}
-				<a style="text-align: left; padding-left: 3px; border-bottom: 1px solid black; display: grid;"></a>
-                <a href="{% url 'update_prestacao' prestacao.id %}">
-                {{ prestacao.numtermo}}<br>
-				</a>
-                		{% endfor %}
-                </h6>
-		</td>
-		<td colspan="1" style="text-align: center; padding-left: 3px">
-			<h6>{% for prestacao in object_list %}
-				<a style="text-align: center; padding-left: 3px; border-bottom: 1px solid black; display: grid;">
-                {{ prestacao.termoAditivo}}<br>
-				</a>
-                		{% endfor %}
-                </h6>
-		</td>
-		<td colspan="1" style="text	-align: left; padding-left: 3px">
-			<h6>{% for prestacao in object_list %}
-				<a style="text-align: left; padding-right: 3px; border-bottom: 1px solid black; display: grid;">
-                {{ prestacao.credor}}<br>
-				</a>
-                		{% endfor %}
-                </h6>
-		</td>
-		<td colspan="1" style="text-align: left; padding-left: 3px">
-			<h6>{% for prestacao in object_list %}
-				<a style="text-align: right; padding-left: 3px; border-bottom: 1px solid black; display: grid;">
-                {{ prestacao.fonte}}<br>
-				</a>
-                		{% endfor %}
-                </h6>
-		</td>
-		<td colspan="1" style="text-align: center; padding-left: 3px">
-			<h6>{% for prestacao in object_list %}
-				<a style="text-align: left; padding-left: 3px; border-bottom: 1px solid black; display: grid;">
-
-                {{ prestacao.cod_reduz}}<br>
-				</a>
-                		{% endfor %}
-                </h6>
-		<td colspan="1" style="text-align: center; padding-left: 3px">
-			<h6>{% for prestacao in object_list %}
-				<a style="text-align: right; padding-left: 3px; border-bottom: 1px solid black; display: grid;">
-					{{ prestacao.gestora}}<br>
-				</a>
-				{% endfor %}
-            </h6>
-		</td>
-		<td colspan="1" style="text-align: center; padding-left: 3px">
-			<h6>{% for prestacao in object_list %}
-				<a style="text-align: right; padding-left: 3px; border-bottom: 1px solid black; display: grid;">
-
-					{{ prestacao.concluida}}<br>
-				</a>
-				{% endfor %}
-            </h6>
-		</td>
-	</tr>
-</table><br><br>
-<div class="container" >
-  <ul class="pagination" style="text-align: center; padding-left: 35%">
-    <li class="page-item"><a class="page-link" href="#">Previous</a></li>
-    <li class="page-item"><a class="page-link" href="#">1</a></li>
-    <li class="page-item active"><a class="page-link" href="#">2</a></li>
-    <li class="page-item"><a class="page-link" href="#">3</a></li>
-    <li class="page-item"><a class="page-link" href="#">Next</a></li>
-  </ul>
-</div>
-
-		<!-- <a href="{% url 'create_prestacao' %}" class="btn btn-info">
-			Novo
-		</a>
-		<a href="{% url 'execucao' %}" class="btn btn-success">
-			Voltar
-		</a> -->
-            <a href="{% url 'list_termos' %}" class="btn btn-dark">
-                Termos
+<section class="accounts-page">
+    <header class="accounts-header">
+        <div>
+            <span class="sgm-eyebrow">CONTROLE FINANCEIRO</span>
+            <h1>Prestações de contas</h1>
+            <p>Acompanhe instrumentos, credores, parcelas e conclusão.</p>
+        </div>
+        {% if perms.prestacao.add_prestacao %}
+            <a href="{% url 'create_prestacao' %}" class="btn btn-primary">
+                <i class="fa fa-plus mr-1"></i> Nova prestação
             </a>
-            <a href="https://sistema-gestao-municipal.herokuapp.com/admin/prestacao/prestacao/?" class="btn btn-warning">
-                Lançamentos
-            </a>
-<br><br>
+        {% endif %}
+    </header>
+
+    <div class="accounts-summary">
+        <article><small>Total</small><strong>{{ total_prestacoes }}</strong></article>
+        <article><small>Em andamento</small><strong>{{ total_andamento }}</strong></article>
+        <article><small>Concluídas</small><strong>{{ total_concluidas }}</strong></article>
+    </div>
+
+    <form method="get" class="accounts-toolbar">
+        <input type="search" name="q" class="form-control" value="{{ termo_busca }}"
+               placeholder="Termo, credor, CPF/CNPJ ou gestor...">
+        <select name="situacao" class="form-control">
+            <option value="">Todas as situações</option>
+            <option value="andamento" {% if situacao_filtro == "andamento" %}selected{% endif %}>Em andamento</option>
+            <option value="concluida" {% if situacao_filtro == "concluida" %}selected{% endif %}>Concluída</option>
+        </select>
+        {% if user.is_superuser %}
+            <select name="empresa" class="form-control">
+                <option value="">Todas as empresas</option>
+                {% for empresa in empresas_disponiveis %}
+                    <option value="{{ empresa.pk }}" {% if empresa_filtro == empresa.pk|stringformat:"s" %}selected{% endif %}>{{ empresa.nome }}</option>
+                {% endfor %}
+            </select>
+        {% endif %}
+        <button class="btn btn-outline-primary">Pesquisar</button>
+    </form>
+
+    {% if prestacoes %}
+        <div class="accounts-grid">
+            {% for item in prestacoes %}
+                <article class="account-card">
+                    <span>{{ item.empresa.nome|default:"Sem empresa vinculada" }}</span>
+                    <h2><a href="{% url 'detail_prestacao' item.pk %}">{{ item }}</a></h2>
+                    <p>{{ item.credor|default:"Credor não informado" }}</p>
+                    <dl>
+                        <div><dt>Tipo</dt><dd>{{ item.tipoTermo|default:"—" }}</dd></div>
+                        <div><dt>CPF/CNPJ</dt><dd>{{ item.CpfCnpj|default:"—" }}</dd></div>
+                        <div><dt>Valor</dt><dd>{{ item.valorContrato|default:"—" }}</dd></div>
+                        <div><dt>Parcelas</dt><dd>{{ item.qtdParcelas|default:"—" }}</dd></div>
+                    </dl>
+                    <footer>
+                        {% if item.concluida %}<b class="status done">Concluída</b>{% else %}<b class="status">Em andamento</b>{% endif %}
+                        <a href="{% url 'detail_prestacao' item.pk %}">Abrir</a>
+                    </footer>
+                </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="sgm-panel accounts-empty">Nenhuma prestação encontrada.</div>
+    {% endif %}
+</section>
 {% endblock %}

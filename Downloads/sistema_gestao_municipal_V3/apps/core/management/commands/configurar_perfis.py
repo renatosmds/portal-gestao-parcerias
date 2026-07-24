@@ -10,6 +10,8 @@ PERFIS = {
         "fornecedores": {"add_fornecedores", "change_fornecedores", "delete_fornecedores", "view_fornecedores"},
         "parcerias": {"add_parcerias", "change_parcerias", "delete_parcerias", "view_parcerias"},
         "termos": {"add_termos", "change_termos", "delete_termos", "view_termos"},
+        "prestacao": {"add_prestacao", "change_prestacao", "delete_prestacao", "view_prestacao"},
+        "analise": {"add_analise", "change_analise", "delete_analise", "view_analise"},
     },
     "Gestor": {
         "funcionarios": {"add_funcionario", "change_funcionario", "view_funcionario"},
@@ -18,6 +20,8 @@ PERFIS = {
         "fornecedores": {"add_fornecedores", "change_fornecedores", "view_fornecedores"},
         "parcerias": {"add_parcerias", "change_parcerias", "view_parcerias"},
         "termos": {"add_termos", "change_termos", "view_termos"},
+        "prestacao": {"add_prestacao", "change_prestacao", "view_prestacao"},
+        "analise": {"add_analise", "change_analise", "view_analise"},
     },
     "Analista": {
         "funcionarios": {"view_funcionario"},
@@ -26,7 +30,11 @@ PERFIS = {
         "fornecedores": {"view_fornecedores"},
         "parcerias": {"view_parcerias"},
         "termos": {"view_termos"},
+        "prestacao": {"view_prestacao"},
+        "analise": {"view_analise"},
         "termos": {"view_termos"},
+        "prestacao": {"view_prestacao"},
+        "analise": {"view_analise"},
     },
     "Usuário": {
         "funcionarios": set(),

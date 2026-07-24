@@ -1,156 +1,171 @@
-import io
-
-from django.contrib.auth.models import User
+from django.contrib import messages
+from django.db.models import Q
 from django.urls import reverse_lazy
-from django.views.generic import (
-    ListView,
-    UpdateView,
-    DeleteView,
-    CreateView
-)
-from django.views.generic.base import View, TemplateView
-from reportlab.pdfgen import canvas
+from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
-from django.http import HttpResponse
-from django.template.loader import get_template
-import xhtml2pdf.pisa as pisa
+from apps.empresas.models import Empresa
 
+from .forms import PrestacaoForm
+from .mixins import PrestacaoEscopoMixin, PrestacaoPermissaoMixin
 from .models import Prestacao
 
-from django.utils.translation import gettext as _
 
-
-class PrestacaoList(ListView):
+class PrestacaoList(PrestacaoPermissaoMixin, PrestacaoEscopoMixin, ListView):
     model = Prestacao
-
-    #    paginate_by = 15 # if pagination is desired
+    template_name = "prestacao/prestacao_list.html"
+    context_object_name = "prestacoes"
+    permission_required = "prestacao.view_prestacao"
+    paginate_by = 15
 
     def get_queryset(self):
-       empresa_logada = self.request.user.funcionario.empresa
-       return Prestacao.objects.filter(empresa=empresa_logada)
+        queryset = super().get_queryset()
+        termo = (self.request.GET.get("q") or "").strip()
+        situacao = (self.request.GET.get("situacao") or "").strip()
+        empresa_id = (self.request.GET.get("empresa") or "").strip()
+
+        if termo:
+            queryset = queryset.filter(
+                Q(numtermo__icontains=termo)
+                | Q(credor__icontains=termo)
+                | Q(CpfCnpj__icontains=termo)
+                | Q(gestora__icontains=termo)
+                | Q(matricula__icontains=termo)
+            )
+
+        if situacao == "concluida":
+            queryset = queryset.filter(concluida=True)
+        elif situacao == "andamento":
+            queryset = queryset.filter(concluida=False)
+
+        if empresa_id and self.request.user.is_superuser:
+            queryset = queryset.filter(empresa_id=empresa_id)
+
+        return queryset.order_by("concluida", "numtermo", "credor")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['report_button'] = _("Employee report")
+        queryset = self.get_queryset()
+        context["termo_busca"] = (self.request.GET.get("q") or "").strip()
+        context["situacao_filtro"] = (
+            self.request.GET.get("situacao") or ""
+        ).strip()
+        context["empresa_filtro"] = (
+            self.request.GET.get("empresa") or ""
+        ).strip()
+        context["total_prestacoes"] = queryset.count()
+        context["total_andamento"] = queryset.filter(concluida=False).count()
+        context["total_concluidas"] = queryset.filter(concluida=True).count()
+        context["empresas_disponiveis"] = (
+            Empresa.objects.order_by("nome")
+            if self.request.user.is_superuser
+            else Empresa.objects.none()
+        )
         return context
 
 
-class PrestacaoEdit(UpdateView):
+class PrestacaoDetail(PrestacaoPermissaoMixin, PrestacaoEscopoMixin, DetailView):
     model = Prestacao
-    fields = ['id', 'tipoTermo', 'numtermo', 'termoAditivo', 'credor', 'numCredor', 'tipo', 'CpfCnpj', 'oficioCcoaf', 'sco',
-              'agCredito', 'ccCredito', 'uo', 'funcao', 'subfuncao', 'programa', 'projeto', 'natureza', 'fonte',
-              'bancoCredor', 'agCredor', 'ccCredor', 'cod_reduz', 'gestora', 'matricula', 'contato', 'valorContrato',
-              'qtdParcelas', 'mesParcela1', 'anoParcela1', 'valorParcela1', 'empenhoParcela1', 'napParcela1',
-              'dataNapParcela1', 'mesParcela2', 'anoParcela2', 'valorParcela2', 'empenhoParcela2', 'napParcela2',
-              'dataNapParcela2', 'mesParcela3', 'anoParcela3', 'valorParcela3', 'empenhoParcela3', 'napParcela3',
-              'dataNapParcela3', 'mesParcela4', 'anoParcela4', 'valorParcela4', 'empenhoParcela4', 'napParcela4',
-              'dataNapParcela4', 'mesParcela5', 'anoParcela5', 'valorParcela5', 'empenhoParcela5', 'napParcela5',
-              'dataNapParcela5', 'mesParcela6', 'anoParcela6', 'valorParcela6', 'empenhoParcela6', 'napParcela6',
-              'dataNapParcela6', 'mesParcela7', 'anoParcela7', 'valorParcela7', 'empenhoParcela7', 'napParcela7',
-              'dataNapParcela7', 'mesParcela8', 'anoParcela8', 'valorParcela8', 'empenhoParcela8', 'napParcela8',
-              'dataNapParcela8', 'mesParcela9', 'anoParcela9', 'valorParcela9', 'empenhoParcela9', 'napParcela9',
-              'dataNapParcela9', 'mesParcela10', 'anoParcela10', 'valorParcela10', 'empenhoParcela10', 'napParcela10',
-              'dataNapParcela10', 'mesParcela11', 'anoParcela11', 'valorParcela11', 'empenhoParcela11', 'napParcela11',
-              'dataNapParcela11', 'mesParcela12', 'anoParcela12', 'valorParcela12', 'empenhoParcela12', 'napParcela12',
-              'dataNapParcela12', 'concluida']
-    success_url = reverse_lazy('list_prestacao')
+    template_name = "prestacao/prestacao_detail.html"
+    context_object_name = "prestacao"
+    permission_required = "prestacao.view_prestacao"
 
 
-class PrestacaoDelete(DeleteView):
+class PrestacaoCreate(PrestacaoPermissaoMixin, CreateView):
     model = Prestacao
-    success_url = reverse_lazy('list_prestacao')
+    form_class = PrestacaoForm
+    template_name = "prestacao/prestacao_form.html"
+    permission_required = "prestacao.add_prestacao"
 
+    def get_empresa_destino(self):
+        if self.request.user.is_superuser:
+            empresa_id = (
+                self.request.GET.get("empresa")
+                or self.request.POST.get("empresa")
+            )
+            return (
+                Empresa.objects.filter(pk=empresa_id).first()
+                if empresa_id
+                else None
+            )
 
-class PrestacaoCreate(CreateView):
-    model = Prestacao
-    fields = ['id', 'tipoTermo', 'numtermo', 'termoAditivo', 'credor', 'numCredor', 'tipo', 'CpfCnpj', 'oficioCcoaf',
-              'sco', 'agCredito', 'ccCredito', 'uo', 'funcao', 'subfuncao', 'programa', 'projeto', 'natureza',
-              'fonte', 'bancoCredor', 'agCredor', 'ccCredor', 'cod_reduz', 'gestora', 'matricula', 'contato',
-              'valorContrato', 'qtdParcelas', 'mesParcela1', 'anoParcela1', 'valorParcela1', 'empenhoParcela1',
-              'napParcela1', 'dataNapParcela1', 'mesParcela2', 'anoParcela2', 'valorParcela2', 'empenhoParcela2',
-              'napParcela2', 'dataNapParcela2', 'mesParcela3', 'anoParcela3', 'valorParcela3', 'empenhoParcela3',
-              'napParcela3', 'dataNapParcela3', 'mesParcela4', 'anoParcela4', 'valorParcela4', 'empenhoParcela4',
-              'napParcela4', 'dataNapParcela4', 'mesParcela5', 'anoParcela5', 'valorParcela5', 'empenhoParcela5',
-              'napParcela5', 'dataNapParcela5', 'mesParcela6', 'anoParcela6', 'valorParcela6', 'empenhoParcela6',
-              'napParcela6', 'dataNapParcela6', 'mesParcela7', 'anoParcela7', 'valorParcela7', 'empenhoParcela7',
-              'napParcela7', 'dataNapParcela7', 'mesParcela8', 'anoParcela8', 'valorParcela8', 'empenhoParcela8',
-              'napParcela8', 'dataNapParcela8', 'mesParcela9', 'anoParcela9', 'valorParcela9', 'empenhoParcela9',
-              'napParcela9', 'dataNapParcela9', 'mesParcela10', 'anoParcela10', 'valorParcela10', 'empenhoParcela10',
-              'napParcela10', 'dataNapParcela10', 'mesParcela11', 'anoParcela11', 'valorParcela11', 'empenhoParcela11',
-              'napParcela11', 'dataNapParcela11', 'mesParcela12', 'anoParcela12', 'valorParcela12', 'empenhoParcela12',
-              'napParcela12', 'dataNapParcela12', 'concluida']
-    success_url = reverse_lazy('list_prestacao')
+        try:
+            return self.request.user.funcionario.empresa
+        except Exception:
+            return None
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["empresa"] = self.get_empresa_destino()
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["empresa_destino"] = self.get_empresa_destino()
+        context["empresas_disponiveis"] = (
+            Empresa.objects.order_by("nome")
+            if self.request.user.is_superuser
+            else Empresa.objects.none()
+        )
+        return context
 
     def form_valid(self, form):
-        funcionario = form.save(commit=False)
-        username = funcionario.numtermo.split(' ')[0]
-        funcionario.empresa = self.request.user.funcionario.empresa
-        funcionario.user = User.objects.create(username=username)
-        funcionario.save()
-        return super(PrestacaoCreate, self).form_valid(form)
+        empresa = self.get_empresa_destino()
+
+        if not empresa:
+            form.add_error(
+                None,
+                "Selecione uma empresa válida para a prestação.",
+            )
+            return self.form_invalid(form)
+
+        self.object = form.save(commit=False)
+        self.object.empresa = empresa
+        self.object.save()
+
+        messages.success(
+            self.request,
+            f"Prestação “{self.object}” cadastrada com sucesso.",
+        )
+        return super().form_valid(form)
 
 
-def relatorio_prestacao(request):
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename="mypdf.pdf"'
+class PrestacaoEdit(
+    PrestacaoPermissaoMixin,
+    PrestacaoEscopoMixin,
+    UpdateView,
+):
+    model = Prestacao
+    form_class = PrestacaoForm
+    template_name = "prestacao/prestacao_form.html"
+    permission_required = "prestacao.change_prestacao"
 
-    buffer = io.BytesIO()
-    p = canvas.Canvas(buffer)
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["empresa"] = self.object.empresa
+        return kwargs
 
-    p.drawString(200, 810, 'Relatorio de prestacao')
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["empresa_destino"] = self.object.empresa
+        context["empresas_disponiveis"] = Empresa.objects.none()
+        return context
 
-    prestacao = Prestacao.objects.filter(
-        empresa=request.user.funcionario.empresa)
-
-    str_ = 'Nome: %s | Hora Extra: %.2f'
-
-    p.drawString(0, 800, '_' * 150)
-
-    y = 750
-    for prestacao in prestacao:
-        p.drawString(10, y, str_ % (
-            prestacao.nome, prestacao.total_horas_extra))
-        y -= 20
-
-    p.showPage()
-    p.save()
-
-    pdf = buffer.getvalue()
-    buffer.close()
-    response.write(pdf)
-
-    return response
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(
+            self.request,
+            f"Prestação “{self.object}” atualizada com sucesso.",
+        )
+        return response
 
 
-class Render:
-    @staticmethod
-    def render(path: str, params: dict, filename: str):
-        template = get_template(path)
-        html = template.render(params)
-        response = io.BytesIO()
-        pdf = pisa.pisaDocument(
-            io.BytesIO(html.encode("UTF-8")), response)
-        if not pdf.err:
-            response = HttpResponse(
-                response.getvalue(), content_type='application/pdf')
-            response['Content-Disposition'] = 'attachment;filename=%s.pdf' % filename
-            return response
-        else:
-            return HttpResponse("Error Rendering PDF", status=400)
-
-
-def get(request):
-    params = {
-        'today': 'Variavel today',
-        'sales': 'Variavel sales',
-        'request': request,
-    }
-    return Render.render('prestacao/relatorio.html', params, 'myfile')
-
-
-class Pdf(View):
-    pass
-
-
-class PdfDebug(TemplateView):
-    template_name = 'prestacao/relatorio.html'
+class PrestacaoDelete(
+    PrestacaoPermissaoMixin,
+    PrestacaoEscopoMixin,
+    DeleteView,
+):
+    model = Prestacao
+    template_name = "prestacao/prestacao_confirm_delete.html"
+    context_object_name = "prestacao"
+    permission_required = "prestacao.delete_prestacao"
+    success_url = reverse_lazy("list_prestacao")

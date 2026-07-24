@@ -86,6 +86,22 @@
                 <span>Financeiro</span>
             </a>
 
+            {% if perms.analise.view_analise or user.is_superuser %}
+            <a class="sgm-nav-item {% if request.resolver_match.url_name == 'list_analise' or request.resolver_match.url_name == 'detail_analise' or request.resolver_match.url_name == 'create_analise' or request.resolver_match.url_name == 'update_analise' or request.resolver_match.url_name == 'delete_analise' %}active{% endif %}"
+               href="{% url 'list_analise' %}">
+                <i class="fa fa-search" aria-hidden="true"></i>
+                <span>Análises</span>
+            </a>
+            {% endif %}
+
+            {% if perms.prestacao.view_prestacao or user.is_superuser %}
+            <a class="sgm-nav-item {% if request.resolver_match.url_name == 'list_prestacao' or request.resolver_match.url_name == 'detail_prestacao' or request.resolver_match.url_name == 'create_prestacao' or request.resolver_match.url_name == 'update_prestacao' or request.resolver_match.url_name == 'delete_prestacao' %}active{% endif %}"
+               href="{% url 'list_prestacao' %}">
+                <i class="fa fa-folder-open-o" aria-hidden="true"></i>
+                <span>Prestações</span>
+            </a>
+            {% endif %}
+
             {% if perms.termos.view_termos or user.is_superuser %}
             <a class="sgm-nav-item {% if request.resolver_match.url_name == 'list_termos' or request.resolver_match.url_name == 'detail_termo' or request.resolver_match.url_name == 'create_termos' or request.resolver_match.url_name == 'update_termos' or request.resolver_match.url_name == 'delete_termos' %}active{% endif %}"
                href="{% url 'list_termos' %}">

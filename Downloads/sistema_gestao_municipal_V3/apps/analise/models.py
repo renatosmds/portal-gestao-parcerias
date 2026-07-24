@@ -1,72 +1,99 @@
 from django.db import models
-from django.contrib.auth.models import User
 from django.urls import reverse
-from apps.departamentos.models import Departamento
-from apps.empresas.models import Empresa
-from apps.termos.models import Termos
-from django.db.models import Sum
-
-
-def get_absolute_url():
-    return reverse('list_analise')
 
 
 class Analise(models.Model):
-    objects = None
-    id = models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')
-    numtermo = models.CharField(max_length=50, verbose_name='Número Termo')
-    nomeOSC = models.CharField(max_length=30, verbose_name='Nome OSC')
-    numRA = models.CharField(max_length=12, verbose_name='Nº Relatório Auditoria (RA)')
-    item = models.CharField(max_length=12, verbose_name='Item')
-    inconformidade = models.TextField(verbose_name='Inconformidade')
-    recomendacoes = models.TextField(verbose_name='Recomendações')
-    posicaoSecretaria = models.TextField(verbose_name='Posição SMDS')
-    status = models.CharField(max_length=50, verbose_name='Status')
+    class Meta:
+        ordering = ["concluida", "numtermo__termo", "numRA", "item"]
+        verbose_name = "Análise"
+        verbose_name_plural = "Análises"
 
-    # user = models.OneToOneField(User, on_delete=models.PROTECT)
-    # departamento = models.ManyToManyField(Departamento)
-    # empresa = models.ForeignKey(Empresa, on_delete=models.PROTECT, null=True, blank=True)
-    numtermo = models.ForeignKey(Termos, on_delete=models.PROTECT, null=True, blank=True)
+    nomeOSC = models.CharField(
+        max_length=150,
+        blank=True,
+        null=True,
+        verbose_name="Nome da OSC",
+    )
+    numRA = models.CharField(
+        max_length=30,
+        blank=True,
+        null=True,
+        verbose_name="Nº Relatório de Auditoria (RA)",
+    )
+    item = models.CharField(
+        max_length=30,
+        blank=True,
+        null=True,
+        verbose_name="Item",
+    )
+    inconformidade = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="Inconformidade",
+    )
+    recomendacoes = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="Recomendações",
+    )
+    posicaoSecretaria = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="Posição da Secretaria",
+    )
+    status = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        verbose_name="Status",
+    )
+    concluida = models.BooleanField(
+        default=False,
+        verbose_name="Concluída",
+    )
+    criada_em = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Criada em",
+    )
+    atualizada_em = models.DateTimeField(
+        auto_now=True,
+        verbose_name="Atualizada em",
+    )
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.analise_set = None
+    empresa = models.ForeignKey(
+        "empresas.Empresa",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="analises_vinculadas",
+        related_query_name="analise_vinculada",
+        verbose_name="Empresa",
+    )
+    numtermo = models.ForeignKey(
+        "termos.Termos",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="analises_vinculadas",
+        related_query_name="analise_vinculada",
+        verbose_name="Termo",
+    )
+    prestacao = models.ForeignKey(
+        "prestacao.Prestacao",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="analises_vinculadas",
+        related_query_name="analise_vinculada",
+        verbose_name="Prestação de contas",
+    )
 
-    @property
-    def analise(self):
-        total = self.analise_set.filter(utilizada=False).aggregate(
-            Sum('valor'))['valor__sum']
-        return total or 0
+    def get_absolute_url(self):
+        return reverse("detail_analise", kwargs={"pk": self.pk})
 
     def __str__(self):
-        return self.numParceria
-
-# -- DROP TABLE public.colaboradores2_colaboradores2;
-
-# CREATE TABLE public.colaboradores2_colaboradores2
-# (
-#  id integer NOT NULL DEFAULT nextval('colaboradores2_colaboradores1_id_seq'::regclass),
-#  photo character varying(100),
-#  nome character varying(100) NOT NULL,
-#  sobrenome character varying(100) NOT NULL,
-#  cargo character varying(100) NOT NULL,
-#  "salarioBase" numeric(7,2) NOT NULL,
-#  endereco character varying(100) NOT NULL,
-#  bairro character varying(100) NOT NULL,
-#  cep character varying(100) NOT NULL,
-#  cidade character varying(100) NOT NULL,
-#  estado character varying(100) NOT NULL,
-#  email character varying(100) NOT NULL,
-#  "dataNascimento" character varying(10) NOT NULL,
-#  idade integer NOT NULL,
-#  competencias text NOT NULL,
-#  habilidades text NOT NULL,
-#  atitudes text NOT NULL,
-#  curriculo character varying(100),
-#  CONSTRAINT colaboradores2_colaboradores1_pkey PRIMARY KEY (id)
-# )
-# WITH (
-#  OIDS=FALSE
-# );
-# ALTER TABLE public.colaboradores2_colaboradores2
-#  OWNER TO eqblxpqnqgqust;
+        termo = str(self.numtermo) if self.numtermo_id else None
+        identificacao = " - ".join(
+            parte for parte in [termo, self.numRA, self.item] if parte
+        )
+        return identificacao or self.nomeOSC or f"Análise #{self.pk}"

@@ -7,7 +7,6 @@ from django.db.models import Sum
 from apps.receitas.models import Receitas
 from apps.curso.models import Curso
 
-from apps.prestacao.models import Prestacao
 #from apps.registro_hora_extra.models import RegistroHoraExtra
 from apps.conferencia3.models import Conferencia3
 # from apps.auditorias.models import Auditorias
@@ -30,7 +29,15 @@ class Empresa(models.Model):  # ok
         related_query_name="empresa_legada",
         verbose_name="Termo legado",
     )
-    prestacao = models.ForeignKey(Prestacao, on_delete=models.PROTECT, null=True, blank=True)
+    prestacao = models.ForeignKey(
+        "prestacao.Prestacao",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="empresas_legadas",
+        related_query_name="empresa_legada",
+        verbose_name="Prestação legada",
+    )
     conferencia3 = models.ForeignKey(Conferencia3, on_delete=models.PROTECT, null=True, blank=True)
     parcerias = models.ForeignKey(
         "parcerias.Parcerias",

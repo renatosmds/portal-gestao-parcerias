@@ -1,13 +1,49 @@
-{% extends 'base.html' %}
-{% load bootstrap %}
-
-{% block title %} Administracao {% endblock %}
-
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{% if object %}Editar{% else %}Nova{% endif %} análise{% endblock %}
+{% block page_name %}Análises técnicas{% endblock %}
+{% block staticcss %}<link rel="stylesheet" href="{% static 'css/analises-v3.css' %}">{% endblock %}
 {% block main %}
-    <h3>Nova Análise</h3>
-    <form method="POST" enctype="multipart/form-data">
+<section class="reviews-page">
+    <a href="{% url 'list_analise' %}" class="reviews-back">← Voltar</a>
+    <header class="reviews-header">
+        <div><h1>{% if object %}Editar{% else %}Nova{% endif %} análise</h1><p>Registre o achado, a recomendação e o posicionamento.</p></div>
+    </header>
+
+    <form method="post" novalidate>
         {% csrf_token %}
-        {{ form|bootstrap }}
-        <button type="submit" class="btn btn-primary">Salvar</button>
+        {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+
+        {% if user.is_superuser and not object %}
+            <div class="sgm-panel review-panel">
+                <label>Empresa</label>
+                <select name="empresa" class="form-control" required>
+                    <option value="">Selecione</option>
+                    {% for empresa in empresas_disponiveis %}
+                        <option value="{{ empresa.pk }}">{{ empresa.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        {% endif %}
+
+        <div class="sgm-panel review-panel review-form-grid">
+            {% for field in form %}
+                <div class="{% if field.name == 'inconformidade' or field.name == 'recomendacoes' or field.name == 'posicaoSecretaria' %}review-field-wide{% endif %}">
+                    {% if field.name == "concluida" %}
+                        <div class="form-check">{{ field }} <label for="{{ field.id_for_label }}">{{ field.label }}</label></div>
+                    {% else %}
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                    {% endif %}
+                    {% for error in field.errors %}<small class="text-danger">{{ error }}</small>{% endfor %}
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="review-actions">
+            <button class="btn btn-primary">Salvar</button>
+            <a href="{% url 'list_analise' %}" class="btn btn-outline-secondary">Cancelar</a>
+        </div>
     </form>
+</section>
 {% endblock %}
