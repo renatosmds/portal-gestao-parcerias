@@ -106,6 +106,7 @@ urlpatterns = [
                   path('prestacao/', include('apps.prestacao.urls')),
                   path('receitas/', include('apps.receitas.urls')),
                   path('analise/', include('apps.analise.urls')),
+                  path('lancamentos/', include('apps.lancamentos.urls')),
                   path('parcerias/', include('apps.parcerias.urls')),
                   #url(r'^', include(router.urls)),
                   #url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework'))

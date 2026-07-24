@@ -71,6 +71,7 @@ INSTALLED_APPS = [
     'apps.empresas',  # gestão_rh
     'apps.fornecedores',
     'apps.funcionarios',  # gestão_rh
+    'apps.lancamentos',
     'apps.parcerias',
     'apps.prestacao',
     'apps.receitas',
