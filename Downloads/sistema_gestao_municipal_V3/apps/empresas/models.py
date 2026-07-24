@@ -3,8 +3,6 @@ from django.urls import reverse
 from django.db.models import Q
 from django.db.models import Sum
 
-
-from apps.termos.models import Termos
 #from apps.funcionarios.models import Funcionario
 from apps.receitas.models import Receitas
 from apps.curso.models import Curso
@@ -23,7 +21,15 @@ class Empresa(models.Model):  # ok
 
     receitas = models.ForeignKey(Receitas, on_delete=models.PROTECT, null=True, blank=True)
     curso = models.ForeignKey(Curso, on_delete=models.PROTECT, null=True, blank=True)
-    termos = models.ForeignKey(Termos, on_delete=models.PROTECT, null=True, blank=True)
+    termos = models.ForeignKey(
+        "termos.Termos",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="empresas_legadas",
+        related_query_name="empresa_legada",
+        verbose_name="Termo legado",
+    )
     prestacao = models.ForeignKey(Prestacao, on_delete=models.PROTECT, null=True, blank=True)
     conferencia3 = models.ForeignKey(Conferencia3, on_delete=models.PROTECT, null=True, blank=True)
     parcerias = models.ForeignKey(
