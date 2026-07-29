@@ -14,6 +14,22 @@ class Lancamento(models.Model):
         REPROVADO = "reprovado", "Reprovado"
         GLOSADO = "glosado", "Glosado"
 
+
+    class TipoGlosa(models.TextChoices):
+        NENHUMA = "nenhuma", "Sem glosa"
+        PARCIAL = "parcial", "Glosa parcial"
+        GLOBAL = "global", "Glosa global"
+
+    class MotivoGlosa(models.TextChoices):
+        SEM_COMPROVACAO = "sem_comprovacao", "Despesa sem comprovação"
+        DOCUMENTO_IRREGULAR = "documento_irregular", "Documento fiscal irregular"
+        FORA_VIGENCIA = "fora_vigencia", "Despesa fora da vigência"
+        NAO_PREVISTA = "nao_prevista", "Despesa não prevista no plano de trabalho"
+        DUPLICIDADE = "duplicidade", "Pagamento em duplicidade"
+        SEM_PAGAMENTO = "sem_pagamento", "Ausência de comprovante de pagamento"
+        INCOMPATIVEL = "incompativel", "Despesa incompatível com o objeto"
+        OUTRO = "outro", "Outro motivo"
+
     class TipoDocumento(models.TextChoices):
         NFE = "nfe", "NF-e"
         NFCE = "nfce", "NFC-e"
@@ -131,6 +147,13 @@ class Lancamento(models.Model):
         validators=[MinValueValidator(Decimal("0.00"))],
         verbose_name="Valor da glosa",
     )
+
+    tipo_glosa = models.CharField(max_length=12, choices=TipoGlosa.choices, default=TipoGlosa.NENHUMA, verbose_name="Tipo de glosa")
+    motivo_glosa = models.CharField(max_length=30, choices=MotivoGlosa.choices, blank=True, verbose_name="Motivo da glosa")
+    fundamentacao_glosa = models.TextField(blank=True, verbose_name="Fundamentação da glosa")
+    glosa_registrada_por = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="glosas_registradas")
+    glosa_registrada_em = models.DateTimeField(null=True, blank=True)
+
     situacao = models.CharField(
         max_length=20,
         choices=Situacao.choices,
@@ -173,3 +196,16 @@ class Lancamento(models.Model):
 
     def __str__(self):
         return self.numero_lancamento or f"Lançamento #{self.pk}"
+
+
+class HistoricoGlosa(models.Model):
+    lancamento = models.ForeignKey(Lancamento, on_delete=models.CASCADE, related_name="historico_glosas")
+    tipo_anterior = models.CharField(max_length=12, blank=True)
+    tipo_novo = models.CharField(max_length=12, choices=Lancamento.TipoGlosa.choices)
+    valor_anterior = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal("0.00"))
+    valor_novo = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal("0.00"))
+    motivo = models.CharField(max_length=30, blank=True)
+    fundamentacao = models.TextField(blank=True)
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    criado_em = models.DateTimeField(auto_now_add=True)
+    class Meta: ordering=["-criado_em"]

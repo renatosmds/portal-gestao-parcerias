@@ -1,13 +1,16 @@
 from django.contrib import messages
 from django.db.models import Q
 from django.urls import reverse_lazy
+from django.shortcuts import get_object_or_404, redirect, render
+from django.contrib.auth.decorators import login_required, permission_required
+from django.utils import timezone
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
 from apps.empresas.models import Empresa
 
-from .forms import PrestacaoForm
+from .forms import MovimentarPrestacaoForm, PrestacaoForm
 from .mixins import PrestacaoEscopoMixin, PrestacaoPermissaoMixin
-from .models import Prestacao
+from .models import HistoricoPrestacao, Prestacao
 
 
 class PrestacaoList(PrestacaoPermissaoMixin, PrestacaoEscopoMixin, ListView):
@@ -68,6 +71,13 @@ class PrestacaoDetail(PrestacaoPermissaoMixin, PrestacaoEscopoMixin, DetailView)
     template_name = "prestacao/prestacao_detail.html"
     context_object_name = "prestacao"
     permission_required = "prestacao.view_prestacao"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["historico"] = self.object.historico_workflow.select_related("usuario")[:20]
+        context["total_lancamentos"] = self.object.lancamentos.count()
+        context["total_glosado"] = sum((x.valor_glosa for x in self.object.lancamentos.all()), 0)
+        return context
 
 
 class PrestacaoCreate(PrestacaoPermissaoMixin, CreateView):
@@ -169,3 +179,33 @@ class PrestacaoDelete(
     context_object_name = "prestacao"
     permission_required = "prestacao.delete_prestacao"
     success_url = reverse_lazy("list_prestacao")
+
+
+TRANSICOES = {
+    "elaboracao": {"enviada"}, "enviada": {"recebida"}, "recebida": {"em_analise"},
+    "em_analise": {"diligencia", "aprovada", "aprovada_ressalvas", "reprovada"},
+    "diligencia": {"corrigida"}, "corrigida": {"em_analise"},
+    "aprovada": {"encerrada"}, "aprovada_ressalvas": {"encerrada"}, "reprovada": {"encerrada"},
+}
+
+@login_required
+@permission_required("prestacao.change_prestacao", raise_exception=True)
+def movimentar_prestacao(request, pk):
+    prestacao = get_object_or_404(Prestacao, pk=pk)
+    permitidas = TRANSICOES.get(prestacao.situacao_workflow, set())
+    form = MovimentarPrestacaoForm(request.POST or None, situacoes_permitidas=permitidas)
+    if request.method == "POST" and form.is_valid():
+        anterior = prestacao.situacao_workflow
+        nova = form.cleaned_data["nova_situacao"]
+        if nova not in permitidas:
+            form.add_error("nova_situacao", "Transição não permitida para a situação atual.")
+        else:
+            prestacao.situacao_workflow = nova
+            if nova == Prestacao.SituacaoWorkflow.ENVIADA: prestacao.enviada_em = timezone.now()
+            if nova == Prestacao.SituacaoWorkflow.RECEBIDA: prestacao.recebida_em = timezone.now()
+            if nova == Prestacao.SituacaoWorkflow.ENCERRADA: prestacao.concluida = True
+            prestacao.save()
+            HistoricoPrestacao.objects.create(prestacao=prestacao, situacao_anterior=anterior, nova_situacao=nova, observacao=form.cleaned_data["observacao"], usuario=request.user)
+            messages.success(request, "Movimentação registrada no histórico da prestação.")
+            return redirect("detail_prestacao", pk=prestacao.pk)
+    return render(request, "prestacao/prestacao_movimentar.html", {"prestacao":prestacao, "form":form})

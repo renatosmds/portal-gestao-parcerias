@@ -13,6 +13,7 @@ PERFIS = {
         "prestacao": {"add_prestacao", "change_prestacao", "delete_prestacao", "view_prestacao"},
         "analise": {"add_analise", "change_analise", "delete_analise", "view_analise"},
         "lancamentos": {"add_lancamento", "change_lancamento", "delete_lancamento", "view_lancamento"},
+        "documentos": {"add_documento", "change_documento", "delete_documento", "view_documento"},
     },
     "Gestor": {
         "funcionarios": {"add_funcionario", "change_funcionario", "view_funcionario"},
@@ -24,6 +25,7 @@ PERFIS = {
         "prestacao": {"add_prestacao", "change_prestacao", "view_prestacao"},
         "analise": {"add_analise", "change_analise", "view_analise"},
         "lancamentos": {"add_lancamento", "change_lancamento", "view_lancamento"},
+        "documentos": {"add_documento", "change_documento", "view_documento"},
     },
     "Analista": {
         "funcionarios": {"view_funcionario"},
@@ -35,6 +37,7 @@ PERFIS = {
         "prestacao": {"view_prestacao"},
         "analise": {"view_analise"},
         "lancamentos": {"view_lancamento"},
+        "documentos": {"view_documento"},
         "termos": {"view_termos"},
         "prestacao": {"view_prestacao"},
         "analise": {"view_analise"},
@@ -46,6 +49,7 @@ PERFIS = {
         "departamentos": {"view_departamento"},
         "fornecedores": {"view_fornecedores"},
         "parcerias": {"view_parcerias"},
+        "documentos": {"view_documento"},
     },
 }
 

@@ -1,0 +1,22 @@
+PORTAL DE GESTÃO DE PARCERIAS — SPRINT 16
+
+ENTREGA
+- Menu lateral recolhível no desktop, com preferência salva no navegador.
+- Menu sobreposto no celular.
+- Fundo institucional levemente mais escuro.
+- Workflow da prestação com transições controladas e histórico.
+- Glosa global, parcial ou sem glosa por lançamento.
+- Validações de valor, motivo e fundamentação.
+- Histórico de alterações das glosas.
+
+INSTALAÇÃO
+1. Faça backup de .env, db.sqlite3 e media.
+2. Copie o conteúdo desta pasta sobre o projeto atual.
+3. Execute:
+   python manage.py check
+   python manage.py migrate
+   python manage.py runserver
+4. No navegador, pressione Ctrl+F5.
+
+OBSERVAÇÃO
+As transições do workflow foram implementadas de forma controlada. A separação fina das ações exclusivas de OSC e órgão público será reforçada nas próximas sprints de perfis e portal da OSC.

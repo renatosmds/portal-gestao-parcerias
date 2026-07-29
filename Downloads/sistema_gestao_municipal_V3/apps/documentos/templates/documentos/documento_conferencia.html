@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Conferir {{ documento }}{% endblock %}
+{% block page_name %}Conferência documental{% endblock %}
+{% block staticcss %}<link rel="stylesheet" href="{% static 'css/documentos-v3.css' %}">{% endblock %}
+{% block main %}
+<section class="docs-page">
+    <a href="{% url 'detail_documento' documento.pk %}" class="docs-back">← Voltar</a>
+    <header class="docs-header">
+        <div><span class="sgm-eyebrow">CHECKLIST</span><h1>Conferir documento</h1><p>{{ documento }}</p></div>
+        <a href="{{ documento.arquivo.url }}" target="_blank" class="btn btn-outline-primary">Abrir arquivo</a>
+    </header>
+    <form method="post" novalidate>
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+        <div class="sgm-panel doc-panel conference-form">
+            {% for field in form %}
+                {% if field.name == "status" or field.name == "observacoes" %}
+                    <div class="conference-wide">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% for error in field.errors %}<small class="text-danger">{{ error }}</small>{% endfor %}
+                    </div>
+                {% else %}
+                    <label class="conference-check">{{ field }} <span>{{ field.label }}</span></label>
+                {% endif %}
+            {% endfor %}
+        </div>
+        <div class="doc-actions">
+            <button class="btn btn-primary">Salvar conferência</button>
+            <a href="{% url 'detail_documento' documento.pk %}" class="btn btn-outline-secondary">Cancelar</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

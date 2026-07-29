@@ -91,7 +91,7 @@ urlpatterns = [
                   path('curso/', include('apps.curso.urls')),
                   path('clientes/', include('apps.clientes.urls')),
                   path('departamentos/', include('apps.departamentos.urls')),
-                  path('documento/', include('apps.documentos.urls')),
+                  path('documentos/', include('apps.documentos.urls')),
                   path('horas-extras/', include('apps.registro_hora_extra.urls')),
                   path('fornecedor/', include('apps.fornecedores.urls')),
                   # path('jet/', include('jet.urls')),  # jet URLS
@@ -144,6 +144,6 @@ if settings.DEBUG:
         path('__debug__/', include(debug_toolbar.urls)),
     ] + urlpatterns
 
-admin.site.site_header = "Sistema Gestão Municipal"
-admin.site.index_title = "Administração"
-admin.site.site_title = "Seja bem Vindo | Sistema de Gestão Municipal"
+admin.site.site_header = "Portal de Gestão de Parcerias"
+admin.site.index_title = "Administração do Portal"
+admin.site.site_title = "Portal de Gestão de Parcerias"

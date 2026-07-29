@@ -1,4 +1,5 @@
 # coding=utf-8
+from django.conf import settings
 from django.db import models
 # from django.contrib.auth.models import User
 from django.urls import reverse
@@ -9,6 +10,18 @@ from django.db.models import Sum
 
 
 class Prestacao(models.Model):
+
+    class SituacaoWorkflow(models.TextChoices):
+        ELABORACAO = "elaboracao", "Em elaboração"
+        ENVIADA = "enviada", "Enviada pela OSC"
+        RECEBIDA = "recebida", "Recebida pelo órgão"
+        EM_ANALISE = "em_analise", "Em análise"
+        DILIGENCIA = "diligencia", "Em diligência"
+        CORRIGIDA = "corrigida", "Corrigida pela OSC"
+        APROVADA = "aprovada", "Aprovada"
+        APROVADA_RESSALVAS = "aprovada_ressalvas", "Aprovada com ressalvas"
+        REPROVADA = "reprovada", "Reprovada"
+        ENCERRADA = "encerrada", "Encerrada"
     class Meta:
         ordering = ["numtermo", "tipoTermo"]
         verbose_name = "Prestação de contas"
@@ -140,6 +153,17 @@ class Prestacao(models.Model):
     dataNapParcela12 = models.DateField(null=True, blank=True, verbose_name='Data Pagto NAP')
     concluida = models.BooleanField(default=False)
 
+    situacao_workflow = models.CharField(
+        max_length=24, choices=SituacaoWorkflow.choices,
+        default=SituacaoWorkflow.ELABORACAO, verbose_name="Situação do fluxo"
+    )
+    analista_responsavel = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="prestacoes_atribuidas", verbose_name="Analista responsável"
+    )
+    enviada_em = models.DateTimeField(null=True, blank=True)
+    recebida_em = models.DateTimeField(null=True, blank=True)
+
     imagem = models.ImageField(blank=True, null=True)
     de_ferias = models.BooleanField(default=False)
 
@@ -163,3 +187,20 @@ class Prestacao(models.Model):
             or self.CpfCnpj
             or f"Prestação #{self.pk}"
         )
+
+
+class HistoricoPrestacao(models.Model):
+    prestacao = models.ForeignKey(Prestacao, on_delete=models.CASCADE, related_name="historico_workflow")
+    situacao_anterior = models.CharField(max_length=24, blank=True)
+    nova_situacao = models.CharField(max_length=24, choices=Prestacao.SituacaoWorkflow.choices)
+    observacao = models.TextField(blank=True)
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    criado_em = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-criado_em"]
+        verbose_name = "Histórico da prestação"
+        verbose_name_plural = "Históricos das prestações"
+
+    def __str__(self):
+        return f"{self.prestacao} — {self.get_nova_situacao_display()}"

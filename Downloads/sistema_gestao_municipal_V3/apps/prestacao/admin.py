@@ -33,3 +33,6 @@ class PrestacaoAdmin(admin.ModelAdmin):
         "credor",
     )
     autocomplete_fields = ("empresa",)
+
+from .models import HistoricoPrestacao
+admin.site.register(HistoricoPrestacao)

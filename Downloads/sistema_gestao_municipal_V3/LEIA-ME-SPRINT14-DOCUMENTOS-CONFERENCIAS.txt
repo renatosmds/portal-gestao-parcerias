@@ -1,0 +1,39 @@
+SGM V3 — SPRINT 14: DOCUMENTOS E CONFERÊNCIAS
+
+ENTREGAS
+- Modernização do app Documentos.
+- Central de documentos com pesquisa e filtros.
+- Cadastro, detalhes, edição e exclusão.
+- Vínculos com Empresa, Termo, Prestação e Lançamento.
+- Checklist de conferência:
+  documento legível;
+  dados compatíveis;
+  vigência válida;
+  pagamento comprovado;
+  atesto válido.
+- Status: pendente, em conferência, conferido, com pendência e reprovado.
+- Registro de responsável, data e observações.
+- Isolamento multitenant.
+- Permissões por perfil.
+- Admin e 6 testes automatizados.
+
+ALTERA O BANCO
+Inclui:
+apps/documentos/migrations/0010_documento_conferencia.py
+
+APLICAÇÃO
+1. Faça backup.
+2. Mescle apps, gestao_rh, templates e static.
+3. Preserve .env, db.sqlite3, media e manage.py.
+4. Execute um comando por vez:
+   python manage.py check
+   python manage.py migrate
+   python manage.py configurar_perfis
+   python manage.py test apps.documentos.tests
+   python manage.py runserver
+
+ACESSO
+http://127.0.0.1:8000/documentos/
+
+Não execute makemigrations. A migration já está incluída.
+Registros documentais antigos poderão permanecer sem empresa vinculada.

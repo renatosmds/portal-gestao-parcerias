@@ -9,7 +9,7 @@
     <header class="accounts-header">
         <div><span class="sgm-eyebrow">PRESTAÇÃO DE CONTAS</span><h1>{{ prestacao }}</h1><p>{{ prestacao.credor|default:"Credor não informado" }}</p></div>
         <div>
-            {% if perms.prestacao.change_prestacao %}<a href="{% url 'update_prestacao' prestacao.pk %}" class="btn btn-primary">Editar</a>{% endif %}
+            {% if perms.prestacao.change_prestacao %}<a href="{% url 'movimentar_prestacao' prestacao.pk %}" class="btn btn-success">Movimentar</a> <a href="{% url 'update_prestacao' prestacao.pk %}" class="btn btn-primary">Editar</a>{% endif %}
             {% if perms.prestacao.delete_prestacao %}<a href="{% url 'delete_prestacao' prestacao.pk %}" class="btn btn-outline-danger">Excluir</a>{% endif %}
         </div>
     </header>
@@ -17,7 +17,7 @@
         <section class="sgm-panel account-panel">
             <h2>Dados gerais</h2>
             <dl class="account-data">
-                <div><dt>Empresa</dt><dd>{{ prestacao.empresa.nome|default:"Não informada" }}</dd></div>
+                <div><dt>Situação do fluxo</dt><dd><span class="sgm-status-pill">{{ prestacao.get_situacao_workflow_display }}</span></dd></div><div><dt>Empresa</dt><dd>{{ prestacao.empresa.nome|default:"Não informada" }}</dd></div>
                 <div><dt>Termo</dt><dd>{{ prestacao.numtermo|default:"Não informado" }}</dd></div>
                 <div><dt>Tipo</dt><dd>{{ prestacao.tipoTermo|default:"Não informado" }}</dd></div>
                 <div><dt>Credor</dt><dd>{{ prestacao.credor|default:"Não informado" }}</dd></div>
@@ -38,5 +38,11 @@
             </dl>
         </aside>
     </div>
+    <section class="sgm-panel sgm-workflow-panel mt-4">
+        <h2>Histórico do fluxo</h2>
+        <ul class="sgm-workflow-history">
+        {% for item in historico %}<li><strong>{{ item.get_nova_situacao_display }}</strong> · {{ item.criado_em|date:"d/m/Y H:i" }}{% if item.usuario %} · {{ item.usuario }}{% endif %}<br><small>{{ item.observacao|default:"Sem observação." }}</small></li>{% empty %}<li>Nenhuma movimentação registrada.</li>{% endfor %}
+        </ul>
+    </section>
 </section>
 {% endblock %}

@@ -151,3 +151,13 @@ class PrestacaoForm(forms.ModelForm):
             )
 
         return cleaned
+
+
+class MovimentarPrestacaoForm(forms.Form):
+    nova_situacao = forms.ChoiceField(label="Nova situação", choices=Prestacao.SituacaoWorkflow.choices, widget=forms.Select(attrs={"class":"form-control"}))
+    observacao = forms.CharField(label="Observação / justificativa", required=False, widget=forms.Textarea(attrs={"class":"form-control", "rows":4}))
+
+    def __init__(self, *args, situacoes_permitidas=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if situacoes_permitidas is not None:
+            self.fields["nova_situacao"].choices = [(v, l) for v,l in Prestacao.SituacaoWorkflow.choices if v in situacoes_permitidas]

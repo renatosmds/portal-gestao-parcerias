@@ -42,3 +42,6 @@ class LancamentoAdmin(admin.ModelAdmin):
         "criado_por",
     )
     date_hierarchy = "data_documento"
+
+from .models import HistoricoGlosa
+admin.site.register(HistoricoGlosa)

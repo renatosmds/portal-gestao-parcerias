@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ documento }} | Documento{% endblock %}
+{% block page_name %}Documentos e Conferências{% endblock %}
+{% block staticcss %}<link rel="stylesheet" href="{% static 'css/documentos-v3.css' %}">{% endblock %}
+{% block main %}
+<section class="docs-page">
+    <a href="{% url 'list_documentos' %}" class="docs-back">← Voltar</a>
+    <header class="docs-header">
+        <div>
+            <span class="sgm-eyebrow">DOCUMENTO</span>
+            <h1>{{ documento }}</h1>
+            <p>{{ documento.get_tipo_display }} · {{ documento.get_status_display }}</p>
+        </div>
+        <div>
+            {% if perms.documentos.change_documento %}
+                <a href="{% url 'conferir_documento' documento.pk %}" class="btn btn-primary">Conferir</a>
+                <a href="{% url 'update_documento' documento.pk %}" class="btn btn-outline-primary">Editar</a>
+            {% endif %}
+            {% if perms.documentos.delete_documento %}
+                <a href="{% url 'delete_documento' documento.pk %}" class="btn btn-outline-danger">Excluir</a>
+            {% endif %}
+        </div>
+    </header>
+
+    <div class="doc-detail-grid">
+        <section class="sgm-panel doc-panel">
+            <h2>Checklist de conferência</h2>
+            <div class="check-grid">
+                <div class="{% if documento.documento_legivel %}checked{% endif %}">Documento legível</div>
+                <div class="{% if documento.dados_compativeis %}checked{% endif %}">Dados compatíveis</div>
+                <div class="{% if documento.vigencia_valida %}checked{% endif %}">Vigência válida</div>
+                <div class="{% if documento.pagamento_comprovado %}checked{% endif %}">Pagamento comprovado</div>
+                <div class="{% if documento.atesto_valido %}checked{% endif %}">Atesto válido</div>
+            </div>
+            <h2>Observações</h2>
+            <div class="doc-notes">{{ documento.observacoes|default:"Nenhuma observação registrada."|linebreaksbr }}</div>
+            <h2>Arquivo</h2>
+            <a href="{{ documento.arquivo.url }}" target="_blank" class="doc-file-link">Abrir documento</a>
+        </section>
+
+        <aside class="sgm-panel doc-panel">
+            <h2>Vínculos</h2>
+            <dl class="doc-data">
+                <div><dt>Empresa</dt><dd>{{ documento.empresa.nome|default:"Não informada" }}</dd></div>
+                <div><dt>Termo</dt><dd>{{ documento.termo|default:"Não informado" }}</dd></div>
+                <div><dt>Prestação</dt><dd>{{ documento.prestacao|default:"Não informada" }}</dd></div>
+                <div><dt>Lançamento</dt><dd>{{ documento.lancamento|default:"Não informado" }}</dd></div>
+                <div><dt>Número</dt><dd>{{ documento.numero_documento|default:"Não informado" }}</dd></div>
+                <div><dt>Data</dt><dd>{{ documento.data_documento|date:"d/m/Y"|default:"Não informada" }}</dd></div>
+                <div><dt>Conferido por</dt><dd>{{ documento.conferido_por|default:"Não informado" }}</dd></div>
+                <div><dt>Conferido em</dt><dd>{{ documento.conferido_em|date:"d/m/Y H:i"|default:"Não informado" }}</dd></div>
+            </dl>
+        </aside>
+    </div>
+</section>
+{% endblock %}

@@ -1,25 +1,39 @@
-from django.db import models  # ok
-from django.urls import reverse
-from django.db.models import Q
+from django.apps import apps
+from django.db import models
 from django.db.models import Sum
-
-#from apps.funcionarios.models import Funcionario
-from apps.receitas.models import Receitas
-from apps.curso.models import Curso
-
-#from apps.registro_hora_extra.models import RegistroHoraExtra
-from apps.conferencia3.models import Conferencia3
-# from apps.auditorias.models import Auditorias
+from django.urls import reverse
 
 
-class Empresa(models.Model):  # ok
+class Empresa(models.Model):
     class Meta:
         ordering = ["nome"]
+        verbose_name = "Empresa"
+        verbose_name_plural = "Empresas"
 
-    nome = models.CharField(max_length=100, help_text='Nome da empresa')  # ok
+    nome = models.CharField(
+        max_length=100,
+        help_text="Nome da empresa",
+    )
 
-    receitas = models.ForeignKey(Receitas, on_delete=models.PROTECT, null=True, blank=True)
-    curso = models.ForeignKey(Curso, on_delete=models.PROTECT, null=True, blank=True)
+    # Relacionamentos legados
+    receitas = models.ForeignKey(
+        "receitas.Receitas",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="empresas_legadas",
+        verbose_name="Receita legada",
+    )
+
+    curso = models.ForeignKey(
+        "curso.Curso",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="empresas_legadas",
+        verbose_name="Curso legado",
+    )
+
     termos = models.ForeignKey(
         "termos.Termos",
         on_delete=models.PROTECT,
@@ -29,6 +43,7 @@ class Empresa(models.Model):  # ok
         related_query_name="empresa_legada",
         verbose_name="Termo legado",
     )
+
     prestacao = models.ForeignKey(
         "prestacao.Prestacao",
         on_delete=models.PROTECT,
@@ -38,7 +53,16 @@ class Empresa(models.Model):  # ok
         related_query_name="empresa_legada",
         verbose_name="Prestação legada",
     )
-    conferencia3 = models.ForeignKey(Conferencia3, on_delete=models.PROTECT, null=True, blank=True)
+
+    conferencia3 = models.ForeignKey(
+        "conferencia3.Conferencia3",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="empresas_legadas",
+        verbose_name="Conferência legada",
+    )
+
     parcerias = models.ForeignKey(
         "parcerias.Parcerias",
         on_delete=models.PROTECT,
@@ -49,174 +73,380 @@ class Empresa(models.Model):  # ok
         verbose_name="Parceria legada",
     )
 
+    # ------------------------------------------------------------------
+    # FUNÇÕES INTERNAS PARA SOMAS
+    # ------------------------------------------------------------------
 
-    # CARD EMPREGADOS #
+    @staticmethod
+    def _somar_campo(modelo, campo):
+        """
+        Soma um campo de determinado model.
+
+        Retorna zero quando não existirem registros ou quando todos
+        os valores estiverem vazios.
+        """
+        resultado = modelo.objects.aggregate(
+            total=Sum(campo, default=0)
+        )
+
+        return resultado.get("total") or 0
+
+    def _somar_termos(self, campo):
+        """
+        Soma somente os termos pertencentes à empresa atual.
+        """
+        Termos = apps.get_model("termos", "Termos")
+
+        resultado = Termos.objects.filter(
+            empresa=self
+        ).aggregate(
+            total=Sum(campo, default=0)
+        )
+
+        return resultado.get("total") or 0
+
+    # ------------------------------------------------------------------
+    # CARD EMPREGADOS
+    # ------------------------------------------------------------------
+
     @property
     def total_funcionarios(self):
-        return self.funcionario_set.all().count()
+        return self.funcionario_set.count()
 
     @property
     def total_funcionarios_ferias(self):
-        return self.funcionario_set.filter(de_ferias=True).count()
+        return self.funcionario_set.filter(
+            de_ferias=True
+        ).count()
 
     @property
     def total_funcionarios_doc_pendente(self):
-        return self.funcionario_set.filter(Q(documento=None)).count()
+        return (
+            self.funcionario_set
+            .filter(documentos_legados__isnull=True)
+            .distinct()
+            .count()
+        )
 
     @property
     def total_funcionarios_doc_ok(self):
-        return self.funcionario_set.filter(~Q(documento=None)).count()
+        return (
+            self.funcionario_set
+            .filter(documentos_legados__isnull=False)
+            .distinct()
+            .count()
+        )
 
-    # CARD HORA-EXTRA #
-    #@property
-    #def total_hora_extra(self):
-    #    return self.RegistroHoraExtra.objects.all().count()
+    # ------------------------------------------------------------------
+    # CARD EXECUÇÃO
+    # ------------------------------------------------------------------
 
-    # CARD EXECUÇÃO #
     @property
     def totalOrdens(self):
-        #return self.bpm.objects.all().count()
-        return Conferencia3.objects.all().count()
+        Conferencia3 = apps.get_model(
+            "conferencia3",
+            "Conferencia3",
+        )
+
+        return Conferencia3.objects.count()
 
     @property
     def ordensValor(self):
-        return Conferencia3.objects.all().aggregate(Sum('valor'))['valor__sum']
-        #return self.Conferencia3_set.all().aggregate(Sum('valor'))['valor__sum'] or 0
-        #return self.bpm.objects.filter().aggregate(sum('valor'))
+        Conferencia3 = apps.get_model(
+            "conferencia3",
+            "Conferencia3",
+        )
+
+        return self._somar_campo(
+            Conferencia3,
+            "valor",
+        )
 
     @property
     def ordensConferir(self):
-        return Conferencia3.objects.filter(conferido=False, notificado=False, aprovado=False).count()
+        Conferencia3 = apps.get_model(
+            "conferencia3",
+            "Conferencia3",
+        )
+
+        return Conferencia3.objects.filter(
+            conferido=False,
+            notificado=False,
+            aprovado=False,
+        ).count()
 
     @property
     def valorTotalExecucao(self):
-        return Conferencia3.objects.all().aggregate(Sum('valorTotalExecucao'))['repasse__sum']
+        Conferencia3 = apps.get_model(
+            "conferencia3",
+            "Conferencia3",
+        )
 
-    # CARD FINANCEIRO #
-    # @property
-    # def totalReceitas(self):
-    #    return self.receitas.objects.all().count()
+        return self._somar_campo(
+            Conferencia3,
+            "valorTotalExecucao",
+        )
 
-
-
-
-
-
-
-
-
+    # ------------------------------------------------------------------
+    # CARD FINANCEIRO
+    # ------------------------------------------------------------------
 
     @property
     def saldoRepasse(self):
-        return Receitas.objects.all().aggregate(Sum('repasse'))['repasse__sum']
+        Receitas = apps.get_model(
+            "receitas",
+            "Receitas",
+        )
+
+        return self._somar_campo(
+            Receitas,
+            "repasse",
+        )
 
     @property
     def saldoDepositoOsc(self):
-        return Receitas.objects.all().aggregate(Sum('depositoOsc'))['depositoOsc__sum']
+        Receitas = apps.get_model(
+            "receitas",
+            "Receitas",
+        )
+
+        return self._somar_campo(
+            Receitas,
+            "depositoOsc",
+        )
 
     @property
     def saldoRendimento(self):
-            return Receitas.objects.all().aggregate(Sum('rendimento'))['rendimento__sum']
+        Receitas = apps.get_model(
+            "receitas",
+            "Receitas",
+        )
+
+        return self._somar_campo(
+            Receitas,
+            "rendimento",
+        )
 
     @property
     def saldoCreditoAutorizado(self):
-        return Receitas.objects.all().aggregate(Sum('creditoAutorizado'))['creditoAutorizado__sum']
+        Receitas = apps.get_model(
+            "receitas",
+            "Receitas",
+        )
+
+        return self._somar_campo(
+            Receitas,
+            "creditoAutorizado",
+        )
 
     @property
     def saldoResgateAutomatico(self):
-        return Receitas.objects.all().aggregate(Sum('resgateAutomatico'))['resgateAutomatico__sum']
+        Receitas = apps.get_model(
+            "receitas",
+            "Receitas",
+        )
+
+        return self._somar_campo(
+            Receitas,
+            "resgateAutomatico",
+        )
 
     @property
     def saldoEstorno(self):
-        return Receitas.objects.all().aggregate(Sum('estorno'))['estorno__sum']
+        Receitas = apps.get_model(
+            "receitas",
+            "Receitas",
+        )
+
+        return self._somar_campo(
+            Receitas,
+            "estorno",
+        )
 
     @property
     def receitaTotal(self):
-        return Receitas.objects.all().aggregate(Sum('repasse'))['repasse__sum'] + \
-               Receitas.objects.all().aggregate(Sum('depositoOsc'))['depositoOsc__sum'] + \
-               Receitas.objects.all().aggregate(Sum('rendimento'))['rendimento__sum'] + \
-               Receitas.objects.all().aggregate(Sum('creditoAutorizado'))['creditoAutorizado__sum'] + \
-               Receitas.objects.all().aggregate(Sum('estorno'))['estorno__sum']\
+        return (
+            self.saldoRepasse
+            + self.saldoDepositoOsc
+            + self.saldoRendimento
+            + self.saldoCreditoAutorizado
+            + self.saldoEstorno
+        )
 
     @property
     def saldoAplicacao(self):
-        return Receitas.objects.all().aggregate(Sum('aplicacao'))['aplicacao__sum']
+        Receitas = apps.get_model(
+            "receitas",
+            "Receitas",
+        )
+
+        return self._somar_campo(
+            Receitas,
+            "aplicacao",
+        )
 
     @property
     def saldoDebitoAutorizado(self):
-        return Receitas.objects.all().aggregate(Sum('debitoAutorizado'))['debitoAutorizado__sum']
+        Receitas = apps.get_model(
+            "receitas",
+            "Receitas",
+        )
+
+        return self._somar_campo(
+            Receitas,
+            "debitoAutorizado",
+        )
 
     @property
     def saldoDespesaBancaria(self):
-        return Receitas.objects.all().aggregate(Sum('despesaBancaria'))['despesaBancaria__sum']
+        Receitas = apps.get_model(
+            "receitas",
+            "Receitas",
+        )
+
+        return self._somar_campo(
+            Receitas,
+            "despesaBancaria",
+        )
 
     @property
     def saldoImpostoRenda(self):
-        return Receitas.objects.all().aggregate(Sum('impostoRenda'))['impostoRenda__sum']
+        Receitas = apps.get_model(
+            "receitas",
+            "Receitas",
+        )
+
+        return self._somar_campo(
+            Receitas,
+            "impostoRenda",
+        )
 
     @property
     def saldoIof(self):
-        return Receitas.objects.all().aggregate(Sum('iof'))['iof__sum']
+        Receitas = apps.get_model(
+            "receitas",
+            "Receitas",
+        )
 
-    # @property
-    # def saldoDespesas(self):
-    #     return Conferencia3.objects.all().aggregate(Sum('valor'))['valor__sum']
+        return self._somar_campo(
+            Receitas,
+            "iof",
+        )
 
     @property
     def despesaTotal(self):
-        return Receitas.objects.all().aggregate(Sum('debitoAutorizado'))['debitoAutorizado__sum'] + \
-               Receitas.objects.all().aggregate(Sum('despesaBancaria'))['despesaBancaria__sum'] + \
-               Receitas.objects.all().aggregate(Sum('impostoRenda'))['impostoRenda__sum'] + \
-               Receitas.objects.all().aggregate(Sum('iof'))['iof__sum'] + \
-               Conferencia3.objects.all().aggregate(Sum('valor'))['valor__sum']\
+        Conferencia3 = apps.get_model(
+            "conferencia3",
+            "Conferencia3",
+        )
+
+        saldo_despesas = self._somar_campo(
+            Conferencia3,
+            "valor",
+        )
+
+        return (
+            self.saldoDebitoAutorizado
+            + self.saldoDespesaBancaria
+            + self.saldoImpostoRenda
+            + self.saldoIof
+            + saldo_despesas
+        )
 
     @property
     def saldoContaAplicacao(self):
-        return Receitas.objects.all().aggregate(Sum('aplicacao'))['aplicacao__sum'] - \
-               Receitas.objects.all().aggregate(Sum('resgateAutomatico'))['resgateAutomatico__sum']
+        return (
+            self.saldoAplicacao
+            - self.saldoResgateAutomatico
+        )
 
     @property
     def saldoFinanceiro(self):
-        return Receitas.objects.all().aggregate(Sum('repasse'))['repasse__sum'] + \
-               Receitas.objects.all().aggregate(Sum('depositoOsc'))['depositoOsc__sum'] + \
-               Receitas.objects.all().aggregate(Sum('rendimento'))['rendimento__sum'] + \
-               Receitas.objects.all().aggregate(Sum('creditoAutorizado'))['creditoAutorizado__sum'] + \
-               Receitas.objects.all().aggregate(Sum('resgateAutomatico'))['resgateAutomatico__sum'] + \
-               Receitas.objects.all().aggregate(Sum('estorno'))['estorno__sum'] - \
-               Receitas.objects.all().aggregate(Sum('aplicacao'))['aplicacao__sum'] - \
-               Receitas.objects.all().aggregate(Sum('debitoAutorizado'))['debitoAutorizado__sum'] - \
-               Receitas.objects.all().aggregate(Sum('despesaBancaria'))['despesaBancaria__sum'] - \
-               Receitas.objects.all().aggregate(Sum('impostoRenda'))['impostoRenda__sum'] - \
-               Receitas.objects.all().aggregate(Sum('iof'))['iof__sum'] - \
-               Conferencia3.objects.all().aggregate(Sum('valor'))['valor__sum']\
+        Conferencia3 = apps.get_model(
+            "conferencia3",
+            "Conferencia3",
+        )
 
+        saldo_despesas = self._somar_campo(
+            Conferencia3,
+            "valor",
+        )
 
+        total_entradas = (
+            self.saldoRepasse
+            + self.saldoDepositoOsc
+            + self.saldoRendimento
+            + self.saldoCreditoAutorizado
+            + self.saldoResgateAutomatico
+            + self.saldoEstorno
+        )
 
-    # CARD TERMOS #
+        total_saidas = (
+            self.saldoAplicacao
+            + self.saldoDebitoAutorizado
+            + self.saldoDespesaBancaria
+            + self.saldoImpostoRenda
+            + self.saldoIof
+            + saldo_despesas
+        )
+
+        return total_entradas - total_saidas
+
+    # ------------------------------------------------------------------
+    # CARD TERMOS
+    # ------------------------------------------------------------------
+
     @property
     def valorglobaltotal(self):
-        return Termos.objects.all().aggregate(Sum('valorglobal'))['valorglobal__sum']
+        return self._somar_termos(
+            "valorglobal"
+        )
 
     @property
     def valorRepasseTotal(self):
-        return Termos.objects.all().aggregate(Sum('valorrepasse'))['valorrepasse__sum']
+        return self._somar_termos(
+            "valorrepasse"
+        )
 
     @property
     def valorSaldoTotal(self):
-        return Termos.objects.all().aggregate(Sum('valorsaldo'))['valorsaldo__sum']
+        return self._somar_termos(
+            "valorsaldo"
+        )
 
-    # CARD AUDITORIAS #
+    # ------------------------------------------------------------------
+    # CARD AUDITORIAS / PARCERIAS
+    # ------------------------------------------------------------------
+
     @property
     def auditoriasQtd(self):
-        return Parcerias.objects.all().count()
+        Parcerias = apps.get_model(
+            "parcerias",
+            "Parcerias",
+        )
+
+        return Parcerias.objects.filter(
+            empresa=self
+        ).count()
+
     @property
     def auditoriasAbertas(self):
-        #return Parcerias.objects.all().count()
-        return Parcerias.objects.filter(concluido=True).count()
+        Parcerias = apps.get_model(
+            "parcerias",
+            "Parcerias",
+        )
+
+        return Parcerias.objects.filter(
+            empresa=self,
+            concluido=False,
+        ).count()
+
+    # ------------------------------------------------------------------
+    # REPRESENTAÇÃO E URL
+    # ------------------------------------------------------------------
 
     def __str__(self):
         return self.nome or f"Empresa #{self.pk}"
 
-    @property
     def get_absolute_url(self):
-        return reverse('home')
+        return reverse("home")

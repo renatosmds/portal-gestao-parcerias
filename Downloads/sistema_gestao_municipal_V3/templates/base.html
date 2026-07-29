@@ -6,12 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
-    <title>{% block title %}Sistema de Gestão Municipal{% endblock %}</title>
+    <title>{% block title %}Portal de Gestão de Parcerias{% endblock %}</title>
 
     <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}">
     <link rel="stylesheet"
           href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link rel="stylesheet" href="{% static 'css/sgm-v2.css' %}">
+    <link rel="stylesheet" href="{% static 'css/sgm-v2.css' %}?v=16.0">
 
     {% block staticcss %}{% endblock %}
 </head>
@@ -22,10 +22,10 @@
     <aside class="sgm-sidebar" id="sgmSidebar" aria-label="Menu principal">
         <div class="sgm-brand">
             <a href="{% url 'home' %}" class="sgm-brand-link">
-                <span class="sgm-brand-mark">SGM</span>
+                <span class="sgm-brand-mark">PGP</span>
                 <span class="sgm-brand-text">
-                    <strong>Gestão Municipal</strong>
-                    <small>Prefeitura de Contagem</small>
+                    <strong>Portal de Parcerias</strong>
+                    <small>{{ area_portal }}</small>
                 </span>
             </a>
         </div>
@@ -39,13 +39,13 @@
                 <span>Dashboard</span>
             </a>
 
-            <span class="sgm-nav-label">GESTÃO</span>
+            <span class="sgm-nav-label">{% if usuario_area_osc %}GESTÃO DA OSC{% else %}GESTÃO DAS PARCERIAS{% endif %}</span>
 
             {% if perms.empresas.view_empresa or user.is_superuser %}
             <a class="sgm-nav-item {% if request.resolver_match.url_name == 'list_empresas' or request.resolver_match.url_name == 'detail_empresa' or request.resolver_match.url_name == 'create_empresa' or request.resolver_match.url_name == 'edit_empresa' or request.resolver_match.url_name == 'delete_empresa' %}active{% endif %}"
                href="{% url 'list_empresas' %}">
                 <i class="fa fa-building-o" aria-hidden="true"></i>
-                <span>Empresas</span>
+                <span>{% if usuario_area_osc %}Minha OSC{% else %}OSCs / Empresas{% endif %}</span>
             </a>
             {% endif %}
 
@@ -85,6 +85,14 @@
                 <i class="fa fa-money" aria-hidden="true"></i>
                 <span>Financeiro</span>
             </a>
+
+            {% if perms.documentos.view_documento or user.is_superuser %}
+            <a class="sgm-nav-item {% if request.resolver_match.url_name == 'list_documentos' or request.resolver_match.url_name == 'detail_documento' or request.resolver_match.url_name == 'create_documento' or request.resolver_match.url_name == 'update_documento' or request.resolver_match.url_name == 'conferir_documento' or request.resolver_match.url_name == 'delete_documento' %}active{% endif %}"
+               href="{% url 'list_documentos' %}">
+                <i class="fa fa-files-o" aria-hidden="true"></i>
+                <span>Documentos</span>
+            </a>
+            {% endif %}
 
             {% if perms.lancamentos.view_lancamento or user.is_superuser %}
             <a class="sgm-nav-item {% if request.resolver_match.url_name == 'list_lancamentos' or request.resolver_match.url_name == 'detail_lancamento' or request.resolver_match.url_name == 'create_lancamento' or request.resolver_match.url_name == 'update_lancamento' or request.resolver_match.url_name == 'delete_lancamento' %}active{% endif %}"
@@ -134,27 +142,27 @@
             <span class="sgm-nav-label">LINKS INSTITUCIONAIS</span>
 
             <a class="sgm-nav-item" target="_blank" rel="noopener noreferrer"
-               href="https://www.contagem.mg.gov.br/?se=doc">
+               href="https://portal.contagem.mg.gov.br/portal/diario-oficial">
                 <i class="fa fa-newspaper-o" aria-hidden="true"></i>
                 <span>Diário Oficial</span>
             </a>
 
             <a class="sgm-nav-item" target="_blank" rel="noopener noreferrer"
-               href="https://www.contagem.mg.gov.br/transparencia/public">
+               href="https://portal.contagem.mg.gov.br/portal/transparencia">
                 <i class="fa fa-eye" aria-hidden="true"></i>
                 <span>Transparência</span>
             </a>
 
             <a class="sgm-nav-item" target="_blank" rel="noopener noreferrer"
-               href="https://www.contagem.mg.gov.br/?se=legislacao">
+               href="https://legislacao.contagem.mg.gov.br/legislacao/legislacaop">
                 <i class="fa fa-balance-scale" aria-hidden="true"></i>
                 <span>Legislação</span>
             </a>
         </nav>
 
         <div class="sgm-sidebar-footer">
-            <small>Sistema de Gestão Municipal</small>
-            <span>Versão 3</span>
+            <small>Portal de Gestão de Parcerias</small>
+            <span>Sprint 16</span>
         </div>
     </aside>
 
@@ -169,8 +177,8 @@
                 </button>
 
                 <div class="sgm-page-identity">
-                    <span class="sgm-page-kicker">PREFEITURA DE CONTAGEM</span>
-                    <strong>{% block page_name %}Sistema de Gestão Municipal{% endblock %}</strong>
+                    <span class="sgm-page-kicker">{{ area_portal|upper }}</span>
+                    <strong>{% block page_name %}Portal de Gestão de Parcerias{% endblock %}</strong>
                 </div>
             </div>
 
@@ -250,7 +258,7 @@
 
         <footer class="sgm-footer">
             <span>&copy; {% now "Y" %} Prefeitura de Contagem</span>
-            <span>Sistema de Gestão Municipal</span>
+            <span>Portal de Gestão de Parcerias</span>
         </footer>
     </div>
 </div>

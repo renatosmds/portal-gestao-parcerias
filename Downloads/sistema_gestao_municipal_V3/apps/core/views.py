@@ -19,82 +19,14 @@ from .tasks import send_relatorio
 from django.db.models import Sum
 from django.core.exceptions import PermissionDenied
 
+from .dashboard import montar_contexto_dashboard
+
 
 @login_required
 def home(request):
-    data = {'usuario': request.user}  # ok
-
-    try:
-        funcionario = request.user.funcionario
-    except Exception as exc:
-        raise PermissionDenied(
-            "Seu usuário ainda não possui um funcionário vinculado."
-        ) from exc
-
-    if not funcionario or not funcionario.empresa_id:
-        raise PermissionDenied(
-            "Seu usuário ainda não possui uma empresa vinculada."
-        )
-
-    # CARD EMPREGADOS #
-    data['total_funcionarios'] = funcionario.empresa.total_funcionarios
-    data['total_funcionarios_ferias'] = funcionario.empresa.total_funcionarios_ferias
-    data['total_funcionarios_doc_pendente'] = funcionario.empresa.total_funcionarios_doc_pendente
-    data['total_funcionarios_doc_ok'] = funcionario.empresa.total_funcionarios_doc_ok
-    #data['total_funcionarios_rg'] = 10
-
-    # CARD BANCO DE HORAS#
-    # data['total_hora_extra'] = funcionario.empresa.total_hora_extra
-    data['total_hora_extra_utilizadas'] = RegistroHoraExtra.objects.filter(
-        funcionario__empresa=funcionario.empresa, utilizada=True).aggregate(Sum('horas'))['horas__sum'] or 0
-    data['total_hora_extra_pendente'] = RegistroHoraExtra.objects.filter(
-        funcionario__empresa=funcionario.empresa, utilizada=False).aggregate(Sum('horas'))['horas__sum'] or 0
-
-    # CARD EXECUÇÂO #
-    #data['ordensValor'] = Conferencia3.objects.filter(funcionario__empresa=funcionario.empresa, utilizada=True).aggregate(Sum('valor'))['valor__sum'] or 0
-
-    data['totalOrdens'] = funcionario.empresa.totalOrdens
-    data['ordensValor'] = funcionario.empresa.ordensValor
-    data['ordensConferir'] = funcionario.empresa.ordensConferir
-    # data['valorTotalExecucao'] = funcionario.empresa.valorTotalExecucao
-
-    # CARD FINANCEIRO #
-    # data['totalReceitas'] = funcionario.empresa.totalReceitas
-    data['saldoRepasse'] = funcionario.empresa.saldoRepasse
-    data['saldoDepositoOsc'] = funcionario.empresa.saldoDepositoOsc
-    data['saldoRendimento'] = funcionario.empresa.saldoRendimento
-    data['saldoCreditoAutorizado'] = funcionario.empresa.saldoCreditoAutorizado
-    data['saldoResgateAutomatico'] = funcionario.empresa.saldoResgateAutomatico
-    data['saldoEstorno'] = funcionario.empresa.saldoEstorno
-    data['receitaTotal'] = funcionario.empresa.receitaTotal
-    data['saldoAplicacao'] = funcionario.empresa.saldoAplicacao
-    data['saldoDebitoAutorizado'] = funcionario.empresa.saldoDebitoAutorizado
-    data['saldoDespesaBancaria'] = funcionario.empresa.saldoDespesaBancaria
-    data['saldoImpostoRenda'] = funcionario.empresa.saldoImpostoRenda
-    data['saldoIof'] = funcionario.empresa.saldoIof
-    # data['saldoDespesas'] = funcionario.empresa.saldoDespesas
-    data['despesaTotal'] = funcionario.empresa.despesaTotal
-    data['saldoContaAplicacao'] = funcionario.empresa.saldoContaAplicacao
-    data['saldoFinanceiro'] = funcionario.empresa.saldoFinanceiro
-
-    # CARD PARCERIAS #
-    # data['totalOrdens'] = funcionario.empresa.totalOrdens
-    # data['ordensConferir'] = funcionario.empresa.ordensConferir
-    # data['ordensValor'] = funcionario.empresa.ordensValor
-
-    # CARD TERMOS #
-    data['valorglobaltotal'] = funcionario.empresa.valorglobaltotal
-    data['valorRepasseTotal'] = funcionario.empresa.valorRepasseTotal
-    data['valorSaldoTotal'] = funcionario.empresa.valorSaldoTotal
-
-    # CARD AUDITORIA #
-    data['auditoriasQtd'] = funcionario.empresa.auditoriasQtd
-    data['auditoriasAbertas'] = funcionario.empresa.auditoriasAbertas
-
-
-    # data['analise'] = funcionario.empresa.analise
-
-    return render(request, 'core/index.html', data)  # ok
+    """Dashboard integrado do Portal de Gestão de Parcerias."""
+    contexto = montar_contexto_dashboard(request)
+    return render(request, "core/index.html", contexto)
 
 
 def menu(request):

@@ -2,13 +2,16 @@ from django.contrib import messages
 from django.db.models import DecimalField, Q, Sum, Value
 from django.db.models.functions import Coalesce
 from django.urls import reverse_lazy
+from django.shortcuts import get_object_or_404, redirect, render
+from django.contrib.auth.decorators import login_required, permission_required
+from django.utils import timezone
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
 from apps.empresas.models import Empresa
 
-from .forms import LancamentoForm
+from .forms import GlosaLancamentoForm, LancamentoForm
 from .mixins import LancamentoEscopoMixin, LancamentoPermissaoMixin
-from .models import Lancamento
+from .models import HistoricoGlosa, Lancamento
 
 
 class LancamentoList(
@@ -92,6 +95,11 @@ class LancamentoDetail(
     template_name = "lancamentos/lancamento_detail.html"
     context_object_name = "lancamento"
     permission_required = "lancamentos.view_lancamento"
+
+    def get_context_data(self, **kwargs):
+        context=super().get_context_data(**kwargs)
+        context["historico_glosas"] = self.object.historico_glosas.select_related("usuario")[:20]
+        return context
 
 
 class LancamentoCreate(LancamentoPermissaoMixin, CreateView):
@@ -185,3 +193,22 @@ class LancamentoDelete(
     context_object_name = "lancamento"
     permission_required = "lancamentos.delete_lancamento"
     success_url = reverse_lazy("list_lancamentos")
+
+
+@login_required
+@permission_required("lancamentos.change_lancamento", raise_exception=True)
+def registrar_glosa(request, pk):
+    lancamento=get_object_or_404(Lancamento, pk=pk)
+    anterior_tipo=lancamento.tipo_glosa; anterior_valor=lancamento.valor_glosa
+    form=GlosaLancamentoForm(request.POST or None, instance=lancamento)
+    if request.method == "POST" and form.is_valid():
+        obj=form.save(commit=False)
+        if obj.tipo_glosa == Lancamento.TipoGlosa.NENHUMA:
+            obj.valor_glosa=0; obj.situacao=Lancamento.Situacao.REGULAR; obj.motivo_glosa=""; obj.fundamentacao_glosa=""
+        else:
+            obj.situacao=Lancamento.Situacao.GLOSADO
+        obj.glosa_registrada_por=request.user; obj.glosa_registrada_em=timezone.now(); obj.save()
+        HistoricoGlosa.objects.create(lancamento=obj, tipo_anterior=anterior_tipo, tipo_novo=obj.tipo_glosa, valor_anterior=anterior_valor, valor_novo=obj.valor_glosa, motivo=obj.motivo_glosa, fundamentacao=obj.fundamentacao_glosa, usuario=request.user)
+        messages.success(request, "Glosa registrada e valores recalculados.")
+        return redirect("detail_lancamento", pk=obj.pk)
+    return render(request, "lancamentos/lancamento_glosa_form.html", {"lancamento":lancamento, "form":form})

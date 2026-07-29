@@ -13,7 +13,7 @@
             <p>{{ lancamento.descricao }}</p>
         </div>
         <div>
-            {% if perms.lancamentos.change_lancamento %}<a href="{% url 'update_lancamento' lancamento.pk %}" class="btn btn-primary">Editar</a>{% endif %}
+            {% if perms.lancamentos.change_lancamento %}<a href="{% url 'registrar_glosa' lancamento.pk %}" class="btn btn-warning">Glosar</a> <a href="{% url 'update_lancamento' lancamento.pk %}" class="btn btn-primary">Editar</a>{% endif %}
             {% if perms.lancamentos.delete_lancamento %}<a href="{% url 'delete_lancamento' lancamento.pk %}" class="btn btn-outline-danger">Excluir</a>{% endif %}
         </div>
     </header>
@@ -46,10 +46,13 @@
                 <div><dt>Pagamento</dt><dd>{{ lancamento.data_pagamento|date:"d/m/Y"|default:"Não informado" }}</dd></div>
                 <div><dt>Atestado</dt><dd>{{ lancamento.atestado|yesno:"Sim,Não" }}</dd></div>
                 <div><dt>Valor</dt><dd>R$ {{ lancamento.valor_documento|floatformat:2|intcomma }}</dd></div>
-                <div><dt>Glosa</dt><dd>R$ {{ lancamento.valor_glosa|floatformat:2|intcomma }}</dd></div>
+                <div><dt>Tipo de glosa</dt><dd>{{ lancamento.get_tipo_glosa_display }}</dd></div><div><dt>Glosa</dt><dd>R$ {{ lancamento.valor_glosa|floatformat:2|intcomma }}</dd></div>
                 <div><dt>Aprovado</dt><dd>R$ {{ lancamento.valor_aprovado|floatformat:2|intcomma }}</dd></div>
             </dl>
         </aside>
     </div>
+    <section class="sgm-panel entry-panel mt-4">
+      <h2>Histórico de glosas</h2><ul class="sgm-workflow-history">{% for item in historico_glosas %}<li><strong>{{ item.get_tipo_novo_display }}</strong> — R$ {{ item.valor_novo|floatformat:2 }} · {{ item.criado_em|date:"d/m/Y H:i" }}{% if item.usuario %} · {{ item.usuario }}{% endif %}<br><small>{{ item.fundamentacao|default:"Sem fundamentação." }}</small></li>{% empty %}<li>Nenhuma glosa registrada.</li>{% endfor %}</ul>
+    </section>
 </section>
 {% endblock %}

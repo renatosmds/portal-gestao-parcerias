@@ -137,3 +137,31 @@ class LancamentoForm(forms.ModelForm):
             )
 
         return cleaned
+
+
+class GlosaLancamentoForm(forms.ModelForm):
+    class Meta:
+        model = Lancamento
+        fields = ["tipo_glosa", "valor_glosa", "motivo_glosa", "fundamentacao_glosa", "justificativa", "recomendacao"]
+        widgets = {
+            "tipo_glosa": forms.Select(attrs={"class":"form-control"}),
+            "valor_glosa": forms.NumberInput(attrs={"class":"form-control", "step":"0.01", "min":"0"}),
+            "motivo_glosa": forms.Select(attrs={"class":"form-control"}),
+            "fundamentacao_glosa": forms.Textarea(attrs={"class":"form-control", "rows":4}),
+            "justificativa": forms.Textarea(attrs={"class":"form-control", "rows":4}),
+            "recomendacao": forms.Textarea(attrs={"class":"form-control", "rows":4}),
+        }
+
+    def clean(self):
+        cleaned=super().clean(); tipo=cleaned.get("tipo_glosa"); valor=cleaned.get("valor_glosa") or Decimal("0.00")
+        total=self.instance.valor_documento or Decimal("0.00")
+        if tipo == Lancamento.TipoGlosa.NENHUMA:
+            cleaned["valor_glosa"] = Decimal("0.00")
+        elif tipo == Lancamento.TipoGlosa.GLOBAL:
+            cleaned["valor_glosa"] = total
+        elif tipo == Lancamento.TipoGlosa.PARCIAL and (valor <= 0 or valor >= total):
+            self.add_error("valor_glosa", "Na glosa parcial, informe valor maior que zero e menor que o valor do lançamento.")
+        if tipo != Lancamento.TipoGlosa.NENHUMA:
+            if not cleaned.get("motivo_glosa"): self.add_error("motivo_glosa", "Informe o motivo da glosa.")
+            if not (cleaned.get("fundamentacao_glosa") or "").strip(): self.add_error("fundamentacao_glosa", "Informe a fundamentação da glosa.")
+        return cleaned
