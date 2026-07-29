@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Funcionario
+from .models import Funcionario, FolhaPonto, FolhaPagamento
 
 
 class FuncionarioAdmin(admin.ModelAdmin):
@@ -34,3 +34,6 @@ class FuncionarioAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Funcionario, FuncionarioAdmin)
+
+admin.site.register(FolhaPonto)
+admin.site.register(FolhaPagamento)
