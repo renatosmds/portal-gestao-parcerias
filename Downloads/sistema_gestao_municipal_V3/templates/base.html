@@ -93,6 +93,17 @@
                 <span>Financeiro</span>
             </a>
 
+            <a class="sgm-nav-item {% if request.resolver_match.url_name == 'list_diligencias' or request.resolver_match.url_name == 'detail_diligencia' or request.resolver_match.url_name == 'create_diligencia' %}active{% endif %}"
+               href="{% url 'list_diligencias' %}">
+                <i class="fa fa-comments-o" aria-hidden="true"></i>
+                <span>Diligências{% if notificacoes_nao_lidas %} <strong>({{ notificacoes_nao_lidas }})</strong>{% endif %}</span>
+            </a>
+
+            <a class="sgm-nav-item {% if request.resolver_match.url_name == 'relatorios_painel' or 'relatorio_' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'relatorios_painel' %}">
+                <i class="fa fa-bar-chart" aria-hidden="true"></i>
+                <span>Relatórios</span>
+            </a>
+
             {% if perms.documentos.view_documento or user.is_superuser %}
             <a class="sgm-nav-item {% if request.resolver_match.url_name == 'list_documentos' or request.resolver_match.url_name == 'detail_documento' or request.resolver_match.url_name == 'create_documento' or request.resolver_match.url_name == 'update_documento' or request.resolver_match.url_name == 'conferir_documento' or request.resolver_match.url_name == 'delete_documento' %}active{% endif %}"
                href="{% url 'list_documentos' %}">
@@ -169,7 +180,7 @@
 
         <div class="sgm-sidebar-footer">
             <small>Portal de Gestão de Parcerias</small>
-            <span>Sprint 16</span>
+            <span>Sprint 19</span>
         </div>
     </aside>
 
@@ -190,6 +201,9 @@
             </div>
 
             <div class="sgm-topbar-actions">
+                <a class="sgm-icon-button" href="{% url 'notificacoes' %}" aria-label="Notificações" title="Notificações">
+                    <i class="fa fa-bell-o" aria-hidden="true"></i>{% if notificacoes_nao_lidas %}<span class="badge badge-danger">{{ notificacoes_nao_lidas }}</span>{% endif %}
+                </a>
                 <button type="button" class="sgm-icon-button" id="themeToggle"
                         aria-label="Alternar tema claro e escuro">
                     <i class="fa fa-moon-o" aria-hidden="true"></i>

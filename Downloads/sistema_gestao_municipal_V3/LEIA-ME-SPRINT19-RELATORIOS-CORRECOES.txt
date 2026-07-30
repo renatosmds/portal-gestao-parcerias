@@ -1,0 +1,30 @@
+SPRINT 19 — RELATÓRIOS, EXPORTAÇÕES E CONSOLIDAÇÃO DE DILIGÊNCIAS
+
+1. Esta entrega contém somente arquivos novos ou alterados.
+2. Copie o conteúdo da pasta sistema_gestao_municipal_V3 sobre a pasta principal.
+3. Preserve .env, db.sqlite3 e media.
+
+CORREÇÕES
+- Os templates de Diligências agora usam o bloco "main", compatível com templates/base.html.
+- /diligencias/ exibe título, filtros, estado vazio e botão Nova diligência.
+- /diligencias/nova/ exibe o formulário.
+- Ações de envio e mudança de situação foram convertidas para POST.
+
+RELATÓRIOS
+- Central em /relatorios/
+- Diligências: HTML, filtros, impressão/PDF pelo navegador e CSV.
+- Glosas: HTML, totais, filtros, impressão/PDF e CSV.
+- Funcionários: HTML, filtro por situação, impressão/PDF e CSV.
+- Folha consolidada: HTML, filtro por competência, totais, impressão/PDF e CSV.
+
+COMANDOS
+python manage.py check
+python manage.py migrate
+python manage.py test apps.diligencias apps.relatorios
+python manage.py runserver
+
+GIT (após os testes)
+git status
+git add .
+git commit -m "Sprint 19: relatorios, exportacoes e correcao de diligencias"
+git push

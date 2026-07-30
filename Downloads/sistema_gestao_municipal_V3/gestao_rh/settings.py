@@ -68,6 +68,8 @@ INSTALLED_APPS = [
     'apps.core',
     'apps.departamentos',  # gestão_rh
     'apps.documentos',  # gestão_rh
+    # 'apps.diligencias',
+    'apps.diligencias.apps.DiligenciasConfig',
     'apps.empresas',  # gestão_rh
     'apps.fornecedores',
     'apps.funcionarios',  # gestão_rh
@@ -75,6 +77,7 @@ INSTALLED_APPS = [
     'apps.parcerias',
     'apps.prestacao',
     'apps.receitas',
+    'apps.relatorios.apps.RelatoriosConfig',
     'apps.registro_hora_extra',  # gestão_rh
     'apps.termos',
     'apps.curso',

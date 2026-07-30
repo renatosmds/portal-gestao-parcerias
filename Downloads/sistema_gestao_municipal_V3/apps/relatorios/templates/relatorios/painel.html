@@ -1,0 +1,11 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}Relatórios | PGP{% endblock %}{% block page_name %}Relatórios e Exportações{% endblock %}
+{% block main %}<div class="container-fluid py-4">
+<div class="d-flex justify-content-between align-items-center mb-4"><div><h1 class="h3 mb-1">Central de Relatórios</h1><p class="text-muted mb-0">Consultas operacionais e exportações do Portal.</p></div></div>
+<div class="row">
+<div class="col-md-4 mb-3"><div class="card h-100"><div class="card-body"><h5>Diligências</h5><p class="display-4 mb-1">{{ qtd_diligencias }}</p><p class="text-muted">{{ qtd_diligencias_abertas }} em andamento</p><a class="btn btn-outline-primary" href="{% url 'relatorio_diligencias' %}">Abrir relatório</a></div></div></div>
+<div class="col-md-4 mb-3"><div class="card h-100"><div class="card-body"><h5>Glosas</h5><p class="display-4 mb-1">{{ qtd_glosas }}</p><p class="text-muted">R$ {{ valor_glosado|floatformat:2 }}</p><a class="btn btn-outline-primary" href="{% url 'relatorio_glosas' %}">Abrir demonstrativo</a></div></div></div>
+<div class="col-md-4 mb-3"><div class="card h-100"><div class="card-body"><h5>Funcionários e folha</h5><p class="display-4 mb-1">{{ qtd_funcionarios }}</p><p class="text-muted">{{ qtd_folhas_abertas }} folhas de ponto abertas</p><a class="btn btn-outline-primary mr-1" href="{% url 'relatorio_funcionarios' %}">Funcionários</a><a class="btn btn-outline-primary" href="{% url 'relatorio_folha' %}">Folha</a></div></div></div>
+</div>
+</div>{% endblock %}
+{% block static %}{{ block.super }}<script>function imprimirRelatorio(){window.print();}</script>{% endblock %}

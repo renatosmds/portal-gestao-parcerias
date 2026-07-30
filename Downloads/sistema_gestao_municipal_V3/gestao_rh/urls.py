@@ -92,6 +92,7 @@ urlpatterns = [
                   path('clientes/', include('apps.clientes.urls')),
                   path('departamentos/', include('apps.departamentos.urls')),
                   path('documentos/', include('apps.documentos.urls')),
+                  path('diligencias/', include('apps.diligencias.urls')),
                   path('horas-extras/', include('apps.registro_hora_extra.urls')),
                   path('fornecedor/', include('apps.fornecedores.urls')),
                   # path('jet/', include('jet.urls')),  # jet URLS
@@ -105,6 +106,7 @@ urlpatterns = [
                   path('termos/', include('apps.termos.urls')),
                   path('prestacao/', include('apps.prestacao.urls')),
                   path('receitas/', include('apps.receitas.urls')),
+                  path('relatorios/', include('apps.relatorios.urls')),
                   path('analise/', include('apps.analise.urls')),
                   path('lancamentos/', include('apps.lancamentos.urls')),
                   path('parcerias/', include('apps.parcerias.urls')),

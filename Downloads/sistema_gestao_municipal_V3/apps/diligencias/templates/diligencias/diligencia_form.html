@@ -1,0 +1,5 @@
+{% extends 'base.html' %}{% load bootstrap %}
+{% block title %}Diligência | PGP{% endblock %}{% block page_name %}Cadastro de Diligência{% endblock %}
+{% block main %}
+<div class="container-fluid py-4"><div class="card"><div class="card-header"><strong>{% if object %}Editar diligência{% else %}Nova diligência{% endif %}</strong></div><div class="card-body"><form method="post">{% csrf_token %}{{ form|bootstrap }}<div class="d-flex justify-content-end"><a class="btn btn-light mr-2" href="{% url 'list_diligencias' %}">Cancelar</a><button class="btn btn-primary" type="submit">Salvar</button></div></form></div></div></div>
+{% endblock %}

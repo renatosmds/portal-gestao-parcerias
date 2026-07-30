@@ -10,6 +10,7 @@ def access_context(request):
         "empresa_usuario": "",
         "usuario_area_osc": False,
         "area_portal": "Portal de Gestão de Parcerias",
+        "notificacoes_nao_lidas": 0,
     }
 
     if not user or not user.is_authenticated:
@@ -25,6 +26,11 @@ def access_context(request):
     else:
         group = user.groups.order_by("name").first()
         context["perfil_usuario"] = group.name if group else "Sem perfil definido"
+
+    try:
+        context["notificacoes_nao_lidas"] = user.notificacoes_pgp.filter(lida=False).count()
+    except Exception:
+        pass
 
     try:
         funcionario = user.funcionario
