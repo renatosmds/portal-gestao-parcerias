@@ -5,7 +5,7 @@
 {% block page_name %}Dashboard Integrado{% endblock %}
 
 {% block staticcss %}
-<link rel="stylesheet" href="{% static 'css/dashboard-v3.css' %}?v=15.0">
+<link rel="stylesheet" href="{% static 'css/dashboard-v3.css' %}?v=21.0">
 {% endblock %}
 
 {% block main %}
@@ -164,6 +164,11 @@
             <a href="{% url 'list_prestacao' %}" class="pgp-shortcut">
                 <span class="pgp-shortcut-icon pgp-soft-yellow"><i class="fa fa-folder-open-o"></i></span>
                 <span><strong>Prestações de contas</strong><small>{{ prestacoes_abertas }} em andamento</small></span>
+                <i class="fa fa-angle-right"></i>
+            </a>
+            <a href="{% url 'list_diligencias' %}" class="pgp-shortcut">
+                <span class="pgp-shortcut-icon pgp-soft-red"><i class="fa fa-comments-o"></i></span>
+                <span><strong>Diligências</strong><small>{{ diligencias_pendentes }} abertas · {{ diligencias_vencidas }} vencidas</small></span>
                 <i class="fa fa-angle-right"></i>
             </a>
         {% endif %}

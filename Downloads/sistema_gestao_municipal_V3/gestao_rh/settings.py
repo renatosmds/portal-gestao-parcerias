@@ -1,5 +1,6 @@
 
 import os
+from importlib.util import find_spec
 # import pandas as pd
 # import django
 #
@@ -29,19 +30,19 @@ from dj_database_url import parse as dburl
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-SECRET_KEY = config('SECRET_KEY')
+SECRET_KEY = config('SECRET_KEY', default='dev-inseguro-troque-no-env')
 DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = [
-    'sistema-gestao-municipal.herokuapp.com',
-    'localhost',
-    '127.0.0.1',
-    # '34.238.131.159',
-    # '34.202.149.53',
-    # 'sistema-gestao-municipal.rlfsolutions.com.br',
-    # 'rlfsolutions.com.br',
-    # 'www.rlfsolutions.com.br',
-]
+def _csv_config(name, default=''):
+    return [item.strip() for item in config(name, default=default).split(',') if item.strip()]
+
+ALLOWED_HOSTS = _csv_config('ALLOWED_HOSTS', '127.0.0.1,localhost')
+CSRF_TRUSTED_ORIGINS = _csv_config('CSRF_TRUSTED_ORIGINS', '')
+PGP_SESSION_IDLE_MINUTES = config('PGP_SESSION_IDLE_MINUTES', default=60, cast=int)
+PGP_MAX_UPLOAD_MB = config('PGP_MAX_UPLOAD_MB', default=20, cast=int)
+DATA_UPLOAD_MAX_MEMORY_SIZE = PGP_MAX_UPLOAD_MB * 1024 * 1024
+FILE_UPLOAD_MAX_MEMORY_SIZE = min(PGP_MAX_UPLOAD_MB, 5) * 1024 * 1024
+PORTABLE_DATA_DIR = config('PGP_DATA_DIR', default='').strip()
 
 INSTALLED_APPS = [
     'grappelli',
@@ -121,11 +122,18 @@ INSTALLED_APPS = [
     # 'venda_produtos',
     # 'vendas',
     # 'vendas1',
-    'debug_toolbar',
     # 'import-export',
 ]
 
+DEBUG_TOOLBAR_AVAILABLE = bool(DEBUG and find_spec('debug_toolbar'))
+if DEBUG_TOOLBAR_AVAILABLE:
+    INSTALLED_APPS.append('debug_toolbar')
+
 INTERNAL_IPS = ['127.0.0.1']
+DEBUG_TOOLBAR_CONFIG = {
+    'SHOW_TOOLBAR_CALLBACK': 'gestao_rh.debug.show_toolbar',
+}
+
 
 #   ADMINS = [('Gregory', 'django@gregorypacheco.com.br')]
 
@@ -133,6 +141,8 @@ SITE_ID = 1
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    # Serve os arquivos coletados também com DEBUG=False e no modo portátil.
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -146,9 +156,14 @@ MIDDLEWARE = [
 
     # 'custom_middleware.AppMetaData',
     # 'whitenoise.middleware.WhiteNoiseMiddleware',
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
 
 ]
+
+MIDDLEWARE.insert(6, 'gestao_rh.middleware.SessionIdleTimeoutMiddleware')
+MIDDLEWARE.append('gestao_rh.middleware.AuditRequestMiddleware')
+if DEBUG_TOOLBAR_AVAILABLE:
+    # Após AuthenticationMiddleware para que o callback possa verificar o usuário.
+    MIDDLEWARE.insert(7, 'debug_toolbar.middleware.DebugToolbarMiddleware')
 
 ROOT_URLCONF = 'gestao_rh.urls'
 
@@ -219,9 +234,21 @@ STATICFILES_DIRS = [
 # Destino do collectstatic. Mantido separado dos arquivos-fonte.
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
+# WhiteNoise mantém CSS/JS disponíveis em homologação, produção local e pendrive.
+# O backend simples evita falhas por manifesto durante o desenvolvimento incremental.
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
+WHITENOISE_MAX_AGE = 31536000 if not DEBUG else 0
+
 MEDIA_URL = '/media/'
 
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = os.path.join(PORTABLE_DATA_DIR or BASE_DIR, 'media')
 # MEDIA_ROOT = 'media'
 
 LOGIN_URL = 'login'
@@ -242,7 +269,7 @@ DATABASE_ROUTERS = ['gestao_rh.DBRoutes.DBRoutes']
 DATABASES = {
       'default': {
            'ENGINE': 'django.db.backends.sqlite3',
-           'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+           'NAME': os.path.join(PORTABLE_DATA_DIR or BASE_DIR, 'db.sqlite3'),
        },
     # 'default': {
     #     'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -304,3 +331,47 @@ DATE_FORMAT = 'd/m/y'
 # Mantém compatibilidade com os models e migrations legados do projeto.
 # Evita a criação automática de BigAutoField e elimina os avisos W042.
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+
+
+# Segurança por ambiente. Em produção, configure DEBUG=False no .env.
+SESSION_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = True
+X_FRAME_OPTIONS = 'DENY'
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_REFERRER_POLICY = 'same-origin'
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=False, cast=bool) if not DEBUG else False
+
+LOG_DIR = os.path.join(PORTABLE_DATA_DIR or BASE_DIR, 'logs')
+os.makedirs(LOG_DIR, exist_ok=True)
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'pgp': {'format': '{asctime} {levelname} {message}', 'style': '{'},
+    },
+    'handlers': {
+        'audit_file': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(LOG_DIR, 'auditoria.log'),
+            'maxBytes': 5 * 1024 * 1024,
+            'backupCount': 5,
+            'formatter': 'pgp',
+            'encoding': 'utf-8',
+        },
+        'error_file': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(LOG_DIR, 'erros.log'),
+            'maxBytes': 5 * 1024 * 1024,
+            'backupCount': 5,
+            'formatter': 'pgp',
+            'encoding': 'utf-8',
+            'level': 'ERROR',
+        },
+    },
+    'loggers': {
+        'pgp.audit': {'handlers': ['audit_file'], 'level': 'INFO', 'propagate': False},
+        'django.request': {'handlers': ['error_file'], 'level': 'ERROR', 'propagate': True},
+    },
+}

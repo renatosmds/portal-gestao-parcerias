@@ -140,7 +140,7 @@ urlpatterns = [
 
               ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-if settings.DEBUG:
+if getattr(settings, 'DEBUG_TOOLBAR_AVAILABLE', False):
     import debug_toolbar
     urlpatterns = [
         path('__debug__/', include(debug_toolbar.urls)),
@@ -149,3 +149,8 @@ if settings.DEBUG:
 admin.site.site_header = "Portal de Gestão de Parcerias"
 admin.site.index_title = "Administração do Portal"
 admin.site.site_title = "Portal de Gestão de Parcerias"
+
+handler400 = 'gestao_rh.error_views.bad_request'
+handler403 = 'gestao_rh.error_views.permission_denied'
+handler404 = 'gestao_rh.error_views.page_not_found'
+handler500 = 'gestao_rh.error_views.server_error'

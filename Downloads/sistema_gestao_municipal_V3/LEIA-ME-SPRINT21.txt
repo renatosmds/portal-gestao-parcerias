@@ -1,0 +1,25 @@
+SPRINT 21 — PAINÉIS GERENCIAIS E CONSOLIDAÇÃO VISUAL
+
+Principais entregas:
+- CSS disponível com DEBUG=True e DEBUG=False por meio do WhiteNoise.
+- collectstatic incorporado aos scripts portáteis.
+- fundo institucional escurecido aplicado globalmente a todas as páginas internas.
+- cartões, formulários e tabelas mantidos em superfícies claras.
+- indicadores de diligências incorporados ao dashboard.
+- atalho operacional para diligências abertas e vencidas.
+- testes automáticos dos três arquivos CSS principais.
+
+INSTALAÇÃO
+1. Copie os arquivos da sprint sobre a pasta principal.
+2. Execute:
+   python -m pip install -r requirements-dev.txt
+   python manage.py collectstatic --noinput --clear
+   python manage.py check
+   python manage.py migrate
+   python manage.py test apps.core.tests_sprint21
+   python manage.py runserver
+3. No navegador, pressione Ctrl+F5.
+
+MODO PORTÁTIL
+Execute novamente portable\preparar_runtime.bat para incluir WhiteNoise no runtime.
+O iniciar_portal.bat agora coleta os arquivos estáticos antes de iniciar.

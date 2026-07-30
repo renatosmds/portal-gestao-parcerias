@@ -1,0 +1,15 @@
+SPRINT 20 — SEGURANÇA, LGPD E MODO PORTÁTIL
+
+1. Copie os arquivos da Sprint sobre a pasta principal.
+2. Preserve .env, db.sqlite3 e media.
+3. Instale dependências de desenvolvimento:
+   python -m pip install -r requirements-dev.txt
+4. Execute:
+   python manage.py check
+   python manage.py migrate
+   python manage.py test
+5. Debug Toolbar: somente superusuário autenticado e apenas com DEBUG=True.
+6. Modo portátil: execute portable\preparar_runtime.bat uma vez em um computador com Python.
+   Depois copie a pasta inteira para o pendrive e use portable\iniciar_portal.bat.
+7. A versão portátil escuta somente em 127.0.0.1 e é indicada para demonstração,
+   homologação ou uso individual. Não é substituta de servidor multiusuário.

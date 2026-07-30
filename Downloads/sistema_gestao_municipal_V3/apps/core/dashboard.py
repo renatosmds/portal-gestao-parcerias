@@ -17,6 +17,7 @@ from django.utils.dateparse import parse_date
 
 from apps.analise.models import Analise
 from apps.documentos.models import Documento
+from apps.diligencias.models import Diligencia
 from apps.empresas.models import Empresa
 from apps.fornecedores.models import Fornecedores
 from apps.lancamentos.models import Lancamento
@@ -270,6 +271,9 @@ def montar_contexto_dashboard(request):
     fornecedores = _aplicar_empresa(
         Fornecedores.objects.select_related("empresa"), empresa_selecionada
     )
+    diligencias = _aplicar_empresa(
+        Diligencia.objects.select_related("empresa", "responsavel"), empresa_selecionada
+    )
 
     if sem_empresa:
         prestacoes = prestacoes.none()
@@ -277,6 +281,7 @@ def montar_contexto_dashboard(request):
         documentos = documentos.none()
         analises = analises.none()
         fornecedores = fornecedores.none()
+        diligencias = diligencias.none()
 
     # O período é aplicado antes do filtro de termo para que o quadro
     # comparativo continue respeitando os mesmos critérios da tela.
@@ -344,6 +349,22 @@ def montar_contexto_dashboard(request):
     analises_total = analises.count()
     analises_abertas = analises.filter(concluida=False).count()
     analises_concluidas = analises_total - analises_abertas
+
+    hoje = timezone.localdate()
+    diligencias_abertas = diligencias.exclude(
+        status__in=[
+            Diligencia.Status.ATENDIDA,
+            Diligencia.Status.NAO_ATENDIDA,
+            Diligencia.Status.CANCELADA,
+        ]
+    )
+    diligencias_pendentes = diligencias_abertas.count()
+    diligencias_vencidas = diligencias_abertas.filter(
+        prazo_resposta__lt=hoje
+    ).count()
+    diligencias_respondidas = diligencias.filter(
+        status__in=[Diligencia.Status.RESPONDIDA, Diligencia.Status.REANALISE]
+    ).count()
 
     valor_lancado = _somar(lancamentos, "valor_documento")
     valor_glosado = _somar(lancamentos, "valor_glosa")
@@ -419,6 +440,13 @@ def montar_contexto_dashboard(request):
             "classe": "roxo" if analises_abertas else "sucesso",
             "url_name": "list_analise",
         },
+        {
+            "rotulo": "Diligências vencidas",
+            "valor": diligencias_vencidas,
+            "icone": "fa-comments-o",
+            "classe": "perigo" if diligencias_vencidas else "sucesso",
+            "url_name": "list_diligencias",
+        },
     ]
 
     atividade_mensal = _serie_mensal(
@@ -476,6 +504,9 @@ def montar_contexto_dashboard(request):
         "analises_total": analises_total,
         "analises_abertas": analises_abertas,
         "analises_concluidas": analises_concluidas,
+        "diligencias_pendentes": diligencias_pendentes,
+        "diligencias_vencidas": diligencias_vencidas,
+        "diligencias_respondidas": diligencias_respondidas,
         "valor_lancado": valor_lancado,
         "valor_analisado": valor_analisado,
         "valor_glosado": valor_glosado,
