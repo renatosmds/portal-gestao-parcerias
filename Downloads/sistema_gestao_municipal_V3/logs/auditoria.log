@@ -16,3 +16,5 @@
 2026-07-30 00:13:05,738 INFO usuario=RLF ip=127.0.0.1 metodo=GET caminho=/lancamentos/ status=200 duracao_ms=34
 2026-07-30 00:21:41,953 INFO usuario=RLF ip=127.0.0.1 metodo=GET caminho=/lancamentos/ status=200 duracao_ms=191
 2026-07-30 00:21:56,522 INFO usuario=RLF ip=127.0.0.1 metodo=GET caminho=/funcionarios/ status=200 duracao_ms=34
+2026-07-30 00:24:52,006 INFO usuario=RLF ip=127.0.0.1 metodo=GET caminho=/prestacao/ status=200 duracao_ms=47
+2026-07-30 00:24:58,538 INFO usuario=RLF ip=127.0.0.1 metodo=GET caminho=/prestacao/novo/ status=200 duracao_ms=146

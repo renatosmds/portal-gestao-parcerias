@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}">
     <link rel="stylesheet"
           href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link rel="stylesheet" href="{% static 'css/sgm-v2.css' %}?v=21.0">
+    <link rel="stylesheet" href="{% static 'css/sgm-v2.css' %}?v=22.0">
 
     {% block staticcss %}{% endblock %}
 </head>
@@ -104,6 +104,13 @@
                 <span>Relatórios</span>
             </a>
 
+            {% if user.is_staff or user.is_superuser %}
+            <a class="sgm-nav-item {% if 'importacao' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'list_importacoes' %}">
+                <i class="fa fa-upload" aria-hidden="true"></i>
+                <span>Importações</span>
+            </a>
+            {% endif %}
+
             {% if perms.documentos.view_documento or user.is_superuser %}
             <a class="sgm-nav-item {% if request.resolver_match.url_name == 'list_documentos' or request.resolver_match.url_name == 'detail_documento' or request.resolver_match.url_name == 'create_documento' or request.resolver_match.url_name == 'update_documento' or request.resolver_match.url_name == 'conferir_documento' or request.resolver_match.url_name == 'delete_documento' %}active{% endif %}"
                href="{% url 'list_documentos' %}">
@@ -180,7 +187,7 @@
 
         <div class="sgm-sidebar-footer">
             <small>Portal de Gestão de Parcerias</small>
-            <span>Sprint 19</span>
+            <span>Sprint 22</span>
         </div>
     </aside>
 

@@ -1,4 +1,4 @@
-
+import sys
 import os
 from importlib.util import find_spec
 # import pandas as pd
@@ -75,6 +75,7 @@ INSTALLED_APPS = [
     'apps.fornecedores',
     'apps.funcionarios',  # gestão_rh
     'apps.lancamentos',
+    'apps.importacoes.apps.ImportacoesConfig',
     'apps.parcerias',
     'apps.prestacao',
     'apps.receitas',
@@ -236,12 +237,18 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # WhiteNoise mantém CSS/JS disponíveis em homologação, produção local e pendrive.
 # O backend simples evita falhas por manifesto durante o desenvolvimento incremental.
+IS_TESTING = "test" in sys.argv
+
 STORAGES = {
     "default": {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
     },
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        "BACKEND": (
+            "django.contrib.staticfiles.storage.StaticFilesStorage"
+            if IS_TESTING
+            else "whitenoise.storage.CompressedManifestStaticFilesStorage"
+        ),
     },
 }
 WHITENOISE_MAX_AGE = 31536000 if not DEBUG else 0
