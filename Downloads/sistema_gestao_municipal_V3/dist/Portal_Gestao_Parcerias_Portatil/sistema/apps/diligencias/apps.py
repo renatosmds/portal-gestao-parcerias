@@ -1,7 +1,0 @@
-from django.apps import AppConfig
-
-
-class DiligenciasConfig(AppConfig):
-    default_auto_field = "django.db.models.BigAutoField"
-    name = "apps.diligencias"
-    verbose_name = "Diligências e comunicação"
