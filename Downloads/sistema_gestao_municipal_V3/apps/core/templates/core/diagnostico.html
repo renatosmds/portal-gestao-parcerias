@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Diagnóstico do portal{% endblock %}
+{% block page_name %}Diagnóstico do portal{% endblock %}
+{% block main %}
+<div class="container-fluid py-3">
+  <div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+      <h1 class="h3 mb-1">Diagnóstico e homologação</h1>
+      <p class="text-muted mb-0">Verificações essenciais da versão beta consolidada.</p>
+    </div>
+    <span class="badge badge-{% if total_falhas %}danger{% else %}success{% endif %} p-2">
+      {% if total_falhas %}{{ total_falhas }} falha{{ total_falhas|pluralize }}{% else %}Sistema operacional{% endif %}
+    </span>
+  </div>
+
+  <div class="alert alert-info">
+    Esta tela não substitui os testes automatizados. Execute também
+    <code>python manage.py validar_portal</code> e <code>python manage.py test</code>.
+  </div>
+
+  <div class="card">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead><tr><th>Verificação</th><th>Situação</th><th>Detalhes</th></tr></thead>
+        <tbody>
+          {% for item in verificacoes %}
+          <tr>
+            <td><strong>{{ item.nome }}</strong></td>
+            <td><span class="badge badge-{% if item.ok %}success{% else %}danger{% endif %}">{% if item.ok %}OK{% else %}Falha{% endif %}</span></td>
+            <td>{{ item.detalhe }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

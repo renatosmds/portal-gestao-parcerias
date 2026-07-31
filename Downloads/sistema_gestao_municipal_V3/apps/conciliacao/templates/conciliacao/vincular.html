@@ -1,3 +1,4 @@
 {% extends "base.html" %}{% load bootstrap %}
 {% block title %}Vincular movimentação{% endblock %}
+{% block page_name %}Conciliação bancária{% endblock %}
 {% block main %}<div class="container py-3"><div class="card"><div class="card-body"><h1 class="h4">Vincular movimentação</h1><p><strong>{{ movimentacao.data|date:"d/m/Y" }}</strong> — {{ movimentacao.descricao }} — R$ {{ movimentacao.valor }}</p><p>Pendente: R$ {{ movimentacao.valor_pendente }}</p>{% if sugestoes %}<div class="alert alert-info"><strong>Sugestões pelo mesmo valor:</strong>{% for l in sugestoes %}<div>{{ l.numero_lancamento }} — {{ l.descricao }}</div>{% endfor %}</div>{% endif %}<form method="post">{% csrf_token %}{{ form|bootstrap }}<button class="btn btn-primary">Confirmar vínculo</button> <a class="btn btn-light" href="{{ movimentacao.conciliacao.get_absolute_url }}">Cancelar</a></form></div></div></div>{% endblock %}

@@ -12,12 +12,16 @@ from django.contrib.auth.models import User, Group
 from rest_framework import viewsets
 from apps.core.serializers import UserSerializer, GroupSerializer
 from apps.registro_hora_extra.models import RegistroHoraExtra
-#from apps.departamentos.models import Departamento
+from apps.departamentos.models import Departamento
 from django.core import serializers
 from django.http import HttpResponse
 from .tasks import send_relatorio
 from django.db.models import Sum
 from django.core.exceptions import PermissionDenied
+from django.contrib.admin.views.decorators import staff_member_required
+from django.db import connection
+from django.template.loader import get_template
+from django.urls import reverse
 
 from .dashboard import montar_contexto_dashboard
 
@@ -191,3 +195,36 @@ def filtra_receitas(request):
 
 def analise(request):
     return self.Analise_set.all().count()
+
+
+@staff_member_required
+def diagnostico_portal(request):
+    """Painel simples de homologação para administradores."""
+    verificacoes = []
+
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+            cursor.fetchone()
+        verificacoes.append({"nome": "Banco de dados", "ok": True, "detalhe": "Conexão realizada."})
+    except Exception as exc:
+        verificacoes.append({"nome": "Banco de dados", "ok": False, "detalhe": str(exc)})
+
+    for nome_template in ("base.html", "core/index.html", "conciliacao/painel.html", "metas/painel.html"):
+        try:
+            get_template(nome_template)
+            verificacoes.append({"nome": f"Template: {nome_template}", "ok": True, "detalhe": "Carregado corretamente."})
+        except Exception as exc:
+            verificacoes.append({"nome": f"Template: {nome_template}", "ok": False, "detalhe": str(exc)})
+
+    for nome_rota in ("home", "conciliacao_painel", "metas_painel", "assistente_ia_central", "relatorios_painel"):
+        try:
+            endereco = reverse(nome_rota)
+            verificacoes.append({"nome": f"Rota: {nome_rota}", "ok": True, "detalhe": endereco})
+        except Exception as exc:
+            verificacoes.append({"nome": f"Rota: {nome_rota}", "ok": False, "detalhe": str(exc)})
+
+    return render(request, "core/diagnostico.html", {
+        "verificacoes": verificacoes,
+        "total_falhas": sum(not item["ok"] for item in verificacoes),
+    })

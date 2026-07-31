@@ -2,7 +2,7 @@ from django.urls import path
 from .views import home, celery, filtra_funcionarios, departamentos_ajax, filtra_termos, filtra_prestacao,\
     filtra_conferencia3, filtra_parcerias, filtra_receitas, execucao, cadastros_gerais, funcionograma, convocacao, form_convocacao,\
     form_requerimento, form_habilitacao, form_aprovacao, relatorio_gestor, relatorio_comissao,  monitoramento,\
-    auditoria, analise_auditoria, acompanhamento_auditorias, tomada_contas, analise, conferencia3_list, menu
+    auditoria, analise_auditoria, acompanhamento_auditorias, tomada_contas, analise, conferencia3_list, menu, diagnostico_portal
 
 urlpatterns = [
     path('', home, name='home'),
@@ -36,4 +36,5 @@ urlpatterns = [
         name='analise_legado',
     ),
     path('menu/', menu, name='menu'),
+    path('diagnostico/', diagnostico_portal, name='diagnostico_portal'),
 ]

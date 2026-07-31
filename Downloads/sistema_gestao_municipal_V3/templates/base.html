@@ -186,6 +186,13 @@
                 <span>Cursos</span>
             </a>
 
+            {% if user.is_staff or user.is_superuser %}
+            <a class="sgm-nav-item {% if request.resolver_match.url_name == 'diagnostico_portal' %}active{% endif %}" href="{% url 'diagnostico_portal' %}">
+                <i class="fa fa-stethoscope" aria-hidden="true"></i>
+                <span>Diagnóstico</span>
+            </a>
+            {% endif %}
+
             <span class="sgm-nav-label">LINKS INSTITUCIONAIS</span>
 
             <a class="sgm-nav-item" target="_blank" rel="noopener noreferrer"
@@ -209,7 +216,7 @@
 
         <div class="sgm-sidebar-footer">
             <small>Portal de Gestão de Parcerias</small>
-            <span>Sprint 23</span>
+            <span>Sprint 27 · Beta</span>
         </div>
     </aside>
 
