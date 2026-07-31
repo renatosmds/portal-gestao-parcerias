@@ -1,0 +1,305 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-br" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <title>{% block title %}Portal de Gestão de Parcerias{% endblock %}</title>
+
+    <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}">
+    <link rel="stylesheet"
+          href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="{% static 'css/sgm-v2.css' %}?v=22.0">
+
+    {% block staticcss %}{% endblock %}
+</head>
+
+<body class="sgm-body">
+<div class="sgm-app">
+
+    <aside class="sgm-sidebar" id="sgmSidebar" aria-label="Menu principal">
+        <div class="sgm-brand">
+            <a href="{% url 'home' %}" class="sgm-brand-link">
+                <span class="sgm-brand-mark">PGP</span>
+                <span class="sgm-brand-text">
+                    <strong>Portal de Parcerias</strong>
+                    <small>{{ area_portal }}</small>
+                </span>
+            </a>
+        </div>
+
+        <nav class="sgm-nav">
+            <span class="sgm-nav-label">VISÃO GERAL</span>
+
+            <a class="sgm-nav-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}"
+               href="{% url 'home' %}">
+                <i class="fa fa-dashboard" aria-hidden="true"></i>
+                <span>Dashboard</span>
+            </a>
+
+            <span class="sgm-nav-label">{% if usuario_area_osc %}GESTÃO DA OSC{% else %}GESTÃO DAS PARCERIAS{% endif %}</span>
+
+            {% if perms.empresas.view_empresa or user.is_superuser %}
+            <a class="sgm-nav-item {% if request.resolver_match.url_name == 'list_empresas' or request.resolver_match.url_name == 'detail_empresa' or request.resolver_match.url_name == 'create_empresa' or request.resolver_match.url_name == 'edit_empresa' or request.resolver_match.url_name == 'delete_empresa' %}active{% endif %}"
+               href="{% url 'list_empresas' %}">
+                <i class="fa fa-building-o" aria-hidden="true"></i>
+                <span>{% if usuario_area_osc %}Minha OSC{% else %}OSCs / Empresas{% endif %}</span>
+            </a>
+            {% endif %}
+
+            {% if perms.departamentos.view_departamento or user.is_superuser %}
+            <a class="sgm-nav-item {% if request.resolver_match.url_name == 'list_departamentos' or request.resolver_match.url_name == 'detail_departamento' or request.resolver_match.url_name == 'create_departamento' or request.resolver_match.url_name == 'update_departamento' or request.resolver_match.url_name == 'delete_departamento' %}active{% endif %}"
+               href="{% url 'list_departamentos' %}">
+                <i class="fa fa-sitemap" aria-hidden="true"></i>
+                <span>Departamentos</span>
+            </a>
+            {% endif %}
+
+            {% if perms.fornecedores.view_fornecedores or user.is_superuser %}
+            <a class="sgm-nav-item {% if request.resolver_match.url_name == 'list_fornecedores' or request.resolver_match.url_name == 'detail_fornecedor' or request.resolver_match.url_name == 'create_fornecedor' or request.resolver_match.url_name == 'update_fornecedor' or request.resolver_match.url_name == 'delete_fornecedor' %}active{% endif %}"
+               href="{% url 'list_fornecedores' %}">
+                <i class="fa fa-truck" aria-hidden="true"></i>
+                <span>Fornecedores</span>
+            </a>
+            {% endif %}
+
+            {% if perms.funcionarios.view_funcionario or user.is_superuser %}
+            <a class="sgm-nav-item" href="{% url 'list_funcionarios' %}">
+                <i class="fa fa-users" aria-hidden="true"></i>
+                <span>Empregados</span>
+            </a>
+            {% endif %}
+            {% if perms.funcionarios.view_folhaponto or user.is_superuser %}
+            <a class="sgm-nav-item" href="{% url 'folhas_ponto_list' %}"><i class="fa fa-calendar-check-o"></i><span>Folha de Ponto</span></a>
+            {% endif %}
+            {% if perms.funcionarios.view_folhapagamento or user.is_superuser %}
+            <a class="sgm-nav-item" href="{% url 'folhas_pagamento_list' %}"><i class="fa fa-file-text-o"></i><span>Contracheques</span></a>
+            {% endif %}
+
+            <a class="sgm-nav-item" href="{% url 'list_hora_extra' %}">
+                <i class="fa fa-clock-o" aria-hidden="true"></i>
+                <span>Banco de Horas</span>
+            </a>
+
+            <a class="sgm-nav-item" href="{% url 'list_conferencia3' %}">
+                <i class="fa fa-check-square-o" aria-hidden="true"></i>
+                <span>Execução</span>
+            </a>
+
+            <a class="sgm-nav-item" href="{% url 'list_receitas' %}">
+                <i class="fa fa-money" aria-hidden="true"></i>
+                <span>Financeiro</span>
+            </a>
+
+            <a class="sgm-nav-item {% if request.resolver_match.url_name == 'list_diligencias' or request.resolver_match.url_name == 'detail_diligencia' or request.resolver_match.url_name == 'create_diligencia' %}active{% endif %}"
+               href="{% url 'list_diligencias' %}">
+                <i class="fa fa-comments-o" aria-hidden="true"></i>
+                <span>Diligências{% if notificacoes_nao_lidas %} <strong>({{ notificacoes_nao_lidas }})</strong>{% endif %}</span>
+            </a>
+
+            <a class="sgm-nav-item {% if request.resolver_match.url_name == 'relatorios_painel' or 'relatorio_' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'relatorios_painel' %}">
+                <i class="fa fa-bar-chart" aria-hidden="true"></i>
+                <span>Relatórios</span>
+            </a>
+
+            {% if user.is_staff or user.is_superuser %}
+            <a class="sgm-nav-item {% if 'importacao' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'list_importacoes' %}">
+                <i class="fa fa-upload" aria-hidden="true"></i>
+                <span>Importações</span>
+            </a>
+            {% endif %}
+
+            {% if perms.documentos.view_documento or user.is_superuser %}
+            <a class="sgm-nav-item {% if request.resolver_match.url_name == 'list_documentos' or request.resolver_match.url_name == 'detail_documento' or request.resolver_match.url_name == 'create_documento' or request.resolver_match.url_name == 'update_documento' or request.resolver_match.url_name == 'conferir_documento' or request.resolver_match.url_name == 'delete_documento' %}active{% endif %}"
+               href="{% url 'list_documentos' %}">
+                <i class="fa fa-files-o" aria-hidden="true"></i>
+                <span>Documentos</span>
+            </a>
+            {% endif %}
+
+            {% if perms.lancamentos.view_lancamento or user.is_superuser %}
+            <a class="sgm-nav-item {% if request.resolver_match.url_name == 'list_lancamentos' or request.resolver_match.url_name == 'detail_lancamento' or request.resolver_match.url_name == 'create_lancamento' or request.resolver_match.url_name == 'update_lancamento' or request.resolver_match.url_name == 'delete_lancamento' %}active{% endif %}"
+               href="{% url 'list_lancamentos' %}">
+                <i class="fa fa-list-alt" aria-hidden="true"></i>
+                <span>Lançamentos</span>
+            </a>
+            {% endif %}
+
+            {% if perms.analise.view_analise or user.is_superuser %}
+            <a class="sgm-nav-item {% if request.resolver_match.url_name == 'list_analise' or request.resolver_match.url_name == 'detail_analise' or request.resolver_match.url_name == 'create_analise' or request.resolver_match.url_name == 'update_analise' or request.resolver_match.url_name == 'delete_analise' %}active{% endif %}"
+               href="{% url 'list_analise' %}">
+                <i class="fa fa-search" aria-hidden="true"></i>
+                <span>Análises</span>
+            </a>
+            {% endif %}
+
+            {% if perms.prestacao.view_prestacao or user.is_superuser %}
+            <a class="sgm-nav-item {% if request.resolver_match.url_name == 'list_prestacao' or request.resolver_match.url_name == 'detail_prestacao' or request.resolver_match.url_name == 'create_prestacao' or request.resolver_match.url_name == 'update_prestacao' or request.resolver_match.url_name == 'delete_prestacao' %}active{% endif %}"
+               href="{% url 'list_prestacao' %}">
+                <i class="fa fa-folder-open-o" aria-hidden="true"></i>
+                <span>Prestações</span>
+            </a>
+            {% endif %}
+
+            {% if perms.termos.view_termos or user.is_superuser %}
+            <a class="sgm-nav-item {% if request.resolver_match.url_name == 'list_termos' or request.resolver_match.url_name == 'detail_termo' or request.resolver_match.url_name == 'create_termos' or request.resolver_match.url_name == 'update_termos' or request.resolver_match.url_name == 'delete_termos' %}active{% endif %}"
+               href="{% url 'list_termos' %}">
+                <i class="fa fa-file-text-o" aria-hidden="true"></i>
+                <span>Termos</span>
+            </a>
+            {% endif %}
+
+            {% if perms.parcerias.view_parcerias or user.is_superuser %}
+            <a class="sgm-nav-item {% if request.resolver_match.url_name == 'list_parcerias' or request.resolver_match.url_name == 'detail_parceria' or request.resolver_match.url_name == 'create_parceria' or request.resolver_match.url_name == 'update_parceria' or request.resolver_match.url_name == 'delete_parceria' %}active{% endif %}"
+               href="{% url 'list_parcerias' %}">
+                <i class="fa fa-handshake-o" aria-hidden="true"></i>
+                <span>Parcerias</span>
+            </a>
+            {% endif %}
+
+            <a class="sgm-nav-item" href="{% url 'list_curso' %}">
+                <i class="fa fa-graduation-cap" aria-hidden="true"></i>
+                <span>Cursos</span>
+            </a>
+
+            <span class="sgm-nav-label">LINKS INSTITUCIONAIS</span>
+
+            <a class="sgm-nav-item" target="_blank" rel="noopener noreferrer"
+               href="https://portal.contagem.mg.gov.br/portal/diario-oficial">
+                <i class="fa fa-newspaper-o" aria-hidden="true"></i>
+                <span>Diário Oficial</span>
+            </a>
+
+            <a class="sgm-nav-item" target="_blank" rel="noopener noreferrer"
+               href="https://portal.contagem.mg.gov.br/portal/transparencia">
+                <i class="fa fa-eye" aria-hidden="true"></i>
+                <span>Transparência</span>
+            </a>
+
+            <a class="sgm-nav-item" target="_blank" rel="noopener noreferrer"
+               href="https://legislacao.contagem.mg.gov.br/legislacao/legislacaop">
+                <i class="fa fa-balance-scale" aria-hidden="true"></i>
+                <span>Legislação</span>
+            </a>
+        </nav>
+
+        <div class="sgm-sidebar-footer">
+            <small>Portal de Gestão de Parcerias</small>
+            <span>Sprint 22</span>
+        </div>
+    </aside>
+
+    <div class="sgm-overlay" id="sgmOverlay"></div>
+
+    <div class="sgm-main">
+        <header class="sgm-topbar">
+            <div class="sgm-topbar-left">
+                <button type="button" class="sgm-icon-button" id="sidebarToggle"
+                        aria-label="Abrir ou fechar menu">
+                    <i class="fa fa-bars" aria-hidden="true"></i>
+                </button>
+
+                <div class="sgm-page-identity">
+                    <span class="sgm-page-kicker">{{ area_portal|upper }}</span>
+                    <strong>{% block page_name %}Portal de Gestão de Parcerias{% endblock %}</strong>
+                </div>
+            </div>
+
+            <div class="sgm-topbar-actions">
+                <a class="sgm-icon-button" href="{% url 'notificacoes' %}" aria-label="Notificações" title="Notificações">
+                    <i class="fa fa-bell-o" aria-hidden="true"></i>{% if notificacoes_nao_lidas %}<span class="badge badge-danger">{{ notificacoes_nao_lidas }}</span>{% endif %}
+                </a>
+                <button type="button" class="sgm-icon-button" id="themeToggle"
+                        aria-label="Alternar tema claro e escuro">
+                    <i class="fa fa-moon-o" aria-hidden="true"></i>
+                </button>
+
+                {% if user.is_authenticated %}
+                <div class="dropdown">
+                    <button class="sgm-user-button dropdown-toggle" type="button"
+                            id="userMenu" data-toggle="dropdown"
+                            aria-haspopup="true" aria-expanded="false">
+                            <span class="sgm-avatar">
+                                {{ user.get_username|slice:":1"|upper }}
+                            </span>
+                        <span class="sgm-user-text">
+                                <strong>{{ user.get_full_name|default:user.get_username }}</strong>
+                                <small>
+                                    {{ perfil_usuario|default:"Usuário autenticado" }}
+                                    {% if empresa_usuario %} · {{ empresa_usuario }}{% endif %}
+                                </small>
+                            </span>
+                    </button>
+
+                    <div class="dropdown-menu dropdown-menu-right sgm-user-menu"
+                         aria-labelledby="userMenu">
+                        <div class="dropdown-header">
+                            <strong>{{ user.get_username }}</strong>
+                        </div>
+                        <a class="dropdown-item" href="{% url 'home' %}">
+                            <i class="fa fa-dashboard mr-2"></i>Dashboard
+                        </a>
+                        {% if user.is_staff %}
+                        <a class="dropdown-item" href="{% url 'admin:index' %}">
+                            <i class="fa fa-users-cog mr-2"></i>Administrar usuários e perfis
+                        </a>
+                        {% endif %}
+                        <div class="dropdown-divider"></div>
+                        <form method="post" action="{% url 'logout' %}" class="m-0">
+                            {% csrf_token %}
+                            <button type="submit"
+                                    class="dropdown-item text-danger border-0 bg-transparent">
+                                <i class="fa fa-sign-out mr-2"></i>
+                                Sair
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% else %}
+                <a class="btn btn-primary" href="{% url 'login' %}">
+                    <i class="fa fa-sign-in mr-1"></i> Entrar
+                </a>
+                {% endif %}
+            </div>
+        </header>
+
+        <main class="sgm-content">
+            {% if messages %}
+            <div class="sgm-messages">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show"
+                     role="alert">
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Fechar">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% block menu %}{% endblock %}
+            {% block main %}{% endblock %}
+        </main>
+
+        <footer class="sgm-footer">
+            <span>&copy; {% now "Y" %} Prefeitura de Contagem</span>
+            <span>Portal de Gestão de Parcerias</span>
+        </footer>
+    </div>
+</div>
+
+{% block static %}
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
+        integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+        crossorigin="anonymous"></script>
+<script src="{% static 'bootstrap/js/bootstrap.js' %}"></script>
+<script src="{% static 'js/sgm-v2.js' %}"></script>
+{% endblock %}
+</body>
+</html>

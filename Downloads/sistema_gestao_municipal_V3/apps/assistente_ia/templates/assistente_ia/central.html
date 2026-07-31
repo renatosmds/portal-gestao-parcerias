@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Análise Assistida | PGP{% endblock %}
+{% block page_name %}Análise Assistida{% endblock %}
+{% block staticcss %}<link rel="stylesheet" href="{% static 'assistente_ia/assistente-ia.css' %}?v=23.0">{% endblock %}
+{% block main %}
+<div class="container-fluid py-4 ai-page">
+  <div class="d-flex flex-wrap justify-content-between align-items-start mb-4">
+    <div><span class="text-uppercase text-muted small font-weight-bold">Sprint 23</span><h1 class="h3 mb-1">Central de Análise Assistida</h1><p class="text-muted mb-0">Validações locais e rascunhos sujeitos à revisão humana obrigatória.</p></div>
+    {% if ia_externa_ativa %}<span class="badge badge-success p-2">IA externa configurada</span>{% else %}<span class="badge badge-secondary p-2">IA externa desativada</span>{% endif %}
+  </div>
+  <div class="row mb-4">
+    <div class="col-md-4 mb-3"><div class="ai-card"><small>Documentos no escopo</small><strong>{{ total_documentos }}</strong></div></div>
+    <div class="col-md-4 mb-3"><div class="ai-card"><small>Processamentos realizados</small><strong>{{ total_processamentos }}</strong></div></div>
+    <div class="col-md-4 mb-3"><div class="ai-card"><small>Aguardando revisão humana</small><strong>{{ aguardando_revisao }}</strong></div></div>
+  </div>
+  <div class="card shadow-sm border-0 mb-4"><div class="card-body"><form method="get" class="form-row align-items-end"><div class="col-md-6"><label>Busca</label><input class="form-control" name="q" value="{{ request.GET.q }}" placeholder="Descrição, número ou OSC"></div><div class="col-md-3"><label>Status do documento</label><select class="form-control" name="status"><option value="">Todos</option><option value="pendente">Pendente</option><option value="em_conferencia">Em conferência</option><option value="conferido">Conferido</option><option value="com_pendencia">Com pendência</option><option value="reprovado">Reprovado</option></select></div><div class="col-md-3"><button class="btn btn-primary btn-block"><i class="fa fa-filter"></i> Filtrar</button></div></form></div></div>
+  <div class="card shadow-sm border-0"><div class="card-header bg-white d-flex justify-content-between"><strong>Documentos disponíveis</strong><small class="text-muted">Nenhuma decisão é automatizada</small></div><div class="table-responsive"><table class="table table-hover mb-0"><thead><tr><th>Documento</th><th>OSC</th><th>Tipo</th><th>Status</th><th>Processamentos</th><th class="text-right">Ação</th></tr></thead><tbody>{% for documento in documentos %}<tr><td><strong>{{ documento.descricao }}</strong><br><small class="text-muted">{{ documento.numero_documento|default:"Sem número" }}</small></td><td>{{ documento.empresa|default:"—" }}</td><td>{{ documento.get_tipo_display }}</td><td>{{ documento.get_status_display }}</td><td>{{ documento.total_processamentos }}</td><td class="text-right"><form method="post" action="{% url 'assistente_ia_executar' documento.pk %}">{% csrf_token %}<button class="btn btn-sm btn-outline-primary"><i class="fa fa-magic"></i> Executar validação local</button></form></td></tr>{% empty %}<tr><td colspan="6" class="text-center py-5 text-muted">Nenhum documento disponível no seu escopo.</td></tr>{% endfor %}</tbody></table></div></div>
+  {% if processamentos_recentes %}<div class="card shadow-sm border-0 mt-4"><div class="card-header bg-white"><strong>Processamentos recentes</strong></div><div class="list-group list-group-flush">{% for item in processamentos_recentes %}<a class="list-group-item list-group-item-action d-flex justify-content-between" href="{% url 'assistente_ia_detalhe' item.pk %}"><span>#{{ item.pk }} — {{ item.documento }}</span><span>{{ item.get_decisao_revisor_display }}</span></a>{% endfor %}</div></div>{% endif %}
+</div>
+{% endblock %}

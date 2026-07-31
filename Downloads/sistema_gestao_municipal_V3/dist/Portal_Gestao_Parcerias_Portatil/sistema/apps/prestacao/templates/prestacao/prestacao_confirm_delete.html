@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Excluir prestação{% endblock %}
+{% block main %}
+<section class="accounts-page"><article class="sgm-panel account-delete">
+<h1>Excluir prestação?</h1><p>Você está prestes a excluir <strong>{{ prestacao }}</strong>.</p>
+<form method="post">{% csrf_token %}
+<a href="{% url 'detail_prestacao' prestacao.pk %}" class="btn btn-outline-secondary">Cancelar</a>
+<button class="btn btn-danger">Confirmar exclusão</button>
+</form></article></section>
+{% endblock %}

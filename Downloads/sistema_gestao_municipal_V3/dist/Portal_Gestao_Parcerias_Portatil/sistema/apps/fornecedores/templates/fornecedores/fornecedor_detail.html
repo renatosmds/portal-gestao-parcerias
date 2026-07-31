@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ fornecedor }} | Fornecedores{% endblock %}
+{% block page_name %}Gestão de Fornecedores{% endblock %}
+
+{% block staticcss %}
+<link rel="stylesheet" href="{% static 'css/fornecedores-v3.css' %}">
+{% endblock %}
+
+{% block main %}
+<section class="suppliers-page">
+    <div class="supplier-detail-top">
+        <div>
+            <a href="{% url 'list_fornecedores' %}" class="suppliers-back">
+                <i class="fa fa-arrow-left mr-1"></i> Voltar para fornecedores
+            </a>
+
+            <div class="supplier-detail-identity">
+                <span class="supplier-avatar supplier-avatar--large">
+                    {{ fornecedor.credor|default:fornecedor.razao|slice:":1"|upper }}
+                </span>
+                <div>
+                    <span class="sgm-eyebrow">FORNECEDOR</span>
+                    <h1>{{ fornecedor }}</h1>
+                    <p>
+                        <i class="fa fa-building-o mr-1"></i>
+                        {{ fornecedor.empresa.nome|default:"Sem empresa vinculada" }}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="supplier-detail-actions">
+            {% if perms.fornecedores.change_fornecedores %}
+                <a href="{% url 'update_fornecedor' fornecedor.pk %}"
+                   class="btn btn-primary">
+                    <i class="fa fa-pencil mr-1"></i> Editar
+                </a>
+            {% endif %}
+
+            {% if perms.fornecedores.delete_fornecedores %}
+                <a href="{% url 'delete_fornecedor' fornecedor.pk %}"
+                   class="btn btn-outline-danger">
+                    <i class="fa fa-trash mr-1"></i> Excluir
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="supplier-detail-layout">
+        <section class="sgm-panel supplier-detail-panel">
+            <div class="supplier-panel-header">
+                <div>
+                    <span class="sgm-eyebrow">IDENTIFICAÇÃO</span>
+                    <h2>Dados cadastrais</h2>
+                </div>
+            </div>
+
+            <dl class="supplier-data-grid">
+                <div>
+                    <dt>Credor</dt>
+                    <dd>{{ fornecedor.credor|default:"Não informado" }}</dd>
+                </div>
+                <div>
+                    <dt>Pessoa</dt>
+                    <dd>{{ fornecedor.get_pessoa_display|default:"Não informado" }}</dd>
+                </div>
+                <div>
+                    <dt>Razão social</dt>
+                    <dd>{{ fornecedor.razao|default:"Não informado" }}</dd>
+                </div>
+                <div>
+                    <dt>Nome fantasia</dt>
+                    <dd>{{ fornecedor.fantasia|default:"Não informado" }}</dd>
+                </div>
+                <div>
+                    <dt>Documento</dt>
+                    <dd>
+                        {{ fornecedor.get_tipo_display|default:"Não informado" }}
+                        {{ fornecedor.numero|default:"" }}
+                    </dd>
+                </div>
+                <div>
+                    <dt>Inscrição estadual</dt>
+                    <dd>{{ fornecedor.iestadual|default:"Não informado" }}</dd>
+                </div>
+                <div>
+                    <dt>Inscrição municipal</dt>
+                    <dd>{{ fornecedor.imunicipal|default:"Não informado" }}</dd>
+                </div>
+            </dl>
+        </section>
+
+        <aside class="sgm-panel supplier-detail-panel">
+            <span class="sgm-eyebrow">CONTATO</span>
+            <h2>Endereço e comunicação</h2>
+
+            <dl class="supplier-data-list">
+                <div>
+                    <dt>Endereço</dt>
+                    <dd>{{ fornecedor.endereco|default:"Não informado" }}</dd>
+                </div>
+                <div>
+                    <dt>Bairro</dt>
+                    <dd>{{ fornecedor.bairro|default:"Não informado" }}</dd>
+                </div>
+                <div>
+                    <dt>CEP</dt>
+                    <dd>{{ fornecedor.cep|default:"Não informado" }}</dd>
+                </div>
+                <div>
+                    <dt>Cidade/UF</dt>
+                    <dd>
+                        {{ fornecedor.cidade|default:"Não informado" }}
+                        {% if fornecedor.estado %}/ {{ fornecedor.estado }}{% endif %}
+                    </dd>
+                </div>
+                <div>
+                    <dt>E-mail</dt>
+                    <dd>{{ fornecedor.email|default:"Não informado" }}</dd>
+                </div>
+                <div>
+                    <dt>Telefone</dt>
+                    <dd>{{ fornecedor.telefone|default:"Não informado" }}</dd>
+                </div>
+            </dl>
+        </aside>
+    </div>
+</section>
+{% endblock %}

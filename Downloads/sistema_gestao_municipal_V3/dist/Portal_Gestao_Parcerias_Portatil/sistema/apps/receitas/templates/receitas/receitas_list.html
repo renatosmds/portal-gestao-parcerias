@@ -1,0 +1,279 @@
+{% extends 'base.html' %}
+
+{% block main %}
+    <table class="table-fluid table-bordered  table-striped table-hover table-condesed">
+		<tr>
+			<td colspan="17" style="text-align: center; padding-left: 10px">
+				<h6>CONTROLE FINANCEIRO</h6>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="1" style="text-align: center; padding-left: 3px; color: black; background: white;">
+				<h6><strong>Data</strong></h6>
+			</td>
+			<td colspan="1" style="text-align: center; padding-left: 3px; color: black; background: white;">
+				<h6><strong>Saldo<br>Anterior</strong></h6>
+			</td>
+			<td colspan="1" style="text-align: center;">
+				<h6><strong>Repasse</strong></h6>
+			</td>
+			<td colspan="1" style="text-align: center;">
+				<h6><strong>Depósito<br>OSC</strong></h6>
+			</td>
+			<td colspan="1" style="text-align: center;">
+				<h6><strong>Rendimento</strong></h6>
+			</td>
+			<td colspan="1" style="text-align: center;">
+				<h6><strong>Crédito<br>Autorizado</strong></h6>
+			</td>
+			<td colspan="1" style="text-align: center;">
+				<h6><strong>Resgate<br>Autorizado</strong></h6>
+			</td>
+			<td colspan="1" style="text-align: center;">
+				<h6><strong>Estorno</strong></h6>
+			</td>
+				<td colspan="1" style="text-align: center; padding-left: 3px; color: black; background: white;">
+				<h6><strong>Total<br>Receitas</strong></h6>
+			</td>
+			<td colspan="1" style="text-align: center;">
+				<h6><strong>Aplicação</strong></h6>
+			</td>
+			<td colspan="1" style="text-align: center;">
+				<h6><strong>Débito<br>Autorizado</strong></h6>
+			</td>
+			<td colspan="1" style="text-align: center;">
+				<h6><strong>Despesa<br>Bancária</strong></h6>
+			</td>
+			<td colspan="1" style="text-align: center;">
+				<h6><strong>Imposto<br>de Renda</strong></h6>
+			</td>
+			<td colspan="1" style="text-align: center;">
+				<h6><strong>IOF</strong></h6>
+			</td>
+			<td colspan="1" style="text-align: center;">
+				<h6><strong>Despesas</strong></h6>
+			</td>
+				<td colspan="1" style="text-align: center; padding-left: 3px; color: black; background: white;">
+				<h6><strong>Total<br>Despesas</strong></h6>
+			</td>
+				<td colspan="1" style="text-align: center; padding-left: 3px; color: black; background: white;">
+				<h6><strong>Saldo<br>Bancário</strong></h6>
+			</td>
+		</tr>
+		<tr>
+				<td colspan="1" style="text-align: right; padding-left: 3px; color: black; background: white;">
+				<h6>
+					{% for receitas in object_list %}
+					<a href="{% url 'update_receitas' receitas.id %}"
+					   style="text-align: left; padding-left: 3px; border-bottom: 1px solid gray; display: grid;
+					   grid-template-columns: repeat(auto-fit, minmax(var(--column-width-min), 1fr));">
+						{{ receitas.data}}
+					</a>
+					{% endfor %}
+				</h6>
+			</td>
+				<td colspan="1" style="text-align: right; padding-left: 3px; color: black; background: white;">
+				<h6>{% for receitas in object_list %}
+					{{ receitas.saldoAnterior}}<br>
+					{% endfor %}
+				</h6>
+			</td>
+			<td colspan="1" style="text-align: right; padding-left: 3px">
+				<h6>{% for receitas in object_list %}
+					{{ receitas.repasse}}<br>
+					{% endfor %}
+				</h6>
+			</td>
+			<td colspan="1" style="text-align: right; padding-left: 3px">
+				<h6>{% for receitas in object_list %}
+					{{ receitas.depositoOsc}}<br>
+					{% endfor %}
+				</h6>
+			</td>
+			<td colspan="1" style="text-align: right; padding-left: 3px">
+				<h6>{% for receitas in object_list %}
+					{{ receitas.rendimento}}<br>
+					{% endfor %}
+				</h6>
+			</td>
+			<td colspan="1" style="text-align: right; padding-left: 3px">
+				<h6>{% for receitas in object_list %}
+					{{ receitas.creditoAutorizado}}<br>
+					{% endfor %}
+				</h6>
+			</td>
+			<td colspan="1" style="text-align: right; padding-left: 3px">
+				<h6>{% for receitas in object_list %}
+					{{ receitas.resgateAutomatico}}<br>
+					{% endfor %}
+				</h6>
+			</td>
+			<td colspan="1" style="text-align: right; padding-left: 3px">
+				<h6>{% for receitas in object_list %}
+					{{ receitas.estorno}}<br>
+					{% endfor %}
+				</h6>
+			</td>
+				<td colspan="1" style="text-align: right; padding-left: 3px; color: black; background: white;">
+				<h6>{% for receitas in object_list %}
+					{{receitas.totalReceitas }}<br>
+					{% endfor %}
+				</h6>
+			</td>
+			<td colspan="1" style="text-align: right; padding-left: 3px">
+				<h6>{% for receitas in object_list %}
+					{{receitas.aplicacao }}<br>
+					{% endfor %}
+				</h6>
+			</td>
+			<td colspan="1" style="text-align: right; padding-left: 3px">
+				<h6>{% for receitas in object_list %}
+					{{receitas.debitoAutorizado }}<br>
+					{% endfor %}
+				</h6>
+			</td>
+			<td colspan="1" style="text-align: right; padding-left: 3px">
+				<h6>{% for receitas in object_list %}
+					{{receitas.despesaBancaria }}<br>
+					{% endfor %}
+				</h6>
+			</td>
+			<td colspan="1" style="text-align: right; padding-left: 3px">
+				<h6>{% for receitas in object_list %}
+					{{receitas.impostoRenda }}<br>
+					{% endfor %}
+				</h6>
+			</td>
+			<td colspan="1" style="text-align: right; padding-left: 3px">
+				<h6>{% for receitas in object_list %}
+					{{receitas.iof }}<br>
+					{% endfor %}
+				</h6>
+			</td>
+			<td colspan="1" style="text-align: right; padding-left: 3px">
+				<h6>{% for receitas in object_list %}
+					{{receitas.despesas }}<br>
+					{% endfor %}
+				</h6>
+			</td>
+				<td colspan="1" style="text-align: right; padding-left: 3px; color: black; background: white;">
+				<h6>{% for receitas in object_list %}
+					{{receitas.totalDespesas }}<br>
+					{% endfor %}
+				</h6>
+			</td>
+			<td colspan="1" style="text-align: right; padding-left: 3px; color: black; background: white;">
+				<h6>{% for receitas in object_list %}
+					{{receitas.saldoBancario }}<br>
+					{% endfor %}
+				</h6>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="1" style="text-align: center; padding-left: 3px; color: black; background: white;">
+				<h6><strong>{{ user }}</strong></h6>
+			</td>
+			<td colspan="1" style="text-align: center; padding-left: 3px; color: black; background: white;">
+				<h6><strong>{{ user }}</strong></h6>
+			</td>
+			<td colspan="1" style="text-align: center;">
+				<h6><strong>{{ user }}</strong></h6>
+			</td>
+			<td colspan="1" style="text-align: center;">
+				<h6><strong>{{ user }}</strong></h6>
+			</td>
+			<td colspan="1" style="text-align: center;">
+				<h6><strong>{{ user }}</strong></h6>
+			</td>
+			<td colspan="1" style="text-align: center;">
+				<h6><strong>{{ user }}</strong></h6>
+			</td>
+			<td colspan="1" style="text-align: center;">
+				<h6><strong>{{ user }}</strong></h6>
+			</td>
+			<td colspan="1" style="text-align: center;">
+				<h6><strong>{{ user }}</strong></h6>
+			</td>
+				<td colspan="1" style="text-align: center; padding-left: 3px; color: black; background: white;">
+				<h6><strong>{{ user }}</strong></h6>
+			</td>
+			<td colspan="1" style="text-align: center;">
+				<h6><strong>{{ user }}</strong></h6>
+			</td>
+			<td colspan="1" style="text-align: center;">
+				<h6><strong>{{ user }}</strong></h6>
+			</td>
+			<td colspan="1" style="text-align: center;">
+				<h6><strong>{{ user }}</strong></h6>
+			</td>
+			<td colspan="1" style="text-align: center;">
+				<h6><strong>{{ user }}</strong></h6>
+			</td>
+			<td colspan="1" style="text-align: center;">
+				<h6><strong>{{ user }}</strong></h6>
+			</td>
+			<td colspan="1" style="text-align: center;">
+				<h6><strong>{{ user }}</strong></h6>
+			</td>
+				<td colspan="1" style="text-align: center; padding-left: 3px; color: black; background: white;">
+				<h6><strong>{{ user }}</strong></h6>
+			</td>
+				<td colspan="1" style="text-align: center; padding-left: 3px; color: black; background: white;">
+				<h6><strong>{{ user }}</strong></h6>
+			</td>
+		</tr>
+		<!--<td colspan="1" style="text-align: center; padding-left: 3px">
+			<h6>{% for receitas in object_list %}
+
+					{{ receitas.conferido}}
+				</label><br>
+				{% endfor %}
+			</h6>
+		</td>
+		<td colspan="1" style="text-align: center; padding-left: 3px">
+			<h6>{% for receitas in object_list %}
+
+					{{ receitas.notificado}}
+				</label><br>
+				{% endfor %}
+			</h6>
+		</td>
+		<td colspan="1" style="text-align: center; padding-left: 3px">
+			<h6>{% for receitas in object_list %}
+
+					{{ receitas.aprovado}}
+				</label><br>
+				{% endfor %}
+			</h6>
+		</td> -->
+		<!-- <div class="col-auto">
+			<div class="form-check mb-2">
+				<label class="form-check-label">
+					<input type="checkbox" class="form-check-input" name="remember"> Remember me
+				</label>
+			</div>
+		</div> -->
+
+
+</table>
+<br><br>
+<div class="container" >
+  <ul class="pagination" style="text-align: center; padding-left: 35%">
+    <li class="page-item"><a class="page-link" href="#">Previous</a></li>
+    <li class="page-item"><a class="page-link" href="#">1</a></li>
+    <li class="page-item active"><a class="page-link" href="#">2</a></li>
+    <li class="page-item"><a class="page-link" href="#">3</a></li>
+    <li class="page-item"><a class="page-link" href="#">Next</a></li>
+  </ul>
+</div>
+
+		<a href="{% url 'create_receitas' %}" class="btn btn-info">
+			Novo
+		</a>
+		<a href="{% url 'execucao' %}" class="btn btn-success">
+			Voltar
+		</a>
+		<a href="{% url 'logout' %}" class="btn btn-danger">
+			Sair
+		</a><br><br>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Importações | PGP{% endblock %}
+{% block page_name %}Central de Importações{% endblock %}
+{% block main %}
+<div class="sgm-page-header d-flex justify-content-between align-items-center mb-4">
+  <div><h1 class="h3 mb-1">Central de Importações</h1><p class="text-muted mb-0">CSV e Excel com validação antes da gravação.</p></div>
+  {% if user.is_staff or user.is_superuser %}<a class="btn btn-primary" href="{% url 'create_importacao' %}"><i class="fa fa-upload mr-1"></i> Nova importação</a>{% endif %}
+</div>
+<div class="sgm-card p-0 overflow-hidden">
+<table class="table table-hover mb-0"><thead><tr><th>#</th><th>Tipo</th><th>Arquivo</th><th>Origem</th><th>Situação</th><th>Lidos</th><th>Erros</th><th></th></tr></thead><tbody>
+{% for item in importacoes %}<tr><td>{{ item.id }}</td><td>{{ item.get_tipo_display }}</td><td>{{ item.arquivo_nome }}</td><td>{{ item.sistema_origem }}</td><td>{{ item.get_situacao_display }}</td><td>{{ item.total_lido }}</td><td>{{ item.total_erros }}</td><td><a href="{% url 'detail_importacao' item.pk %}">Detalhes</a></td></tr>
+{% empty %}<tr><td colspan="8" class="text-center py-5 text-muted">Nenhuma importação registrada.</td></tr>{% endfor %}
+</tbody></table></div>
+{% endblock %}

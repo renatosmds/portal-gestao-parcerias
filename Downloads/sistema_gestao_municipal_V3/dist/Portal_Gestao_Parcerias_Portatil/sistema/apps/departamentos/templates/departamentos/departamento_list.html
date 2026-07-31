@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Departamentos | Sistema de Gestão Municipal{% endblock %}
+{% block page_name %}Gestão de Departamentos{% endblock %}
+
+{% block staticcss %}
+<link rel="stylesheet" href="{% static 'css/departamentos-v3.css' %}">
+{% endblock %}
+
+{% block main %}
+<section class="departments-page">
+    <header class="departments-header">
+        <div class="departments-title">
+            <span class="departments-title-icon">
+                <i class="fa fa-sitemap"></i>
+            </span>
+            <div>
+                <span class="sgm-eyebrow">ESTRUTURA ORGANIZACIONAL</span>
+                <h1>Departamentos</h1>
+                <p>Consulte e administre os departamentos vinculados às empresas.</p>
+            </div>
+        </div>
+
+        {% if perms.departamentos.add_departamento %}
+            <a href="{% url 'create_departamento' %}" class="btn btn-primary">
+                <i class="fa fa-plus mr-1"></i> Novo departamento
+            </a>
+        {% endif %}
+    </header>
+
+    <div class="departments-summary">
+        <article class="departments-summary-card">
+            <span><i class="fa fa-sitemap"></i></span>
+            <div>
+                <small>Departamentos encontrados</small>
+                <strong>{{ total_departamentos }}</strong>
+            </div>
+        </article>
+
+        <article class="departments-summary-card">
+            <span><i class="fa fa-building-o"></i></span>
+            <div>
+                <small>Escopo de acesso</small>
+                <strong>
+                    {% if user.is_superuser %}Todas as empresas{% else %}Empresa vinculada{% endif %}
+                </strong>
+            </div>
+        </article>
+    </div>
+
+    <form method="get" class="departments-toolbar">
+        <div class="departments-search">
+            <i class="fa fa-search"></i>
+            <input type="search"
+                   name="q"
+                   class="form-control"
+                   value="{{ termo_busca }}"
+                   placeholder="Pesquisar departamento..."
+                   autocomplete="off">
+        </div>
+
+        {% if user.is_superuser %}
+            <select name="empresa" class="form-control departments-company-filter">
+                <option value="">Todas as empresas</option>
+                {% for empresa in empresas_disponiveis %}
+                    <option value="{{ empresa.pk }}"
+                            {% if empresa_filtro == empresa.pk|stringformat:"s" %}selected{% endif %}>
+                        {{ empresa.nome }}
+                    </option>
+                {% endfor %}
+            </select>
+        {% endif %}
+
+        <button type="submit" class="btn btn-outline-primary">Pesquisar</button>
+
+        {% if termo_busca or empresa_filtro %}
+            <a href="{% url 'list_departamentos' %}" class="btn btn-outline-secondary">
+                Limpar
+            </a>
+        {% endif %}
+    </form>
+
+    {% if departamentos %}
+        <div class="departments-grid">
+            {% for departamento in departamentos %}
+                <article class="department-card">
+                    <div class="department-card-top">
+                        <span class="department-avatar">
+                            {{ departamento.nome|slice:":1"|upper }}
+                        </span>
+
+                        <div class="department-card-actions">
+                            <a href="{% url 'detail_departamento' departamento.pk %}"
+                               class="department-icon-action"
+                               title="Visualizar departamento">
+                                <i class="fa fa-eye"></i>
+                            </a>
+
+                            {% if perms.departamentos.change_departamento %}
+                                <a href="{% url 'update_departamento' departamento.pk %}"
+                                   class="department-icon-action"
+                                   title="Editar departamento">
+                                    <i class="fa fa-pencil"></i>
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="department-card-body">
+                        <span class="department-company">
+                            <i class="fa fa-building-o mr-1"></i>
+                            {{ departamento.empresa.nome }}
+                        </span>
+
+                        <h2>
+                            <a href="{% url 'detail_departamento' departamento.pk %}">
+                                {{ departamento.nome }}
+                            </a>
+                        </h2>
+
+                        <div class="department-metrics">
+                            <div>
+                                <strong>{{ departamento.quantidade_funcionarios }}</strong>
+                                <small>Funcionários</small>
+                            </div>
+                            <div>
+                                <strong>{{ departamento.quantidade_ativos }}</strong>
+                                <small>Ativos</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <footer class="department-card-footer">
+                        <a href="{% url 'detail_departamento' departamento.pk %}">
+                            Abrir departamento
+                            <i class="fa fa-arrow-right ml-1"></i>
+                        </a>
+                    </footer>
+                </article>
+            {% endfor %}
+        </div>
+
+        {% if is_paginated %}
+            <nav class="departments-pagination" aria-label="Paginação">
+                {% if page_obj.has_previous %}
+                    <a href="?q={{ termo_busca|urlencode }}&empresa={{ empresa_filtro|urlencode }}&page={{ page_obj.previous_page_number }}"
+                       class="btn btn-outline-secondary">
+                        <i class="fa fa-angle-left mr-1"></i> Anterior
+                    </a>
+                {% endif %}
+
+                <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+
+                {% if page_obj.has_next %}
+                    <a href="?q={{ termo_busca|urlencode }}&empresa={{ empresa_filtro|urlencode }}&page={{ page_obj.next_page_number }}"
+                       class="btn btn-outline-secondary">
+                        Próxima <i class="fa fa-angle-right ml-1"></i>
+                    </a>
+                {% endif %}
+            </nav>
+        {% endif %}
+    {% else %}
+        <div class="sgm-panel departments-empty">
+            <span><i class="fa fa-sitemap"></i></span>
+            <h2>Nenhum departamento encontrado</h2>
+            <p>
+                {% if termo_busca or empresa_filtro %}
+                    Nenhum cadastro corresponde aos filtros informados.
+                {% else %}
+                    Ainda não existem departamentos disponíveis no seu escopo.
+                {% endif %}
+            </p>
+
+            {% if termo_busca or empresa_filtro %}
+                <a href="{% url 'list_departamentos' %}"
+                   class="btn btn-outline-primary">
+                    Limpar filtros
+                </a>
+            {% elif perms.departamentos.add_departamento %}
+                <a href="{% url 'create_departamento' %}" class="btn btn-primary">
+                    <i class="fa fa-plus mr-1"></i> Cadastrar departamento
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+</section>
+{% endblock %}
+
+{% block static %}
+{{ block.super }}
+<script src="{% static 'js/departamentos-v3.js' %}"></script>
+{% endblock %}

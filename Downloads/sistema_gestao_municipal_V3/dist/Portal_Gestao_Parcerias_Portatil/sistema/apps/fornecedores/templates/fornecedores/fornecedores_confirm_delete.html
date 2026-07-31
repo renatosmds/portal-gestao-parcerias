@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Excluir fornecedor | Sistema de Gestão Municipal{% endblock %}
+{% block page_name %}Gestão de Fornecedores{% endblock %}
+
+{% block staticcss %}
+<link rel="stylesheet" href="{% static 'css/fornecedores-v3.css' %}">
+{% endblock %}
+
+{% block main %}
+<section class="suppliers-page supplier-delete-page">
+    <article class="supplier-delete-card">
+        <span class="supplier-delete-icon">
+            <i class="fa fa-exclamation-triangle"></i>
+        </span>
+
+        <span class="sgm-eyebrow">CONFIRMAÇÃO NECESSÁRIA</span>
+        <h1>Excluir fornecedor?</h1>
+
+        <p>
+            Você está prestes a excluir <strong>{{ fornecedor }}</strong>.
+        </p>
+
+        <div class="supplier-delete-warning">
+            <i class="fa fa-info-circle"></i>
+            <span>
+                A exclusão poderá ser impedida caso existam registros protegidos vinculados.
+            </span>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="supplier-delete-actions">
+                <a href="{% url 'detail_fornecedor' fornecedor.pk %}"
+                   class="btn btn-outline-secondary">
+                    Cancelar
+                </a>
+
+                <button type="submit" class="btn btn-danger">
+                    <i class="fa fa-trash mr-1"></i> Confirmar exclusão
+                </button>
+            </div>
+        </form>
+    </article>
+</section>
+{% endblock %}

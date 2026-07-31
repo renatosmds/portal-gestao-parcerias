@@ -40,6 +40,14 @@ ALLOWED_HOSTS = _csv_config('ALLOWED_HOSTS', '127.0.0.1,localhost')
 CSRF_TRUSTED_ORIGINS = _csv_config('CSRF_TRUSTED_ORIGINS', '')
 PGP_SESSION_IDLE_MINUTES = config('PGP_SESSION_IDLE_MINUTES', default=60, cast=int)
 PGP_MAX_UPLOAD_MB = config('PGP_MAX_UPLOAD_MB', default=20, cast=int)
+
+# Sprint 23 — análise assistida. A integração externa permanece desativada por padrão.
+PGP_IA_ATIVA = config('PGP_IA_ATIVA', default=False, cast=bool)
+OPENAI_API_KEY = config('OPENAI_API_KEY', default='')
+PGP_IA_MODELO = config('PGP_IA_MODELO', default='')
+PGP_IA_LIMITE_PAGINAS = config('PGP_IA_LIMITE_PAGINAS', default=10, cast=int)
+PGP_IA_LIMITE_TAMANHO_MB = config('PGP_IA_LIMITE_TAMANHO_MB', default=15, cast=int)
+PGP_IA_ANONIMIZAR = config('PGP_IA_ANONIMIZAR', default=True, cast=bool)
 DATA_UPLOAD_MAX_MEMORY_SIZE = PGP_MAX_UPLOAD_MB * 1024 * 1024
 FILE_UPLOAD_MAX_MEMORY_SIZE = min(PGP_MAX_UPLOAD_MB, 5) * 1024 * 1024
 PORTABLE_DATA_DIR = config('PGP_DATA_DIR', default='').strip()
@@ -62,6 +70,10 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
 
     'apps.analise',
+    'apps.assistente_ia.apps.AssistenteIaConfig',
+    'apps.transparencia.apps.TransparenciaConfig',
+    'apps.conciliacao.apps.ConciliacaoConfig',
+    'apps.metas.apps.MetasConfig',
     #'apps.app_antiga',
     'apps.clientes',
     'apps.conferencia3',

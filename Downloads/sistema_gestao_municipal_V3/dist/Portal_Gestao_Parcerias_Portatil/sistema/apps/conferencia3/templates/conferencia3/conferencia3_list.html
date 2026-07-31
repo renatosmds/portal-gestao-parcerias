@@ -1,0 +1,253 @@
+{% extends 'base.html' %}
+{% load l10n %}
+{% load humanize %}
+{% block main %}
+<!--	<table width="100%">
+		<tr style="background: #662b7e">
+			<th colspan="4">
+				<h3 style=" text-align: center; background: #662b7e; color: white; padding: 10px 0px 10px 0px">
+					PLANO DE TRABALHO
+				</h3>
+			</th>
+		</tr>
+	</table> -->
+<table  border="1" width="100%">
+	<thead>
+		<tr>
+			<td colspan="3" style="text-align: center;">
+				<h6><strong>LOGO</strong></h6>
+			</td>
+			<td colspan="8" style="text-align: center; padding-left: 10px"><h6>PREFEITURA MUNICIPAL DE CONTAGEM<br>SECRETARIA MUNICIPAL DE DESENVOLVIMENTO SOCIAL<br>RELAÇÃO DE PAGAMENTO MUNICIPAL<br>DECRETO Nº 30/17</h6>
+			</td>
+			<td colspan="2" style="text-align: center;">
+				<h6><strong>DATA:</strong></h6>
+			</td>
+			<td colspan="2" style="text-align: center;">
+				<h6><strong>02/06/2018</strong></h6>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="2" style="text-align: center;  padding-left: 3px">
+				<h6><strong>PROCESSO</strong></h6>
+			</td>
+			<td colspan="2" style="text-align: center;  padding-left: 3px">
+				<h6><strong>PARCELA / Nº:</strong></h6>
+			</td>
+			<td colspan="5" style="text-align: center;  padding-left: 3px">
+				<h6><strong>PARCERIA Nº</strong></h6>
+			</td>
+			<td colspan="2" style="text-align: center;  padding-left: 3px">
+				<h6><strong>PARCEIRO</strong></h6>
+			</td>
+			<td colspan="2" style="text-align: center; padding-left: 3px">
+				<h6><strong>CNPJ</strong></h6>
+			</td>
+			<td colspan="2" style="text-align: center;  padding-left: 3px">
+				<h6><strong>PERÍODO</strong></h6>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="2" style="text-align: left; padding-left: 3px">
+				<h6>Prestação de Contas</h6>
+			</td>
+			<td colspan="2" style="text-align: left; padding-left: 3px">
+				<h6>{{ conferencia3.parcela }}</h6>
+			</td>
+			<td colspan="5" style="text-align: left; padding-left: 3px">
+				<h6>Termo de Colaboração Nº 002/2018 - PA Nº 195/2017 - Chamamento Nº 001/2018.<!--<br>Retificado através do Doc Nº 4345 DE 17/05/2018 - Leia-se: Termo de Colaboração Nº 004/2018 - PA Nº 195/2017 - Chamamento Nº 001/2018--></h6>
+			</td>
+			<td colspan="2" style="text-align: left; padding-left: 3px">
+				<h6>{{ conferencia3.numtermo }}</h6>
+			</td>
+			<td colspan="2" style="text-align: left; padding-left: 3px">
+				<h6>06.986.035/0001-28</h6>
+			</td>
+			<td colspan="2" style="text-align: left; padding-left: 3px">
+				<h6>06/05/2018 A 31/05/2018 (5151-2)</h6>
+			</td>
+		</tr>
+	</thead>
+</table>
+<table  border="1" width="100%">
+	<tr>
+<!--		<td colspan="18" style="text-align: CENTER; padding-left: 0px"><h5>RELAÇÃO DE PAGAMENTOS</h5>
+		</td> -->
+	</tr>
+	<tr>
+		<td colspan="1" style="text-align: center;">
+			<h6><strong>Ordem</strong></h6>
+		</td>
+		<td colspan="6" style="text-align: center;">
+			<h6><strong>Credor</strong></h6>
+		</td>
+		<td colspan="3" style="text-align: center;">
+			<h6><strong>Cpf/Cnpj</strong></h6>
+		</td>
+		<td colspan="1" style="text-align: center;">
+			<h6><strong>Espécie</strong></h6>
+		</td>
+		<td colspan="1" style="text-align: center;">
+			<h6><strong>Nº(*)</strong></h6>
+		</td>
+		<td colspan="1" style="text-align: center;">
+			<h6><strong>Data</strong></h6>
+		</td>
+		<td colspan="1" style="text-align: center;">
+			<h6><strong>NºDoc.</strong></h6>
+		</td>
+		<td colspan="1" style="text-align: center;">
+			<h6><strong>Valor(R$)</strong></h6>
+		</td>
+	<tr>
+		<td colspan="1" style="text-align: center; padding-left: 3px">
+			<h6>{% for conferencia3 in object_list %}
+				<a style="text-align: center; padding-left: 3px; border-bottom: 1px solid black; display: grid;">
+				<a href="{% url 'update_conferencia3' conferencia3.id %}">
+                    {{ conferencia3.ordem}}<br>
+				</a>
+				{% endfor %}
+				</a>
+			</h6>
+		</td>
+		<td colspan="6" style="text-align: left; padding-left: 3px">
+			<h6>{% for fornecedor in object_list %}
+				<a style="text-align: left; padding-left: 3px; border-bottom: 1px solid black; display: grid;">
+                {{ fornecedor.credor}}<br>
+				</a>
+				{% endfor %}
+			</h6>
+		</td>
+		<td colspan="3" style="text-align: right; padding-left: 3px">
+			<h6>{% for conferencia3 in object_list %}
+				<a style="text-align: right; padding-left: 3px; border-bottom: 1px solid black; display: grid;">
+                {{ conferencia3.CpfCnpj}}<br>
+				</a>
+				{% endfor %}
+			</h6>
+		</td>
+		<td colspan="1" style="text-align: center; padding-left: 3px">
+			<h6>{% for conferencia3 in object_list %}
+				<a style="text-align: center; padding-left: 3px; border-bottom: 1px solid black; display: grid;">
+                {{ conferencia3.especie}}<br>
+				</a>
+				{% endfor %}
+			</h6>
+		</td>
+		<td colspan="1" style="text-align: center; padding-left: 3px">
+			<h6>{% for conferencia3 in object_list %}
+				<a style="text-align: right; padding-left: 3px; border-bottom: 1px solid black; display: grid;">
+                {{ conferencia3.numero}}<br>
+				</a>
+				{% endfor %}
+			</h6>
+		</td>
+		<td colspan="1" style="text-align: center; padding-left: 3px">
+			<h6>{% for conferencia3 in object_list %}
+				<a style="text-align: right; padding-left: 3px; border-bottom: 1px solid black; display: grid;">
+                {{ conferencia3.data}}<br>
+				</a>
+				{% endfor %}
+			</h6>
+		</td>
+		<td colspan="1" style="text-align: right; padding-left: 3px">
+			<h6>{% for conferencia3 in object_list %}
+				<a style="text-align: right; padding-left: 3px; border-bottom: 1px solid black; display: grid;">
+                {{ conferencia3.comprovante}}<br>
+				</a>
+				{% endfor %}
+			</h6>
+		</td>
+		<td colspan="1" style="text-align: right; padding-left: 3px">
+			<h6>{% for conferencia3 in object_list %}
+				<a style="text-align: right; padding-left: 3px; border-bottom: 1px solid black; display: grid;">
+					{{conferencia3.valor|floatformat:2}}<br>
+				<!--{{bpm.valor|intcomma }}<br> -->
+				</a>
+				{% endfor %}
+			</h6>
+		</td>
+<!--		<div class="col-auto">
+			<div class="form-check mb-2">
+				<label class="form-check-label">
+					<input type="checkbox" class="form-check-input" name="remember"> Remember me
+				</label>
+			</div>
+		</div> -->
+	</tr>
+
+</table>
+<table >
+	<tr>
+		<td colspan="20" style="text-align: left: ; padding-left: 1000px">
+			<h6><strong>TOTAL:</strong></h6>
+		</td>
+			<td colspan="1" style="text-align: right; padding-left: 3px">
+				<h6>{% for conferencia3 in object_list %}
+					{{ conferencia3.valor}}<br>
+					{% endfor %}
+				</h6>
+			</td>
+	</tr>
+	<tr>
+		<td colspan="20" style="text-align: left; padding-left: 600px; padding-top: 30px">
+			<h6>Contagem, 02 de junho de 2018</h6>
+		</td>
+	</tr>
+	<tr>
+		<td colspan="4" style="text-align: left; padding-left: 10px; padding-top: 60px">
+			<h6><strong>_______________________________________________________________</strong></h6>
+		</td>
+	</tr>
+	<tr>
+		<td colspan="4" style="text-align: left; padding-left: 10px; padding-top: 0px">
+			<h6><strong>AMANDA LETÍCIA GOMES DE OLIVEIRA</strong></h6>
+		</td>
+		<td colspan="4" style="text-align: left; padding-left: 0px; padding-top: 0px">
+			<h6>CPF : 125.038.506-77</h6>
+		</td>
+	</tr>
+	<tr>
+		<td colspan="20" style="text-align: left; padding-left: 10px">
+			<h6>Nome / Assinatura do Responsável pelo preenchimento</h6>
+		</td>
+	</tr>
+	<tr>
+		<td colspan="4" style="text-align: left; padding-left: 10px; padding-top: 60px">
+			<h6><strong>_______________________________________________________________</strong></h6>
+		</td>
+	</tr>
+		<td colspan="4" style="text-align: left; padding-left: 10px; padding-top: 0px">
+			<h6><strong>JONATHAN ALMEIDA ARAÚJO</strong></h6>
+		</td>
+		<td colspan="4" style="text-align: left; padding-left: 0px; padding-top: 0px">
+			<h6>CPF : 015.596.516-60</h6>
+		</td>
+	<tr>
+		<td colspan="20" style="text-align: left; padding-left: 10px">
+			<h6>Nome / Assinatura do Titular Parceiro</h6>
+		</td>
+	</tr>
+</table><br><br>
+<div class="container" >
+  <ul class="pagination" style="text-align: center; padding-left: 35%">
+    <li class="page-item"><a class="page-link" href="#">Previous</a></li>
+    <li class="page-item"><a class="page-link" href="#">1</a></li>
+    <li class="page-item active"><a class="page-link" href="#">2</a></li>
+    <li class="page-item"><a class="page-link" href="#">3</a></li>
+    <li class="page-item"><a class="page-link" href="#">Next</a></li>
+  </ul>
+</div>
+
+		<a href="{% url 'create_conferencia3' %}" class="btn btn-info">
+			Novo
+		</a>
+		<a href="{% url 'execucao' %}" class="btn btn-success">
+			Voltar
+		</a>
+		<a href="{% url 'logout' %}" class="btn btn-danger">
+			Sair
+		</a>
+		<a href="https://sistema-gestao-municipal.herokuapp.com/admin/conferencia3/conferencia3/?" class="btn btn-warning">
+			Conferência
+		</a><br><br>
+{% endblock %}

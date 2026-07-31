@@ -1,0 +1,18 @@
+PORTAL DE GESTÃO DE PARCERIAS — MODO PORTÁTIL REAL
+
+1. No computador principal, com o Portal funcionando, execute:
+   portable_real\construir_portatil.bat
+
+2. O processo cria:
+   dist\Portal_Gestao_Parcerias_Portatil
+
+3. Copie ESSA pasta pronta para o pendrive.
+
+4. No computador de destino, mesmo sem Python instalado, execute:
+   iniciar_portal.bat
+
+Não execute pip, não crie venv e não instale requirements no pendrive.
+Os dados ficam separados em dados\db.sqlite3 e dados\media.
+Antes de atualizar o código, execute fazer_backup.bat.
+
+Observação: o executável Windows precisa ser gerado em um computador Windows. O pacote final pode ser movido entre letras de unidade.

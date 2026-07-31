@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load static humanize %}
+{% block title %}{{ lancamento }} | Lançamento{% endblock %}
+{% block page_name %}Lançamentos{% endblock %}
+{% block staticcss %}<link rel="stylesheet" href="{% static 'css/lancamentos-v3.css' %}">{% endblock %}
+{% block main %}
+<section class="entries-page">
+    <a href="{% url 'list_lancamentos' %}" class="entries-back">← Voltar</a>
+    <header class="entries-header">
+        <div>
+            <span class="sgm-eyebrow">LANÇAMENTO</span>
+            <h1>{{ lancamento }}</h1>
+            <p>{{ lancamento.descricao }}</p>
+        </div>
+        <div>
+            {% if perms.lancamentos.change_lancamento %}<a href="{% url 'registrar_glosa' lancamento.pk %}" class="btn btn-warning">Glosar</a> <a href="{% url 'update_lancamento' lancamento.pk %}" class="btn btn-primary">Editar</a>{% endif %}
+            {% if perms.lancamentos.delete_lancamento %}<a href="{% url 'delete_lancamento' lancamento.pk %}" class="btn btn-outline-danger">Excluir</a>{% endif %}
+        </div>
+    </header>
+
+    <div class="entry-detail-grid">
+        <section class="sgm-panel entry-panel">
+            <h2>Resultado da análise</h2>
+            <div class="entry-result">
+                <b class="entry-status status-{{ lancamento.situacao }}">{{ lancamento.get_situacao_display }}</b>
+                <p><strong>Inconformidade/justificativa</strong><br>{{ lancamento.justificativa|default:"Não registrada."|linebreaksbr }}</p>
+                <p><strong>Recomendação</strong><br>{{ lancamento.recomendacao|default:"Não registrada."|linebreaksbr }}</p>
+            </div>
+            <h2>Documentos</h2>
+            <div class="entry-files">
+                {% if lancamento.documento %}<a href="{{ lancamento.documento.url }}" target="_blank">Abrir documento comprobatório</a>{% endif %}
+                {% if lancamento.comprovante_pagamento %}<a href="{{ lancamento.comprovante_pagamento.url }}" target="_blank">Abrir comprovante de pagamento</a>{% endif %}
+                {% if not lancamento.documento and not lancamento.comprovante_pagamento %}<span>Nenhum arquivo anexado.</span>{% endif %}
+            </div>
+        </section>
+
+        <aside class="sgm-panel entry-panel">
+            <h2>Dados do lançamento</h2>
+            <dl class="entry-data">
+                <div><dt>Empresa</dt><dd>{{ lancamento.empresa.nome }}</dd></div>
+                <div><dt>Termo</dt><dd>{{ lancamento.termo|default:"Não informado" }}</dd></div>
+                <div><dt>Prestação</dt><dd>{{ lancamento.prestacao|default:"Não informada" }}</dd></div>
+                <div><dt>Fornecedor</dt><dd>{{ lancamento.fornecedor|default:"Não informado" }}</dd></div>
+                <div><dt>Documento</dt><dd>{{ lancamento.get_tipo_documento_display }} {{ lancamento.numero_documento }}</dd></div>
+                <div><dt>Data</dt><dd>{{ lancamento.data_documento|date:"d/m/Y" }}</dd></div>
+                <div><dt>Pagamento</dt><dd>{{ lancamento.data_pagamento|date:"d/m/Y"|default:"Não informado" }}</dd></div>
+                <div><dt>Atestado</dt><dd>{{ lancamento.atestado|yesno:"Sim,Não" }}</dd></div>
+                <div><dt>Valor</dt><dd>R$ {{ lancamento.valor_documento|floatformat:2|intcomma }}</dd></div>
+                <div><dt>Tipo de glosa</dt><dd>{{ lancamento.get_tipo_glosa_display }}</dd></div><div><dt>Glosa</dt><dd>R$ {{ lancamento.valor_glosa|floatformat:2|intcomma }}</dd></div>
+                <div><dt>Aprovado</dt><dd>R$ {{ lancamento.valor_aprovado|floatformat:2|intcomma }}</dd></div>
+            </dl>
+        </aside>
+    </div>
+    <section class="sgm-panel entry-panel mt-4">
+      <h2>Histórico de glosas</h2><ul class="sgm-workflow-history">{% for item in historico_glosas %}<li><strong>{{ item.get_tipo_novo_display }}</strong> — R$ {{ item.valor_novo|floatformat:2 }} · {{ item.criado_em|date:"d/m/Y H:i" }}{% if item.usuario %} · {{ item.usuario }}{% endif %}<br><small>{{ item.fundamentacao|default:"Sem fundamentação." }}</small></li>{% empty %}<li>Nenhuma glosa registrada.</li>{% endfor %}</ul>
+    </section>
+</section>
+{% endblock %}

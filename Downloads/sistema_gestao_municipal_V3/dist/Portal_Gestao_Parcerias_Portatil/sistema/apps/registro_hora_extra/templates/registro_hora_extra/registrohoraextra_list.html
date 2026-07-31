@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+
+{% block main %}
+<table class="table-fluid table-bordered  table-striped table-hover table-condesed">
+    <tr>
+        <td colspan="12" style="text-align: CENTER; padding-left: 0px">
+            <h3>BANCO DE HORAS</h3>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="1" style="text-align: center;">
+            <h6><strong>Funcionário</strong></h6>
+        </td>
+        <td colspan="1" style="text-align: center;">
+            <h6><strong>Motivo</strong></h6>
+        </td>
+        <td colspan="1" style="text-align: center;">
+            <h6><strong>Assunto</strong></h6>
+        </td>
+		<td colspan="1" style="text-align: center;">
+			<h6><strong>Horas</strong></h6>
+        </td>
+<!--        <td colspan="1" style="text-align: center;">-->
+<!--			<h6><strong>Utilizadas</strong></h6>-->
+<!--        </td>-->
+<!--        <td colspan="1" style="text-align: center;">-->
+<!--			<h6><strong>Delete</strong></h6>-->
+<!--        </td>-->
+    </tr>
+    <tr>
+        <td colspan="1" style="text-align: left; padding-left: 3px">
+            <h6>
+                {% for registro_re in object_list %}
+				<a style="text-align: left; padding-left: 3px; border-bottom: 1px solid black; display: grid;">
+<!--                <a href="{% url 'update_hora_extra_base' registro_re.id %}">-->
+                   {{ registro_re.funcionario }}
+<!--                </a>-->
+                </a>
+                {% endfor %}
+            </h6>
+        </td>
+        <td colspan="1" style="text-align: left; padding-left: 3px">
+            <h6>
+                {% for registro_re in object_list %}
+				<a style="text-align: left; padding-left: 3px; border-bottom: 1px solid black; display: grid;">
+<!--                <a href="{% url 'update_hora_extra_base' registro_re.id %}">-->
+                    {{ registro_re.motivo }}
+                </a>
+                {% endfor %}
+            </h6>
+        </td>
+        <td colspan="1" style="text-align: left; padding-left: 3px">
+            <h6>
+                {% for registro_re in object_list %}
+				<a style="text-align: left; padding-left: 3px; border-bottom: 1px solid black; display: grid;">
+<!--                <a href="{% url 'update_hora_extra_base' registro_re.id %}">-->
+                    {{ registro_re.assunto }}
+                </a>
+                {% endfor %}
+            </h6>
+        </td>
+        <td colspan="1" style="text-align: left; padding-left: 3px">
+            <h6>
+                {% for registro_re in object_list %}
+				<a style="text-align: left; padding-left: 3px; border-bottom: 1px solid black; display: grid;">
+<!--                <a href="{% url 'update_hora_extra_base' registro_re.id %}">-->
+                    {{ registro_re.horas }}
+                </a>
+                {% endfor %}
+            </h6>
+        </td>
+<!--        <td colspan="1" style="text-align: left; padding-left: 3px">-->
+<!--            <h6>-->
+<!--                {% for registro_re in object_list %}-->
+<!--				<a style="text-align: left; padding-left: 3px; border-bottom: 1px solid black; display: grid;">-->
+<!--&lt;!&ndash;                <a href="{% url 'update_hora_extra_base' registro_re.id %}">&ndash;&gt;-->
+<!--                    {{ registro_re.utlizada }}-->
+<!--                </a>-->
+<!--                {% endfor %}-->
+<!--            </h6>-->
+<!--        </td>-->
+<!--        <td colspan="1" style="text-align: left; padding-left: 3px">-->
+<!--            <h6>-->
+<!--                {% for registro_re in object_list %}-->
+<!--                <a href="{% url 'update_hora_extra_base' registro_re.id %}"-->
+<!--                   style="text-align: left; padding-left: 3px; border-bottom: 1px solid gray; display: grid;-->
+<!--				   grid-template-columns: repeat(auto-fit, minmax(var(&#45;&#45;column-width-min), 1fr));">-->
+<!--&lt;!&ndash;&ndash;&gt;-->
+<!--                </a>-->
+<!--                <a href="{% url 'delete_hora_extra' registro_re.id %}" id class="fa fa-trash"-->
+<!--                   aria-hidden="true" style="color: #662b7e; text-align: left; padding-left: 3px; border-bottom: 1px solid gray; display: grid;-->
+<!--				   grid-template-columns: repeat(auto-fit, minmax(var(&#45;&#45;column-width-min), 1fr)); "> &lt;!&ndash; purple = #662b7e &ndash;&gt;-->
+<!--                </a>-->
+<!--                {% endfor %}-->
+<!--            </h6>-->
+<!--            <h6>-->
+<!--                {% if not object_list %}-->
+<!--                <h3>Nao existem registros de hora extra no banco de dados</h3>-->
+<!--                {% endif %}<br><br>-->
+<!--            </h6>-->
+<!--        </td>-->
+    </tr>
+</table>
+<br>
+<div class="container" >
+  <ul class="pagination" style="text-align: center; padding-left: 35%">
+    <li class="page-item"><a class="page-link" href="#">Previous</a></li>
+    <li class="page-item"><a class="page-link" href="#">1</a></li>
+    <li class="page-item active"><a class="page-link" href="#">2</a></li>
+    <li class="page-item"><a class="page-link" href="#">3</a></li>
+    <li class="page-item"><a class="page-link" href="#">Next</a></li>
+  </ul>
+</div>
+<div>
+    <a href="{% url 'create_registro_hora_extra' %}" class="btn btn-info">
+        Novo
+    </a>
+    <a href="{% url 'cadastros_gerais' %}" class="btn btn-success">
+        Voltar
+    </a>
+    <a href="{% url 'logout' %}" class="btn btn-danger">
+        Sair
+    </a>
+		<a href="https://sistema-gestao-municipal.herokuapp.com/admin/registro_hora_extra/registrohoraextra/" class="btn btn-warning">
+			Lançamentos
+		</a><br><br>
+</div>
+<br>
+<a href="{% url 'exportar_csv' %}" class="btn btn-secondary"> Exportar CSV </a>
+<a href="{% url 'exportar_excel' %}" class="btn btn-secondary"> Exportar Excel </a>
+{% endblock %}

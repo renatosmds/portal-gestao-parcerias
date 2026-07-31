@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Excluir documento{% endblock %}
+{% block main %}
+<section class="docs-page">
+    <article class="sgm-panel doc-delete">
+        <h1>Excluir documento?</h1>
+        <p>Você está prestes a excluir <strong>{{ documento }}</strong>.</p>
+        <form method="post">
+            {% csrf_token %}
+            <a href="{% url 'detail_documento' documento.pk %}" class="btn btn-outline-secondary">Cancelar</a>
+            <button class="btn btn-danger">Confirmar exclusão</button>
+        </form>
+    </article>
+</section>
+{% endblock %}

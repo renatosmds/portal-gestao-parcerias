@@ -1,0 +1,185 @@
+{% extends 'base2.html' %}
+
+{% block main %}
+    <table class="table-fluid table-bordered  table-striped table-hover table-condesed">
+	<tr>
+		<td colspan="12" style="text-align: CENTER; padding-left: 0px">
+			<h5>RELAÇÃO DE CURSOS</h5>
+		</td>
+	</tr>
+	<tr>
+		<td colspan="1" style="text-align: center;">
+			<h6><strong>Nome do Curso</strong></h6>
+		</td>
+<!--		<td colspan="1" style="text-align: center;">
+			<h6><strong>Salário<br>Base</strong></h6>
+		</td>
+		<td colspan="1" style="text-align: center;">
+			<h6><strong>Salário<br>Bruto</strong></h6>
+		</td>
+		<td colspan="1" style="text-align: center;">
+			<h6><strong>Salário<br>Líquido</strong></h6>
+		</td>
+-->		<td colspan="1" style="text-align: center;">
+			<h6><strong>Ano</strong></h6>
+		</td>
+		<td colspan="1" style="text-align: center;">
+			<h6><strong>Mês</strong></h6>
+		</td>
+		<td colspan="1" style="text-align: center;">
+			<h6><strong>Cronograma</strong></h6>
+		</td>
+		<!--<td colspan="1" style="text-align: center;">-->
+			<!--<h6><strong>Cronograma</strong></h6>-->
+		<!--</td>-->
+		<td colspan="1" style="text-align: center;">
+			<h6><strong>Horário</strong></h6>
+		</td>
+		<td colspan="1" style="text-align: center;">
+			<h6><strong>Carga Horária</strong></h6>
+		</td>
+		<td colspan="1" style="text-align: center;">
+			<h6><strong>Docente</strong></h6>
+		</td>
+		<td colspan="1" style="text-align: center;">
+			<h6><strong>Certificado Entregue</strong></h6>
+		</td>
+	</tr>
+	<tr>
+		<td colspan="1" style="text-align: left; padding-left: 3px">
+			<h6>
+				{% for curso in object_list %}
+				<a href="{% url 'update_curso' curso.id %}"
+				   style="text-align: left; padding-left: 3px; border-bottom: 1px solid gray; display: grid;
+				   grid-template-columns: repeat(auto-fit, minmax(var(--column-width-min), 1fr));">
+					{{ curso.nomeCurso }}
+				</a>
+				{% endfor %}
+			</h6>
+		</td>
+<!--		<td colspan="1" style="text-align: left; padding-left: 3px">
+			<h6>
+				{% for funcionarios in object_list %}
+
+				<a style="text-align: left; padding-left: 3px; border-bottom: 1px solid gray; display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(var(--column-width-min), 1fr));">
+					{{ funcionarios.salarioBase }}
+				</a>
+				{% endfor %}
+			</h6>
+		</td>
+		<td colspan="1" style="text-align: left; padding-left: 3px">
+			<h6>
+				{% for funcionarios in object_list %}
+
+				<a style="text-align: left; padding-left: 3px; border-bottom: 1px solid gray; display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(var(--column-width-min), 1fr));">
+					{{ funcionarios.salarioBruto }}
+				</a>
+				{% endfor %}
+			</h6>
+		</td>
+		<td colspan="1" style="text-align: left; padding-left: 3px">
+			<h6>
+				{% for funcionarios in object_list %}
+				<a style="text-align: left; padding-left: 3px; border-bottom: 1px solid gray; display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(var(--column-width-min), 1fr));">
+					{{ funcionarios.salarioLiquido }}
+				</a>
+				{% endfor %}
+			</h6>
+		</td>
+-->		<td colspan="1" style="text-align: left; padding-left: 3px">
+			<h6>{% for curso in object_list %}
+				<a style="text-align: left; padding-left: 3px; border-bottom: 1px solid gray; display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(var(--column-width-min), 1fr));">
+                    {{ curso.anoCurso }}<br>
+					{% endfor %}
+				</a>
+                </h6>
+		</td>
+		<td colspan="1" style="text-align: left; padding-left: 3px">
+			<h6>{% for curso in object_list %}
+				<a style="text-align: left; padding-left: 3px; border-bottom: 1px solid gray; display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(var(--column-width-min), 1fr));">
+                    {{ curso.mesCurso }}<br>
+					{% endfor %}
+				</a>
+                </h6>
+		</td>
+		<td colspan="1" style="text-align: left; padding-left: 3px">
+			<h6>{% for curso in object_list %}
+				<a style="text-align: left; padding-left: 3px; border-bottom: 1px solid gray; display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(var(--column-width-min), 1fr));">
+					{{ curso.cronograma }}<br>
+					{% endfor %}
+				</a>
+			</h6>
+		</td>
+<!--&ndash;&gt;		<td colspan="1" style="text-align: left; padding-left: 3px">-->
+			<!--<h6>{% for curso in object_list %}-->
+				<!--<a style="text-align: left; padding-left: 3px; border-bottom: 1px solid gray; display: grid;-->
+    <!--grid-template-columns: repeat(auto-fit, minmax(var(&#45;&#45;column-width-min), 1fr));">-->
+                    <!--{{ curso.cronograma }}<br>-->
+					<!--{% endfor %}-->
+				<!--</a>-->
+                <!--</h6>-->
+		<!--</td>-->
+		<td colspan="1" style="text-align: left; padding-left: 3px">
+			<h6>{% for curso in object_list %}
+				<a style="text-align: left; padding-left: 3px; border-bottom: 1px solid gray; display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(var(--column-width-min), 1fr));">
+                    {{ curso.horario }}<br>
+				</a>
+                		{% endfor %}
+                </h6>
+		</td>
+		<td colspan="1" style="text-align: left; padding-left: 3px">
+			<h6>{% for curso in object_list %}
+				<a style="text-align: left; padding-left: 3px; border-bottom: 1px solid gray; display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(var(--column-width-min), 1fr));">
+                    {{ curso.carga}}<br>
+				</a>
+                		{% endfor %}
+                </h6>
+		</td>
+		<td colspan="1" style="text-align: left; padding-left: 3px">
+			<h6>{% for curso in object_list %}
+				<a style="text-align: left; padding-left: 3px; border-bottom: 1px solid gray; display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(var(--column-width-min), 1fr));">
+                    {{ curso.docente}}<br>
+				</a>
+                		{% endfor %}
+                </h6>
+		</td>
+		<td colspan="1" style="text-align: left; padding-left: 3px">
+			<h6>{% for curso in object_list %}
+				<a style="text-align: left; padding-left: 3px; border-bottom: 1px solid gray; display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(var(--column-width-min), 1fr));">
+                    {{ curso.certificado}}<br>
+				</a>
+                		{% endfor %}
+                </h6>
+		</td>
+	</tr>
+</table><br><br>
+<div class="container" >
+  <ul class="pagination" style="text-align: center; padding-left: 35%">
+    <li class="page-item"><a class="page-link" href="#">Previous</a></li>
+    <li class="page-item"><a class="page-link" href="#">1</a></li>
+    <li class="page-item active"><a class="page-link" href="#">2</a></li>
+    <li class="page-item"><a class="page-link" href="#">3</a></li>
+    <li class="page-item"><a class="page-link" href="#">Next</a></li>
+  </ul>
+</div>
+
+		<a href="{% url 'create_curso' %}" class="btn btn-info">
+			Novo
+		</a>
+		<a href="{% url 'home' %}" class="btn btn-success">
+			Voltar
+		</a>
+		<a href="{% url 'logout' %}" class="btn btn-danger">
+			Sair
+		</a><br><br>
+{% endblock %}

@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ parceria }} | Parcerias{% endblock %}
+{% block page_name %}Gestão de Parcerias{% endblock %}
+
+{% block staticcss %}
+<link rel="stylesheet" href="{% static 'css/parcerias-v3.css' %}">
+{% endblock %}
+
+{% block main %}
+<section class="partnerships-page">
+    <div class="partnership-detail-top">
+        <div>
+            <a href="{% url 'list_parcerias' %}" class="partnerships-back">
+                <i class="fa fa-arrow-left mr-1"></i> Voltar para parcerias
+            </a>
+
+            <div class="partnership-detail-identity">
+                <span class="partnership-avatar partnership-avatar--large">
+                    {{ parceria.nomeOSC|default:"P"|slice:":1"|upper }}
+                </span>
+                <div>
+                    <span class="sgm-eyebrow">PARCERIA</span>
+                    <h1>
+                        {{ parceria.numtermo.termo|default:parceria.numtermo.numtermo|default:"Termo não informado" }}
+                    </h1>
+                    <p>{{ parceria.nomeOSC|default:"OSC não informada" }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="partnership-detail-actions">
+            {% if perms.parcerias.change_parcerias %}
+                <a href="{% url 'update_parceria' parceria.pk %}" class="btn btn-primary">
+                    <i class="fa fa-pencil mr-1"></i> Editar
+                </a>
+            {% endif %}
+            {% if perms.parcerias.delete_parcerias %}
+                <a href="{% url 'delete_parceria' parceria.pk %}"
+                   class="btn btn-outline-danger">
+                    <i class="fa fa-trash mr-1"></i> Excluir
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="partnership-detail-layout">
+        <section class="sgm-panel partnership-detail-panel">
+            <div class="partnership-panel-header">
+                <div>
+                    <span class="sgm-eyebrow">ACOMPANHAMENTO</span>
+                    <h2>Informações da parceria</h2>
+                </div>
+                {% if parceria.concluido %}
+                    <span class="partnership-status partnership-status--success">Concluída</span>
+                {% else %}
+                    <span class="partnership-status">Em andamento</span>
+                {% endif %}
+            </div>
+
+            <dl class="partnership-data-grid">
+                <div><dt>Empresa</dt><dd>{{ parceria.empresa.nome|default:"Não informada" }}</dd></div>
+                <div><dt>Fornecedor/credor</dt><dd>{{ parceria.credor|default:"Não informado" }}</dd></div>
+                <div><dt>Prazo final</dt><dd>{{ parceria.prazoFinal|default:"Não informado" }}</dd></div>
+                <div><dt>Prazo decorrido</dt><dd>{{ parceria.prazoDecorrido|default:"Não informado" }}</dd></div>
+                <div><dt>Prazo restante</dt><dd>{{ parceria.prazoRestante|default:"Não informado" }}</dd></div>
+                <div><dt>RA</dt><dd>{{ parceria.numRA|default:"Não informado" }}</dd></div>
+                <div><dt>Entrada RA</dt><dd>{{ parceria.dtRaSMDS|date:"d/m/Y"|default:"Não informada" }}</dd></div>
+                <div><dt>Resposta RA</dt><dd>{{ parceria.respRA|default:"Não informada" }}</dd></div>
+                <div><dt>RE</dt><dd>{{ parceria.numRE|default:"Não informado" }}</dd></div>
+                <div><dt>Entrada RE</dt><dd>{{ parceria.dtReSMDS|date:"d/m/Y"|default:"Não informada" }}</dd></div>
+                <div><dt>Resposta RE</dt><dd>{{ parceria.respRE|default:"Não informada" }}</dd></div>
+            </dl>
+
+            <div class="partnership-text-block">
+                <span class="sgm-eyebrow">STATUS</span>
+                <p>{{ parceria.status|default:"Nenhuma situação registrada."|linebreaksbr }}</p>
+            </div>
+
+            <div class="partnership-text-block">
+                <span class="sgm-eyebrow">HISTÓRICO</span>
+                <p>{{ parceria.historico|default:"Nenhum histórico registrado."|linebreaksbr }}</p>
+            </div>
+        </section>
+
+        <aside class="sgm-panel partnership-detail-panel">
+            <span class="sgm-eyebrow">DOCUMENTOS</span>
+            <h2>Arquivos vinculados</h2>
+
+            <div class="partnership-file-list">
+                {% if parceria.fileTC %}<a href="{{ parceria.fileTC.url }}" target="_blank"><i class="fa fa-file-o"></i> Termo de colaboração</a>{% endif %}
+                {% if parceria.fileRA %}<a href="{{ parceria.fileRA.url }}" target="_blank"><i class="fa fa-file-o"></i> Relatório de auditoria</a>{% endif %}
+                {% if parceria.fileOficioRA %}<a href="{{ parceria.fileOficioRA.url }}" target="_blank"><i class="fa fa-file-o"></i> Ofício RA</a>{% endif %}
+                {% if parceria.fileRE %}<a href="{{ parceria.fileRE.url }}" target="_blank"><i class="fa fa-file-o"></i> Relatório de efetividade</a>{% endif %}
+                {% if parceria.fileOficioRE %}<a href="{{ parceria.fileOficioRE.url }}" target="_blank"><i class="fa fa-file-o"></i> Ofício RE</a>{% endif %}
+                {% if parceria.fileRRE %}<a href="{{ parceria.fileRRE.url }}" target="_blank"><i class="fa fa-file-o"></i> Resposta RE</a>{% endif %}
+
+                {% if not parceria.fileTC and not parceria.fileRA and not parceria.fileOficioRA and not parceria.fileRE and not parceria.fileOficioRE and not parceria.fileRRE %}
+                    <div class="partnership-inline-empty">
+                        Nenhum arquivo anexado.
+                    </div>
+                {% endif %}
+            </div>
+        </aside>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,500 @@
+{% extends 'base.html' %}
+{% load static humanize %}
+
+{% block title %}Dashboard | Portal de Gestão de Parcerias{% endblock %}
+{% block page_name %}Dashboard Integrado{% endblock %}
+
+{% block staticcss %}
+<link rel="stylesheet" href="{% static 'css/dashboard-v3.css' %}?v=21.0">
+{% endblock %}
+
+{% block main %}
+<section class="pgp-dashboard">
+    <header class="pgp-dashboard-hero">
+        <div>
+            <span class="sgm-eyebrow">{{ area_portal|upper }}</span>
+            <h1>{{ titulo_dashboard }}</h1>
+            <p>{{ descricao_dashboard }}</p>
+        </div>
+
+        <div class="pgp-hero-actions">
+            {% if user.is_superuser %}
+            <div class="pgp-view-switch" aria-label="Alternar visão do dashboard">
+                <a href="?visao=orgao{% if empresa_selecionada %}&empresa={{ empresa_selecionada.pk }}{% endif %}{% if termo_selecionado %}&termo={{ termo_selecionado.pk }}{% endif %}"
+                   class="{% if visao_dashboard == 'orgao' %}active{% endif %}">
+                    <i class="fa fa-university"></i> Órgão Público
+                </a>
+                <a href="?visao=osc{% if empresa_selecionada %}&empresa={{ empresa_selecionada.pk }}{% endif %}{% if termo_selecionado %}&termo={{ termo_selecionado.pk }}{% endif %}"
+                   class="{% if visao_dashboard == 'osc' %}active{% endif %}">
+                    <i class="fa fa-handshake-o"></i> OSC
+                </a>
+            </div>
+            {% endif %}
+
+            <div class="pgp-current-scope">
+                <i class="fa fa-filter"></i>
+                <div>
+                    <small>Escopo atual</small>
+                    <strong>
+                        {% if empresa_selecionada %}
+                            {{ empresa_selecionada.nome }}
+                        {% elif escopo_todas_empresas %}
+                            Todas as OSCs
+                        {% else %}
+                            Sem OSC vinculada
+                        {% endif %}
+                    </strong>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <form method="get" class="pgp-filter-panel">
+        <input type="hidden" name="visao" value="{{ visao_dashboard }}">
+
+        {% if user.is_superuser %}
+        <div class="pgp-filter-field pgp-filter-company">
+            <label for="id_empresa">OSC</label>
+            <select name="empresa" id="id_empresa" class="form-control">
+                <option value="">Todas as OSCs</option>
+                {% for empresa in empresas_disponiveis %}
+                <option value="{{ empresa.pk }}" {% if empresa_selecionada.pk == empresa.pk %}selected{% endif %}>
+                    {{ empresa.nome }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        {% endif %}
+
+        <div class="pgp-filter-field pgp-filter-term">
+            <label for="id_termo">Termo</label>
+            <select name="termo" id="id_termo" class="form-control">
+                <option value="">Todos os termos</option>
+                {% for termo in termos_disponiveis %}
+                <option value="{{ termo.pk }}" {% if termo_selecionado.pk == termo.pk %}selected{% endif %}>
+                    {{ termo.termo|default:termo.numtermo|default:termo.apelido }}
+                    {% if termo.empresa %} — {{ termo.empresa.nome }}{% endif %}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="pgp-filter-field">
+            <label for="id_inicio">Data inicial</label>
+            <input type="date" name="inicio" id="id_inicio" class="form-control"
+                   value="{% if inicio_filtro %}{{ inicio_filtro|date:'Y-m-d' }}{% endif %}">
+        </div>
+
+        <div class="pgp-filter-field">
+            <label for="id_fim">Data final</label>
+            <input type="date" name="fim" id="id_fim" class="form-control"
+                   value="{% if fim_filtro %}{{ fim_filtro|date:'Y-m-d' }}{% endif %}">
+        </div>
+
+        <div class="pgp-filter-actions">
+            <button type="submit" class="btn btn-primary">
+                <i class="fa fa-search"></i> Aplicar filtros
+            </button>
+            <a href="{% url 'home' %}?visao={{ visao_dashboard }}" class="btn btn-light">
+                Limpar
+            </a>
+        </div>
+    </form>
+
+    {% if periodo_ajustado %}
+    <div class="alert alert-info pgp-dashboard-message">
+        <i class="fa fa-info-circle"></i>
+        As datas estavam invertidas e foram reorganizadas automaticamente.
+    </div>
+    {% endif %}
+
+    {% if sem_empresa_vinculada %}
+    <div class="alert alert-warning pgp-dashboard-message">
+        <i class="fa fa-exclamation-triangle"></i>
+        Seu usuário ainda não possui uma OSC vinculada. Solicite ao administrador que associe seu cadastro de funcionário a uma empresa.
+    </div>
+    {% endif %}
+
+    <div class="pgp-shortcuts">
+        {% if visao_dashboard == 'osc' %}
+            {% if perms.fornecedores.add_fornecedores or user.is_superuser %}
+            <a href="{% url 'create_fornecedor' %}" class="pgp-shortcut">
+                <span class="pgp-shortcut-icon pgp-soft-blue"><i class="fa fa-truck"></i></span>
+                <span><strong>Novo fornecedor</strong><small>Cadastre antes da despesa</small></span>
+                <i class="fa fa-angle-right"></i>
+            </a>
+            {% endif %}
+            {% if perms.lancamentos.add_lancamento or user.is_superuser %}
+            <a href="{% url 'create_lancamento' %}" class="pgp-shortcut">
+                <span class="pgp-shortcut-icon pgp-soft-purple"><i class="fa fa-plus-circle"></i></span>
+                <span><strong>Novo lançamento</strong><small>Registre um item financeiro</small></span>
+                <i class="fa fa-angle-right"></i>
+            </a>
+            {% endif %}
+            {% if perms.documentos.add_documento or user.is_superuser %}
+            <a href="{% url 'create_documento' %}" class="pgp-shortcut">
+                <span class="pgp-shortcut-icon pgp-soft-green"><i class="fa fa-cloud-upload"></i></span>
+                <span><strong>Enviar documento</strong><small>Anexe comprovantes e relatórios</small></span>
+                <i class="fa fa-angle-right"></i>
+            </a>
+            {% endif %}
+            {% if perms.prestacao.add_prestacao or user.is_superuser %}
+            <a href="{% url 'create_prestacao' %}" class="pgp-shortcut">
+                <span class="pgp-shortcut-icon pgp-soft-yellow"><i class="fa fa-folder-open-o"></i></span>
+                <span><strong>Nova prestação</strong><small>Inicie um período de contas</small></span>
+                <i class="fa fa-angle-right"></i>
+            </a>
+            {% endif %}
+        {% else %}
+            <a href="{% url 'list_documentos' %}" class="pgp-shortcut">
+                <span class="pgp-shortcut-icon pgp-soft-blue"><i class="fa fa-files-o"></i></span>
+                <span><strong>Conferir documentos</strong><small>{{ documentos_pendentes }} aguardando tratamento</small></span>
+                <i class="fa fa-angle-right"></i>
+            </a>
+            <a href="{% url 'list_lancamentos' %}" class="pgp-shortcut">
+                <span class="pgp-shortcut-icon pgp-soft-purple"><i class="fa fa-list-alt"></i></span>
+                <span><strong>Analisar lançamentos</strong><small>{{ lancamentos_nao_analisados }} não analisados</small></span>
+                <i class="fa fa-angle-right"></i>
+            </a>
+            <a href="{% url 'list_analise' %}" class="pgp-shortcut">
+                <span class="pgp-shortcut-icon pgp-soft-green"><i class="fa fa-search"></i></span>
+                <span><strong>Análises técnicas</strong><small>{{ analises_abertas }} em aberto</small></span>
+                <i class="fa fa-angle-right"></i>
+            </a>
+            <a href="{% url 'list_prestacao' %}" class="pgp-shortcut">
+                <span class="pgp-shortcut-icon pgp-soft-yellow"><i class="fa fa-folder-open-o"></i></span>
+                <span><strong>Prestações de contas</strong><small>{{ prestacoes_abertas }} em andamento</small></span>
+                <i class="fa fa-angle-right"></i>
+            </a>
+            <a href="{% url 'list_diligencias' %}" class="pgp-shortcut">
+                <span class="pgp-shortcut-icon pgp-soft-red"><i class="fa fa-comments-o"></i></span>
+                <span><strong>Diligências</strong><small>{{ diligencias_pendentes }} abertas · {{ diligencias_vencidas }} vencidas</small></span>
+                <i class="fa fa-angle-right"></i>
+            </a>
+        {% endif %}
+    </div>
+
+    <div class="pgp-section-title">
+        <div>
+            <span class="sgm-eyebrow">INDICADORES CONSOLIDADOS</span>
+            <h2>Situação das parcerias</h2>
+        </div>
+        <small>Os números respeitam os filtros selecionados.</small>
+    </div>
+
+    <div class="pgp-metric-grid">
+        <article class="pgp-metric-card">
+            <div class="pgp-metric-top">
+                <span class="pgp-metric-icon pgp-soft-blue"><i class="fa fa-building-o"></i></span>
+                <span class="pgp-chip">Cadastros</span>
+            </div>
+            <span class="pgp-metric-label">{% if visao_dashboard == 'osc' %}Fornecedores cadastrados{% else %}OSCs no escopo{% endif %}</span>
+            <strong class="pgp-metric-value">{% if visao_dashboard == 'osc' %}{{ fornecedores_total }}{% else %}{{ oscs_total }}{% endif %}</strong>
+            <p>{% if visao_dashboard == 'osc' %}Base de fornecedores da organização{% else %}Entidades disponíveis para acompanhamento{% endif %}</p>
+        </article>
+
+        <article class="pgp-metric-card">
+            <div class="pgp-metric-top">
+                <span class="pgp-metric-icon pgp-soft-purple"><i class="fa fa-file-text-o"></i></span>
+                <span class="pgp-chip">Parcerias</span>
+            </div>
+            <span class="pgp-metric-label">Termos cadastrados</span>
+            <strong class="pgp-metric-value">{{ termos_total }}</strong>
+            <p><b>{{ termos_vigentes }}</b> identificados como vigentes ou em execução</p>
+        </article>
+
+        <article class="pgp-metric-card">
+            <div class="pgp-metric-top">
+                <span class="pgp-metric-icon pgp-soft-yellow"><i class="fa fa-folder-open-o"></i></span>
+                <span class="pgp-chip">Prestação</span>
+            </div>
+            <span class="pgp-metric-label">Prestações de contas</span>
+            <strong class="pgp-metric-value">{{ prestacoes_total }}</strong>
+            <p><b>{{ prestacoes_abertas }}</b> em andamento · <b>{{ prestacoes_concluidas }}</b> concluídas</p>
+        </article>
+
+        <article class="pgp-metric-card">
+            <div class="pgp-metric-top">
+                <span class="pgp-metric-icon pgp-soft-green"><i class="fa fa-files-o"></i></span>
+                <span class="pgp-chip">Documentos</span>
+            </div>
+            <span class="pgp-metric-label">Documentos cadastrados</span>
+            <strong class="pgp-metric-value">{{ documentos_total }}</strong>
+            <p><b>{{ documentos_pendentes }}</b> pendentes · <b>{{ documentos_conferidos }}</b> conferidos</p>
+        </article>
+
+        <article class="pgp-metric-card">
+            <div class="pgp-metric-top">
+                <span class="pgp-metric-icon pgp-soft-red"><i class="fa fa-list-alt"></i></span>
+                <span class="pgp-chip">Lançamentos</span>
+            </div>
+            <span class="pgp-metric-label">Itens financeiros</span>
+            <strong class="pgp-metric-value">{{ lancamentos_total }}</strong>
+            <p><b>{{ lancamentos_nao_analisados }}</b> aguardando análise</p>
+        </article>
+
+        <article class="pgp-metric-card pgp-metric-money">
+            <div class="pgp-metric-top">
+                <span class="pgp-metric-icon pgp-soft-purple"><i class="fa fa-money"></i></span>
+                <span class="pgp-chip">Financeiro</span>
+            </div>
+            <span class="pgp-metric-label">Valor lançado</span>
+            <strong class="pgp-metric-value">R$ {{ valor_lancado|floatformat:2 }}</strong>
+            <p><b>R$ {{ valor_glosado|floatformat:2 }}</b> em glosas</p>
+        </article>
+    </div>
+
+    <div class="pgp-dashboard-grid pgp-dashboard-grid-main">
+        <section class="pgp-panel">
+            <div class="pgp-panel-header">
+                <div>
+                    <span class="sgm-eyebrow">PRIORIDADES</span>
+                    <h2>Pendências que exigem atenção</h2>
+                </div>
+            </div>
+
+            <div class="pgp-alert-list">
+                {% for alerta in alertas_dashboard %}
+                <a href="{% url alerta.url_name %}" class="pgp-alert-item pgp-alert-{{ alerta.classe }}">
+                    <span><i class="fa {{ alerta.icone }}"></i></span>
+                    <div>
+                        <strong>{{ alerta.valor }}</strong>
+                        <small>{{ alerta.rotulo }}</small>
+                    </div>
+                    <i class="fa fa-angle-right"></i>
+                </a>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="pgp-panel">
+            <div class="pgp-panel-header">
+                <div>
+                    <span class="sgm-eyebrow">CONFORMIDADE</span>
+                    <h2>Progresso do trabalho</h2>
+                </div>
+            </div>
+
+            <div class="pgp-progress-grid">
+                <div class="pgp-progress-card">
+                    <div class="pgp-progress-ring" style="--progress: {{ percentual_documentos }}">
+                        <strong>{{ percentual_documentos }}%</strong>
+                    </div>
+                    <div><strong>Documentos conferidos</strong><small>{{ documentos_conferidos }} de {{ documentos_total }}</small></div>
+                </div>
+                <div class="pgp-progress-card">
+                    <div class="pgp-progress-ring" style="--progress: {{ percentual_lancamentos }}">
+                        <strong>{{ percentual_lancamentos }}%</strong>
+                    </div>
+                    <div><strong>Lançamentos analisados</strong><small>{{ lancamentos_analisados }} de {{ lancamentos_total }}</small></div>
+                </div>
+                <div class="pgp-progress-card">
+                    <div class="pgp-progress-ring" style="--progress: {{ percentual_prestacoes }}">
+                        <strong>{{ percentual_prestacoes }}%</strong>
+                    </div>
+                    <div><strong>Prestações concluídas</strong><small>{{ prestacoes_concluidas }} de {{ prestacoes_total }}</small></div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div class="pgp-dashboard-grid pgp-dashboard-grid-charts">
+        <section class="pgp-panel">
+            <div class="pgp-panel-header">
+                <div>
+                    <span class="sgm-eyebrow">LANÇAMENTOS</span>
+                    <h2>Distribuição por situação</h2>
+                </div>
+                <strong>{{ lancamentos_total }} itens</strong>
+            </div>
+            <div class="pgp-distribution-list">
+                {% for item in distribuicao_lancamentos %}
+                <div class="pgp-distribution-item">
+                    <div><span>{{ item.rotulo }}</span><strong>{{ item.valor }}</strong></div>
+                    <div class="pgp-bar"><span class="pgp-bar-{{ item.classe }}" style="width: {{ item.percentual }}%"></span></div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="pgp-panel">
+            <div class="pgp-panel-header">
+                <div>
+                    <span class="sgm-eyebrow">DOCUMENTOS</span>
+                    <h2>Distribuição por conferência</h2>
+                </div>
+                <strong>{{ documentos_total }} arquivos</strong>
+            </div>
+            <div class="pgp-distribution-list">
+                {% for item in distribuicao_documentos %}
+                <div class="pgp-distribution-item">
+                    <div><span>{{ item.rotulo }}</span><strong>{{ item.valor }}</strong></div>
+                    <div class="pgp-bar"><span class="pgp-bar-{{ item.classe }}" style="width: {{ item.percentual }}%"></span></div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="pgp-panel">
+            <div class="pgp-panel-header">
+                <div>
+                    <span class="sgm-eyebrow">ATIVIDADE</span>
+                    <h2>Movimentações nos últimos meses</h2>
+                </div>
+            </div>
+            <div class="pgp-month-chart" aria-label="Atividade mensal">
+                {% for mes in atividade_mensal %}
+                <div class="pgp-month-column">
+                    <div class="pgp-month-value">{{ mes.valor }}</div>
+                    <div class="pgp-month-track"><span style="height: {{ mes.percentual }}%"></span></div>
+                    <small>{{ mes.rotulo }}</small>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+
+    <section class="pgp-panel pgp-finance-panel">
+        <div class="pgp-panel-header">
+            <div>
+                <span class="sgm-eyebrow">SÍNTESE FINANCEIRA</span>
+                <h2>Valores consolidados do escopo</h2>
+            </div>
+        </div>
+        <div class="pgp-finance-grid">
+            <div><span>Valor global dos termos</span><strong>R$ {{ valor_global|floatformat:2 }}</strong></div>
+            <div><span>Valor repassado</span><strong>R$ {{ valor_repassado|floatformat:2 }}</strong></div>
+            <div><span>Saldo informado nos termos</span><strong>R$ {{ saldo_termos|floatformat:2 }}</strong></div>
+            <div><span>Valor analisado</span><strong>R$ {{ valor_analisado|floatformat:2 }}</strong></div>
+            <div><span>Valor aprovado após glosas</span><strong>R$ {{ valor_aprovado|floatformat:2 }}</strong></div>
+            <div class="pgp-finance-danger"><span>Valor glosado</span><strong>R$ {{ valor_glosado|floatformat:2 }}</strong></div>
+        </div>
+    </section>
+
+    <section class="pgp-panel">
+        <div class="pgp-panel-header">
+            <div>
+                <span class="sgm-eyebrow">TERMOS</span>
+                <h2>Acompanhamento por parceria</h2>
+            </div>
+            <a href="{% url 'list_termos' %}" class="btn btn-sm btn-outline-primary">Ver todos</a>
+        </div>
+
+        {% if resumo_termos %}
+        <div class="table-responsive">
+            <table class="table pgp-table">
+                <thead>
+                    <tr>
+                        <th>Termo / OSC</th>
+                        <th>Prestações</th>
+                        <th>Lançamentos</th>
+                        <th>Documentos pendentes</th>
+                        <th>Análises abertas</th>
+                        <th>Valor lançado</th>
+                        <th>Glosa</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in resumo_termos %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'detail_termo' item.objeto.pk %}">
+                                <strong>{{ item.objeto.termo|default:item.objeto.numtermo|default:item.objeto.apelido }}</strong>
+                            </a>
+                            <small>{{ item.objeto.empresa.nome|default:item.objeto.nomeosc|default:'OSC não informada' }}</small>
+                        </td>
+                        <td>{{ item.prestacoes }}</td>
+                        <td>{{ item.lancamentos }}</td>
+                        <td>{{ item.documentos_pendentes }}</td>
+                        <td>{{ item.analises_abertas }}</td>
+                        <td>R$ {{ item.valor_lancado|floatformat:2 }}</td>
+                        <td>R$ {{ item.valor_glosado|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="pgp-empty-state">
+            <i class="fa fa-folder-open-o"></i>
+            <strong>Nenhum termo encontrado</strong>
+            <p>Altere os filtros ou cadastre a primeira parceria.</p>
+        </div>
+        {% endif %}
+    </section>
+
+    <div class="pgp-dashboard-grid pgp-dashboard-grid-recent">
+        <section class="pgp-panel">
+            <div class="pgp-panel-header">
+                <div><span class="sgm-eyebrow">RECENTES</span><h2>Lançamentos</h2></div>
+                <a href="{% url 'list_lancamentos' %}">Ver todos</a>
+            </div>
+            <div class="pgp-record-list">
+                {% for lancamento in lancamentos_recentes %}
+                <a href="{% url 'detail_lancamento' lancamento.pk %}" class="pgp-record-item">
+                    <span class="pgp-record-icon"><i class="fa fa-list-alt"></i></span>
+                    <div>
+                        <strong>{{ lancamento.numero_lancamento }}</strong>
+                        <small>{{ lancamento.descricao|truncatechars:55 }}</small>
+                    </div>
+                    <div class="pgp-record-value">
+                        <strong>R$ {{ lancamento.valor_documento|floatformat:2 }}</strong>
+                        <small>{{ lancamento.get_situacao_display }}</small>
+                    </div>
+                </a>
+                {% empty %}
+                <div class="pgp-mini-empty">Nenhum lançamento no escopo.</div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="pgp-panel">
+            <div class="pgp-panel-header">
+                <div><span class="sgm-eyebrow">RECENTES</span><h2>Documentos</h2></div>
+                <a href="{% url 'list_documentos' %}">Ver todos</a>
+            </div>
+            <div class="pgp-record-list">
+                {% for documento in documentos_recentes %}
+                <a href="{% url 'detail_documento' documento.pk %}" class="pgp-record-item">
+                    <span class="pgp-record-icon"><i class="fa fa-file-pdf-o"></i></span>
+                    <div>
+                        <strong>{{ documento.descricao }}</strong>
+                        <small>{{ documento.get_tipo_display }}</small>
+                    </div>
+                    <div class="pgp-record-value">
+                        <strong>{{ documento.percentual_conferencia }}%</strong>
+                        <small>{{ documento.get_status_display }}</small>
+                    </div>
+                </a>
+                {% empty %}
+                <div class="pgp-mini-empty">Nenhum documento no escopo.</div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="pgp-panel">
+            <div class="pgp-panel-header">
+                <div><span class="sgm-eyebrow">RECENTES</span><h2>Análises técnicas</h2></div>
+                <a href="{% url 'list_analise' %}">Ver todas</a>
+            </div>
+            <div class="pgp-record-list">
+                {% for analise in analises_recentes %}
+                <a href="{% url 'detail_analise' analise.pk %}" class="pgp-record-item">
+                    <span class="pgp-record-icon"><i class="fa fa-search"></i></span>
+                    <div>
+                        <strong>{{ analise.numRA|default:'Análise sem RA' }}</strong>
+                        <small>{{ analise.inconformidade|default:'Sem inconformidade registrada'|truncatechars:55 }}</small>
+                    </div>
+                    <div class="pgp-record-value">
+                        <strong>{% if analise.concluida %}Concluída{% else %}Aberta{% endif %}</strong>
+                        <small>{{ analise.status|default:'Sem status' }}</small>
+                    </div>
+                </a>
+                {% empty %}
+                <div class="pgp-mini-empty">Nenhuma análise no escopo.</div>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+</section>
+{% endblock %}

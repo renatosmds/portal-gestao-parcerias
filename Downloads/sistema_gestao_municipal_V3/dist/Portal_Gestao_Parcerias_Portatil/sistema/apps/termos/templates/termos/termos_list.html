@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Termos | Sistema de Gestão Municipal{% endblock %}
+{% block page_name %}Gestão de Termos{% endblock %}
+{% block staticcss %}<link rel="stylesheet" href="{% static 'css/termos-v3.css' %}">{% endblock %}
+{% block main %}
+<section class="terms-page">
+    <header class="terms-header">
+        <div>
+            <span class="sgm-eyebrow">GESTÃO DE INSTRUMENTOS</span>
+            <h1>Termos</h1>
+            <p>Consulte e administre os instrumentos vinculados às empresas.</p>
+        </div>
+        {% if perms.termos.add_termos %}
+            <a href="{% url 'create_termos' %}" class="btn btn-primary"><i class="fa fa-plus mr-1"></i>Novo termo</a>
+        {% endif %}
+    </header>
+
+    <form method="get" class="terms-toolbar">
+        <input type="search" name="q" class="form-control" value="{{ termo_busca }}" placeholder="Pesquisar termo, OSC ou analista...">
+        <input type="text" name="status" class="form-control" value="{{ status_filtro }}" placeholder="Status">
+        {% if user.is_superuser %}
+            <select name="empresa" class="form-control">
+                <option value="">Todas as empresas</option>
+                {% for empresa in empresas_disponiveis %}
+                    <option value="{{ empresa.pk }}" {% if empresa_filtro == empresa.pk|stringformat:"s" %}selected{% endif %}>{{ empresa.nome }}</option>
+                {% endfor %}
+            </select>
+        {% endif %}
+        <button class="btn btn-outline-primary">Pesquisar</button>
+        {% if termo_busca or status_filtro or empresa_filtro %}
+            <a href="{% url 'list_termos' %}" class="btn btn-outline-secondary">Limpar</a>
+        {% endif %}
+    </form>
+
+    <div class="terms-count">{{ total_termos }} termo(s) encontrado(s)</div>
+
+    {% if termos %}
+        <div class="terms-grid">
+            {% for termo in termos %}
+                <article class="term-card">
+                    <span class="term-company">{{ termo.empresa.nome|default:"Sem empresa vinculada" }}</span>
+                    <h2><a href="{% url 'detail_termo' termo.pk %}">{{ termo }}</a></h2>
+                    <p>{{ termo.nomeosc|default:"OSC não informada" }}</p>
+                    <dl>
+                        <div><dt>Status</dt><dd>{{ termo.status|default:"Não informado" }}</dd></div>
+                        <div><dt>Analista</dt><dd>{{ termo.analista|default:"Não informado" }}</dd></div>
+                        <div><dt>Vigência</dt><dd>{{ termo.inicioVigencia|default:termo.vigencia|default:"Não informada" }}</dd></div>
+                    </dl>
+                    <footer>
+                        <a href="{% url 'detail_termo' termo.pk %}">Abrir termo</a>
+                        {% if perms.termos.change_termos %}
+                            <a href="{% url 'update_termos' termo.pk %}">Editar</a>
+                        {% endif %}
+                    </footer>
+                </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="sgm-panel terms-empty">Nenhum termo encontrado.</div>
+    {% endif %}
+</section>
+{% endblock %}

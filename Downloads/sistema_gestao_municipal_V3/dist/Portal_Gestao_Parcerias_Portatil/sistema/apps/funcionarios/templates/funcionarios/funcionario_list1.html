@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block main %}
+<ul class="list-group">
+    <li class="list-group-item" style="background: #FFFFE0;">
+        <h5>LISTA DE FUNCIONÁRIOS</h5>
+        <br>
+        {% for funcionario in object_list %}
+        <h6>
+            <a href="{% url 'update_funcionario' funcionario.id %}">
+                {{ funcionario }}
+            </a>
+            <a href="{% url 'delete_funcionario' funcionario.id %}" id class="fa fa-trash"
+               aria-hidden="true" style="color: #662b7e;"> <!-- purple = #662b7e -->
+            </a>
+        </h6>
+        {% endfor %}
+        <a href="{% url 'create_funcionario' %}" class="btn btn-info">
+            Novo
+        </a>
+        <a href="{% url 'home' %}" class="btn btn-success">
+            Voltar
+        </a>
+        <a href="{% url 'logout' %}" class="btn btn-danger">
+            Sair
+        </a>
+    </li>
+</ul>
+<div class="col">
+
+</div>
+<div class="col-6">
+    <ul class="list-group">
+        <li class="list-group-item" style="background: #FFFFE0;">
+            <h5>RELATÓRIOS BANCO DE HORAS</h5>
+            <h6 style="align: left;">
+                <ul>
+                    <lu>
+                        <a href="{% url 'relatorio_funcionario' %}">
+                            Relatório de Funcionários - pdf
+                        </a>
+                    </lu><br>
+                    <lu>
+                        <a href="{% url 'relatorio_funcionario_html' %}">
+                            Relatório de Funcionários - html
+                        </a>
+                    </lu><br>
+                    <lu>
+                        <a href="{% url 'relatorio_funcionario_html_debug' %}">
+                            Relatório de Funcionários - html (debug)
+                        </a>
+                    </lu>
+                </ul>
+            </h6>
+        </li>
+    </ul>
+</div>
+{% endblock %}

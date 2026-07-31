@@ -1,0 +1,3 @@
+{% extends "base.html" %}{% load bootstrap %}
+{% block title %}Nova importação | PGP{% endblock %}{% block page_name %}Nova Importação{% endblock %}
+{% block main %}<div class="row justify-content-center"><div class="col-xl-8"><div class="sgm-card p-4"><h1 class="h4">Enviar arquivo para validação</h1><p class="text-muted">Formatos aceitos: CSV e XLSX, até 10 MB. Nenhum cadastro é alterado antes da confirmação.</p><form method="post" enctype="multipart/form-data">{% csrf_token %}{{ form|bootstrap }}<div class="d-flex justify-content-between mt-4"><a class="btn btn-light" href="{% url 'list_importacoes' %}">Cancelar</a><button class="btn btn-primary" type="submit">Validar arquivo</button></div></form></div></div></div>{% endblock %}

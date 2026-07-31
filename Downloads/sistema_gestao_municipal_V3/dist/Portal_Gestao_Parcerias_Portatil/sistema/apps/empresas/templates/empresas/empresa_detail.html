@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ empresa.nome }} | Empresas{% endblock %}
+{% block page_name %}Gestão de Empresas{% endblock %}
+
+{% block staticcss %}
+<link rel="stylesheet" href="{% static 'css/empresas-v3.css' %}">
+{% endblock %}
+
+{% block main %}
+<section class="companies-page">
+    <div class="company-detail-top">
+        <div>
+            <a href="{% url 'list_empresas' %}" class="companies-back">
+                <i class="fa fa-arrow-left mr-1"></i> Voltar para empresas
+            </a>
+
+            <div class="company-detail-identity">
+                <span class="company-avatar company-avatar--large">
+                    {{ empresa.nome|slice:":1"|upper }}
+                </span>
+                <div>
+                    <span class="sgm-eyebrow">EMPRESA</span>
+                    <h1>{{ empresa.nome }}</h1>
+                    <p>Visão geral da entidade e dos funcionários vinculados.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="company-detail-actions">
+
+        {% if perms.departamentos.view_departamento %}
+            <a href="{% url 'list_departamentos' %}?empresa={{ empresa.pk }}"
+               class="btn btn-outline-primary">
+                <i class="fa fa-sitemap mr-1"></i> Departamentos
+            </a>
+        {% endif %}
+            {% if perms.empresas.change_empresa %}
+                <a href="{% url 'edit_empresa' empresa.pk %}" class="btn btn-primary">
+                    <i class="fa fa-pencil mr-1"></i> Editar
+                </a>
+            {% endif %}
+
+            {% if perms.empresas.delete_empresa %}
+                <a href="{% url 'delete_empresa' empresa.pk %}"
+                   class="btn btn-outline-danger">
+                    <i class="fa fa-trash mr-1"></i> Excluir
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="companies-summary companies-summary--three">
+        <article class="companies-summary-card">
+            <span><i class="fa fa-users"></i></span>
+            <div>
+                <small>Funcionários</small>
+                <strong>{{ total_funcionarios }}</strong>
+            </div>
+        </article>
+        <article class="companies-summary-card">
+            <span><i class="fa fa-check-circle"></i></span>
+            <div>
+                <small>Ativos</small>
+                <strong>{{ total_ativos }}</strong>
+            </div>
+        </article>
+        <article class="companies-summary-card">
+            <span><i class="fa fa-suitcase"></i></span>
+            <div>
+                <small>Em férias</small>
+                <strong>{{ total_ferias }}</strong>
+            </div>
+        </article>
+    </div>
+
+    <div class="company-detail-layout">
+        <section class="sgm-panel company-detail-panel">
+            <div class="company-panel-header">
+                <div>
+                    <span class="sgm-eyebrow">EQUIPE</span>
+                    <h2>Funcionários vinculados</h2>
+                </div>
+
+                {% if perms.funcionarios.view_funcionario %}
+                    <a href="{% url 'list_funcionarios' %}" class="btn btn-outline-primary btn-sm">
+                        Ver todos
+                    </a>
+                {% endif %}
+            </div>
+
+            {% if funcionarios %}
+                <div class="company-employee-list">
+                    {% for funcionario in funcionarios %}
+                        <div class="company-employee">
+                            <span class="company-employee-avatar">
+                                {{ funcionario.nome|slice:":1"|upper }}
+                            </span>
+                            <div>
+                                <strong>{{ funcionario.nome }}</strong>
+                                <small>
+                                    {{ funcionario.cargo|default:"Cargo não informado" }}
+                                </small>
+                            </div>
+                            {% if funcionario.ativo %}
+                                <span class="company-status company-status--success">Ativo</span>
+                            {% else %}
+                                <span class="company-status">Inativo</span>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="company-inline-empty">
+                    <i class="fa fa-user-o"></i>
+                    Nenhum funcionário vinculado a esta empresa.
+                </div>
+            {% endif %}
+        </section>
+
+        <aside class="sgm-panel company-detail-panel">
+            <span class="sgm-eyebrow">CADASTRO</span>
+            <h2>Dados da empresa</h2>
+
+            <dl class="company-data-list">
+                <div>
+                    <dt>Nome</dt>
+                    <dd>{{ empresa.nome }}</dd>
+                </div>
+                <div>
+                    <dt>Código interno</dt>
+                    <dd>#{{ empresa.pk }}</dd>
+                </div>
+            </dl>
+        </aside>
+    </div>
+</section>
+{% endblock %}

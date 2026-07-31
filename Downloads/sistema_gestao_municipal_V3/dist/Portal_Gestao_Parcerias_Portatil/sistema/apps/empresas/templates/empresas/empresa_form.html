@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+    {% if object %}Editar empresa{% else %}Nova empresa{% endif %}
+    | Sistema de Gestão Municipal
+{% endblock %}
+{% block page_name %}Gestão de Empresas{% endblock %}
+
+{% block staticcss %}
+<link rel="stylesheet" href="{% static 'css/empresas-v3.css' %}">
+{% endblock %}
+
+{% block main %}
+<section class="companies-page">
+    <div class="company-form-header">
+        <div>
+            <a href="{% if object %}{% url 'detail_empresa' object.pk %}{% else %}{% url 'list_empresas' %}{% endif %}"
+               class="companies-back">
+                <i class="fa fa-arrow-left mr-1"></i> Voltar
+            </a>
+            <span class="sgm-eyebrow">ESTRUTURA ORGANIZACIONAL</span>
+            <h1>{% if object %}Editar empresa{% else %}Nova empresa{% endif %}</h1>
+            <p>
+                {% if object %}
+                    Atualize os dados cadastrais de {{ object.nome }}.
+                {% else %}
+                    Cadastre uma nova empresa ou entidade no sistema.
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
+    <form method="post" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="company-form-layout">
+            <section class="sgm-panel company-form-panel">
+                <div class="company-panel-header">
+                    <div>
+                        <span class="sgm-eyebrow">DADOS PRINCIPAIS</span>
+                        <h2>Identificação</h2>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.nome.id_for_label }}">
+                        Nome da empresa <span class="text-danger">*</span>
+                    </label>
+                    {{ form.nome }}
+
+                    {% if form.nome.help_text %}
+                        <small class="form-text text-muted">{{ form.nome.help_text }}</small>
+                    {% endif %}
+
+                    {% for error in form.nome.errors %}
+                        <small class="company-field-error">
+                            <i class="fa fa-exclamation-circle mr-1"></i>{{ error }}
+                        </small>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <aside class="sgm-panel company-form-panel company-form-actions">
+                <span class="sgm-eyebrow">AÇÕES</span>
+                <h2>Concluir cadastro</h2>
+                <p>Revise as informações antes de salvar.</p>
+
+                <button type="submit" class="btn btn-primary btn-block">
+                    <i class="fa fa-check mr-1"></i>
+                    {% if object %}Salvar alterações{% else %}Cadastrar empresa{% endif %}
+                </button>
+
+                <a href="{% if object %}{% url 'detail_empresa' object.pk %}{% else %}{% url 'list_empresas' %}{% endif %}"
+                   class="btn btn-outline-secondary btn-block">
+                    Cancelar
+                </a>
+            </aside>
+        </div>
+    </form>
+</section>
+{% endblock %}

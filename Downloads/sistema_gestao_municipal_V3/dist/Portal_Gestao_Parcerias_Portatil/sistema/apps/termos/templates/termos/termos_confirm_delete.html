@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Excluir termo{% endblock %}
+{% block staticcss %}<link rel="stylesheet" href="{% static 'css/termos-v3.css' %}">{% endblock %}
+{% block main %}
+<section class="terms-page">
+    <article class="sgm-panel term-delete">
+        <h1>Excluir termo?</h1>
+        <p>Você está prestes a excluir <strong>{{ termo_obj }}</strong>.</p>
+        <form method="post">{% csrf_token %}
+            <a href="{% url 'detail_termo' termo_obj.pk %}" class="btn btn-outline-secondary">Cancelar</a>
+            <button class="btn btn-danger">Confirmar exclusão</button>
+        </form>
+    </article>
+</section>
+{% endblock %}

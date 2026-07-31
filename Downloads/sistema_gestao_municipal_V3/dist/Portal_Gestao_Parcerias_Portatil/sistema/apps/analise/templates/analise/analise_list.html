@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Análises | SGM{% endblock %}
+{% block page_name %}Análises técnicas{% endblock %}
+{% block staticcss %}<link rel="stylesheet" href="{% static 'css/analises-v3.css' %}">{% endblock %}
+{% block main %}
+<section class="reviews-page">
+    <header class="reviews-header">
+        <div>
+            <span class="sgm-eyebrow">PRESTAÇÃO DE CONTAS</span>
+            <h1>Análises técnicas</h1>
+            <p>Organize inconformidades, recomendações e posicionamentos.</p>
+        </div>
+        {% if perms.analise.add_analise %}
+            <a href="{% url 'create_analise' %}" class="btn btn-primary">
+                <i class="fa fa-plus mr-1"></i> Nova análise
+            </a>
+        {% endif %}
+    </header>
+
+    <div class="reviews-summary">
+        <article><small>Total</small><strong>{{ total_analises }}</strong></article>
+        <article><small>Em andamento</small><strong>{{ total_andamento }}</strong></article>
+        <article><small>Concluídas</small><strong>{{ total_concluidas }}</strong></article>
+    </div>
+
+    <form method="get" class="reviews-toolbar">
+        <input type="search" name="q" class="form-control" value="{{ termo_busca }}"
+               placeholder="Termo, OSC, RA, item ou texto...">
+        <select name="situacao" class="form-control">
+            <option value="">Todas as situações</option>
+            <option value="andamento" {% if situacao_filtro == "andamento" %}selected{% endif %}>Em andamento</option>
+            <option value="concluida" {% if situacao_filtro == "concluida" %}selected{% endif %}>Concluída</option>
+        </select>
+        {% if user.is_superuser %}
+            <select name="empresa" class="form-control">
+                <option value="">Todas as empresas</option>
+                {% for empresa in empresas_disponiveis %}
+                    <option value="{{ empresa.pk }}" {% if empresa_filtro == empresa.pk|stringformat:"s" %}selected{% endif %}>{{ empresa.nome }}</option>
+                {% endfor %}
+            </select>
+        {% endif %}
+        <button class="btn btn-outline-primary">Pesquisar</button>
+        {% if termo_busca or situacao_filtro or empresa_filtro %}
+            <a href="{% url 'list_analise' %}" class="btn btn-outline-secondary">Limpar</a>
+        {% endif %}
+    </form>
+
+    {% if analises %}
+        <div class="reviews-grid">
+            {% for item in analises %}
+                <article class="review-card">
+                    <span>{{ item.empresa.nome|default:"Sem empresa vinculada" }}</span>
+                    <h2><a href="{% url 'detail_analise' item.pk %}">{{ item }}</a></h2>
+                    <p>{{ item.nomeOSC|default:"OSC não informada" }}</p>
+                    <div class="review-text">
+                        {{ item.inconformidade|default:"Sem inconformidade registrada"|truncatechars:170 }}
+                    </div>
+                    <footer>
+                        {% if item.concluida %}<b class="review-status done">Concluída</b>{% else %}<b class="review-status">Em andamento</b>{% endif %}
+                        <a href="{% url 'detail_analise' item.pk %}">Abrir</a>
+                    </footer>
+                </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="sgm-panel reviews-empty">Nenhuma análise encontrada.</div>
+    {% endif %}
+</section>
+{% endblock %}

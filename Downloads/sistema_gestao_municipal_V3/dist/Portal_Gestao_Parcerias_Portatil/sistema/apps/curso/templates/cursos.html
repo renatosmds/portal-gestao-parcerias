@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    Curso
+{% endblock %}
+
+{% block main %}
+    <h4>LISTA DE CURSOS</h4>
+        <ul class="list-group">
+            {% for curso in cursos %}
+                <li class="list-group-item">
+                    <a href="{% url 'curso_update' curso.id %}">{{ curso.nomeCurso }}</a> |
+                    <a href="{% url 'curso_update' curso.id %}">{{ curso.mesCurso }}</a> |
+                    <a href="{% url 'curso_update' curso.id %}">{{ curso.anoCurso }}</a> |
+                    <a href="{% url 'curso_delete' curso.id %}">
+                        <i class="fa fa-trash"></i>
+                    </a>
+            {% endfor %}
+        </ul>
+        <br>
+        <a href="{% url 'home' %}" class="btn btn-info">Voltar</a>
+        &nbsp
+        <a href="{% url 'curso_new' %}" class="btn btn-success">Novo</a>
+
+{% endblock %}

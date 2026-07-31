@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block main %}
+<th>
+	<div class="row">
+		<div class="col-1">
+
+		</div>
+		<div class="col">
+			<ul class="list-group">
+				<li class="list-group-item" style="background: #FFFFE0"> <!-- LightYellow / Código HTML #FFFFE0 |
+				 Código Java 255 255 255 -->
+					<table width="100%">
+						<tr>
+							<th colspan="1" style="background: #FFFFE0" width="50%"> <!-- LightYellow /
+							Código HTML #FFFFE0 | Código Java 255 255 224 -->
+								<h4 style="color: #FFFFE0F">
+									<ul>
+										<lu><a href="{% url 'list_departamentos' %}">Cadastro de Departamento</a></lu><br>
+										<lu><a href="{% url 'list_departamentos' %}">Cadastro de Funcionograma</a></lu><br>
+										<lu><a href="{% url 'list_funcionarios' %}">Cadastro de Funcionário</a></lu><br>
+										<lu><a href="{% url 'list_hora_extra' %}">Cadastro de Banco de Horas</a></lu><br>
+										<lu><a href="{% url 'exportar_csv' %}">Relatório de Banco de Horas</a></lu><br>
+										<lu><a href="{% url 'list_termos' %}">Cadastro de Termo</a></lu><br>
+										<lu><a href="{% url 'list_conferencia3' %}">Prestação de Contas</a></lu><br>
+										<lu><a href="{% url 'list_prestacao' %}">Controle Orçamentário</a></lu><br>
+										<lu><a href="{% url 'list_receitas' %}">Controle Financeiro</a></lu><br><br>
+
+										<button class="btn btn-danger"><a href="{% url 'logout' %}">Sair</a></button>
+									</ul>
+								</h4>
+							</th>
+						</tr>
+					</table>
+				</li>
+			</ul>
+		</div>
+		<div class="col-1">
+
+		</div>
+	</div>
+</th>
+{% endblock %}

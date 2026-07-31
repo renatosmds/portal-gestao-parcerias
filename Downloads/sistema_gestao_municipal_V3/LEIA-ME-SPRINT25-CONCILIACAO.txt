@@ -1,0 +1,26 @@
+SPRINT 25 — CONCILIAÇÃO BANCÁRIA E CONFERÊNCIA FINANCEIRA
+
+INSTALAÇÃO
+1. Faça backup de .env, db.sqlite3 e media.
+2. Copie o conteúdo da pasta sistema_gestao_municipal_V3 sobre a pasta principal.
+3. Execute:
+   python -m pip install -r requirements.txt
+   python manage.py check
+   python manage.py migrate
+   python manage.py test apps.conciliacao
+   python manage.py collectstatic --noinput
+   python manage.py runserver
+
+ACESSO
+http://127.0.0.1:8000/conciliacao/
+
+FORMATOS DE EXTRATO
+CSV: cabeçalhos recomendados data, descricao, credito, debito, documento, favorecido, saldo.
+XLSX: mesmos cabeçalhos na primeira linha.
+OFX: leitura dos blocos STMTTRN, DTPOSTED, TRNAMT, MEMO/NAME e CHECKNUM.
+
+REGRAS
+- A associação entre extrato e lançamento exige confirmação humana.
+- Uma movimentação pode ser vinculada parcialmente.
+- A conciliação não aprova nem reprova a prestação automaticamente.
+- Movimentações ignoradas exigem justificativa.

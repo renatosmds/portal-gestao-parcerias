@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}Funcionários | Sistema de Gestão Municipal{% endblock %}
+{% block page_name %}Gestão de Funcionários{% endblock %}
+
+{% block staticcss %}
+<link rel="stylesheet" href="{% static 'css/funcionarios-v2.css' %}">
+{% endblock %}
+
+{% block main %}
+<section class="employees-page">
+    {% include "components/page_header.html" with eyebrow="GESTÃO DE PESSOAS" title="Funcionários" subtitle="Consulte e administre os funcionários vinculados à empresa atual." icon="fa-users" %}
+
+    <div class="employees-toolbar">
+        <div class="employees-search">
+            <i class="fa fa-search" aria-hidden="true"></i>
+            <input
+                type="search"
+                id="employeeSearch"
+                class="form-control"
+                placeholder="Pesquisar por nome, cargo, nível ou e-mail..."
+                autocomplete="off">
+        </div>
+
+        <div class="employees-toolbar-actions">
+            <a href="{% url 'relatorio_funcionario' %}" class="btn btn-outline-secondary">
+                <i class="fa fa-file-pdf-o mr-1" aria-hidden="true"></i>
+                Relatório PDF
+            </a>
+            {% if perms.funcionarios.add_funcionario %}
+                <a href="{% url 'create_funcionario' %}" class="btn btn-primary">
+                    <i class="fa fa-plus mr-1" aria-hidden="true"></i>
+                    Novo funcionário
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="employees-summary">
+        <div class="employees-summary-item">
+            <span class="employees-summary-icon employees-summary-icon--purple">
+                <i class="fa fa-users"></i>
+            </span>
+            <div>
+                <small>Registros exibidos</small>
+                <strong id="employeeCount">{{ object_list|length }}</strong>
+            </div>
+        </div>
+
+        <div class="employees-summary-item">
+            <span class="employees-summary-icon employees-summary-icon--green">
+                <i class="fa fa-check-circle"></i>
+            </span>
+            <div>
+                <small>Ativos</small>
+                <strong id="activeEmployeeCount">—</strong>
+            </div>
+        </div>
+
+        <div class="employees-summary-item">
+            <span class="employees-summary-icon employees-summary-icon--yellow">
+                <i class="fa fa-suitcase"></i>
+            </span>
+            <div>
+                <small>Em férias</small>
+                <strong id="vacationEmployeeCount">—</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="sgm-panel employees-table-panel">
+        <div class="table-responsive">
+            <table class="table employees-table" id="employeesTable">
+                <thead>
+                <tr>
+                    <th>Funcionário</th>
+                    <th>Cargo / nível</th>
+                    <th>Contato</th>
+                    <th>Equipamento</th>
+                    <th>Situação</th>
+                    <th class="text-right">Ações</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for funcionario in object_list %}
+                    <tr
+                        data-employee-row
+                        data-active="{{ funcionario.ativo|yesno:'true,false' }}"
+                        data-vacation="{{ funcionario.de_ferias|yesno:'true,false' }}">
+                        <td>
+                            <div class="employee-identity">
+                                <span class="employee-avatar">
+                                    {{ funcionario.nome|default:"?"|slice:":1"|upper }}
+                                </span>
+                                <div>
+                                    <a href="{% url 'update_funcionario' funcionario.id %}"
+                                       class="employee-name">
+                                        {{ funcionario.nome|default:"Não informado" }}
+                                    </a>
+                                    <small>
+                                        {% if funcionario.usuario %}
+                                            Usuário: {{ funcionario.usuario }}
+                                        {% else %}
+                                            Sem usuário informado
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="employee-stacked">
+                                <strong>{{ funcionario.cargo|default:"Não informado" }}</strong>
+                                <small>Nível: {{ funcionario.nivel|default:"—" }}</small>
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="employee-stacked">
+                                <span>
+                                    <i class="fa fa-envelope-o mr-1"></i>
+                                    {{ funcionario.email|default:"Sem e-mail" }}
+                                </span>
+                                <small>
+                                    <i class="fa fa-phone mr-1"></i>
+                                    {{ funcionario.Telefone|default:"Sem telefone" }}
+                                </small>
+                            </div>
+                        </td>
+
+                        <td>
+                            <span class="employee-equipment">
+                                <i class="fa fa-desktop mr-1"></i>
+                                {{ funcionario.equipamento|default:"Não informado" }}
+                            </span>
+                        </td>
+
+                        <td>
+                            <div class="employee-statuses">
+                                {% if funcionario.ativo %}
+                                    <span class="status-badge status-badge--success">
+                                        <i class="fa fa-check-circle"></i> Ativo
+                                    </span>
+                                {% else %}
+                                    <span class="status-badge status-badge--muted">
+                                        <i class="fa fa-minus-circle"></i> Inativo
+                                    </span>
+                                {% endif %}
+
+                                {% if funcionario.de_ferias %}
+                                    <span class="status-badge status-badge--warning">
+                                        <i class="fa fa-suitcase"></i> Férias
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </td>
+
+                        <td class="text-right">
+                            <div class="employee-actions">
+                                {% if perms.funcionarios.change_funcionario %}
+                                    <a href="{% url 'update_funcionario' funcionario.id %}"
+                                       class="employee-action"
+                                       title="Editar funcionário"
+                                       aria-label="Editar {{ funcionario.nome }}">
+                                        <i class="fa fa-pencil"></i>
+                                    </a>
+                                {% endif %}
+                                {% if perms.funcionarios.delete_funcionario %}
+                                    <a href="{% url 'delete_funcionario' funcionario.id %}"
+                                       class="employee-action employee-action--danger"
+                                       title="Excluir funcionário"
+                                       aria-label="Excluir {{ funcionario.nome }}">
+                                        <i class="fa fa-trash"></i>
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr id="employeesEmptyRow">
+                        <td colspan="6">
+                            {% include "components/empty_state.html" with icon="fa-users" title="Nenhum funcionário cadastrado" text="Cadastre o primeiro funcionário desta empresa para começar." action_url="create_funcionario" action_text="Cadastrar funcionário" %}
+                        </td>
+                    </tr>
+                {% endfor %}
+
+                <tr id="employeesNoResult" class="d-none">
+                    <td colspan="6">
+                        <div class="employees-no-result">
+                            <i class="fa fa-search"></i>
+                            <strong>Nenhum resultado encontrado</strong>
+                            <span>Tente pesquisar por outro termo.</span>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        {% include "components/pagination.html" %}
+    </div>
+</section>
+{% endblock %}
+
+{% block static %}
+{{ block.super }}
+<script src="{% static 'js/funcionarios-v2.js' %}"></script>
+{% endblock %}

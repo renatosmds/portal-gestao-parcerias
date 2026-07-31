@@ -1,0 +1,22 @@
+SPRINT 24 — PORTAL DA TRANSPARÊNCIA
+
+Instalação:
+1. Copie o conteúdo da pasta sistema_gestao_municipal_V3 sobre o projeto principal.
+2. Execute:
+   python manage.py check
+   python manage.py migrate
+   python manage.py test apps.transparencia
+   python manage.py collectstatic --noinput
+   python manage.py runserver
+
+Acesso público (sem login):
+http://127.0.0.1:8000/transparencia/
+
+Gestão da publicação (usuário staff/superusuário):
+http://127.0.0.1:8000/transparencia/gestao/
+
+Regras:
+- Termos não são publicados automaticamente.
+- Documentos são internos por padrão.
+- Somente documentos classificados como Público e marcados como Publicado ficam disponíveis sem login.
+- Dados abertos: /transparencia/dados-abertos.csv e /transparencia/dados-abertos.json

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Resultado da Análise Assistida | PGP{% endblock %}
+{% block page_name %}Resultado da Análise Assistida{% endblock %}
+{% block staticcss %}<link rel="stylesheet" href="{% static 'assistente_ia/assistente-ia.css' %}?v=23.0">{% endblock %}
+{% block main %}
+<div class="container-fluid py-4 ai-page">
+  <div class="d-flex justify-content-between align-items-start mb-4"><div><a href="{% url 'assistente_ia_central' %}" class="small">← Voltar à central</a><h1 class="h3 mt-2 mb-1">Processamento #{{ processamento.pk }}</h1><p class="text-muted mb-0">{{ processamento.documento }} · {{ processamento.empresa|default:"Sem OSC" }}</p></div><span class="badge badge-info p-2">{{ processamento.get_decisao_revisor_display }}</span></div>
+  <div class="alert alert-warning"><strong>Aviso:</strong> este resultado é assistivo. A decisão final cabe exclusivamente ao servidor responsável.</div>
+  <div class="card shadow-sm border-0 mb-4"><div class="card-header bg-white"><strong>Resumo</strong></div><div class="card-body">{{ processamento.resumo|linebreaks }}</div></div>
+  <h2 class="h5 mb-3">Achados</h2>
+  {% for achado in processamento.achados.all %}<div class="ai-achado ai-{{ achado.severidade }} mb-3"><div class="d-flex justify-content-between"><strong>{{ achado.titulo }}</strong><span>{{ achado.get_severidade_display }}</span></div><p class="mb-0 mt-2">{{ achado.descricao }}</p></div>{% empty %}<p class="text-muted">Nenhum achado registrado.</p>{% endfor %}
+  <div class="row mt-4"><div class="col-lg-4 mb-3"><div class="card h-100 border-0 shadow-sm"><div class="card-header bg-white"><strong>Rascunho de inconformidade</strong></div><div class="card-body"><p>{{ processamento.rascunho_inconformidade|default:"Não gerado."|linebreaks }}</p></div></div></div><div class="col-lg-4 mb-3"><div class="card h-100 border-0 shadow-sm"><div class="card-header bg-white"><strong>Rascunho de diligência</strong></div><div class="card-body"><p>{{ processamento.rascunho_diligencia|default:"Não gerado."|linebreaks }}</p></div></div></div><div class="col-lg-4 mb-3"><div class="card h-100 border-0 shadow-sm"><div class="card-header bg-white"><strong>Recomendação</strong></div><div class="card-body"><p>{{ processamento.rascunho_recomendacao|default:"Não gerada."|linebreaks }}</p></div></div></div></div>
+  <div class="card shadow-sm border-0 mt-3"><div class="card-header bg-white"><strong>Revisão humana</strong></div><div class="card-body"><form method="post" action="{% url 'assistente_ia_revisar' processamento.pk %}">{% csrf_token %}<div class="form-group"><label>Decisão sobre a sugestão</label>{{ form_revisao.decisao_revisor }}</div><div class="form-group"><label>Observações do revisor</label>{{ form_revisao.observacoes_revisor }}</div><button class="btn btn-success"><i class="fa fa-check"></i> Registrar revisão</button></form></div></div>
+</div>
+{% endblock %}

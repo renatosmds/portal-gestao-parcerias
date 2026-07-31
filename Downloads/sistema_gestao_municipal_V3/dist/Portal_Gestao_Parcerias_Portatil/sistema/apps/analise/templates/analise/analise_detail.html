@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ analise }} | Análise{% endblock %}
+{% block page_name %}Análises técnicas{% endblock %}
+{% block staticcss %}<link rel="stylesheet" href="{% static 'css/analises-v3.css' %}">{% endblock %}
+{% block main %}
+<section class="reviews-page">
+    <a href="{% url 'list_analise' %}" class="reviews-back">← Voltar</a>
+    <header class="reviews-header">
+        <div>
+            <span class="sgm-eyebrow">ANÁLISE TÉCNICA</span>
+            <h1>{{ analise }}</h1>
+            <p>{{ analise.nomeOSC|default:"OSC não informada" }}</p>
+        </div>
+        <div>
+            {% if perms.analise.change_analise %}<a href="{% url 'update_analise' analise.pk %}" class="btn btn-primary">Editar</a>{% endif %}
+            {% if perms.analise.delete_analise %}<a href="{% url 'delete_analise' analise.pk %}" class="btn btn-outline-danger">Excluir</a>{% endif %}
+        </div>
+    </header>
+
+    <div class="review-detail-grid">
+        <section class="sgm-panel review-panel">
+            <h2>Inconformidade</h2>
+            <div class="review-long-text">{{ analise.inconformidade|default:"Não registrada."|linebreaksbr }}</div>
+            <h2>Recomendações</h2>
+            <div class="review-long-text">{{ analise.recomendacoes|default:"Não registradas."|linebreaksbr }}</div>
+            <h2>Posição da Secretaria</h2>
+            <div class="review-long-text">{{ analise.posicaoSecretaria|default:"Não registrada."|linebreaksbr }}</div>
+        </section>
+
+        <aside class="sgm-panel review-panel">
+            <h2>Identificação</h2>
+            <dl class="review-data">
+                <div><dt>Empresa</dt><dd>{{ analise.empresa.nome|default:"Não informada" }}</dd></div>
+                <div><dt>Termo</dt><dd>{{ analise.numtermo|default:"Não informado" }}</dd></div>
+                <div><dt>Prestação</dt><dd>{{ analise.prestacao|default:"Não informada" }}</dd></div>
+                <div><dt>RA</dt><dd>{{ analise.numRA|default:"Não informado" }}</dd></div>
+                <div><dt>Item</dt><dd>{{ analise.item|default:"Não informado" }}</dd></div>
+                <div><dt>Status</dt><dd>{{ analise.status|default:"Não informado" }}</dd></div>
+                <div><dt>Atualização</dt><dd>{{ analise.atualizada_em|date:"d/m/Y H:i" }}</dd></div>
+            </dl>
+        </aside>
+    </div>
+</section>
+{% endblock %}
