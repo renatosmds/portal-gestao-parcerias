@@ -1,0 +1,39 @@
+databases:
+  - name: pgp-demo-db
+    plan: free
+    databaseName: pgp_demo
+    user: pgp_demo
+
+services:
+  - type: web
+    name: portal-gestao-parcerias-demo
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
+    startCommand: python manage.py migrate --noinput && python manage.py preparar_demo && gunicorn gestao_rh.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+    healthCheckPath: /
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: pgp-demo-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: PGP_AMBIENTE_DEMO
+        value: "True"
+      - key: PGP_IA_ATIVA
+        value: "False"
+      - key: SECURE_SSL_REDIRECT
+        value: "True"
+      - key: ALLOWED_HOSTS
+        value: portal-gestao-parcerias-demo.onrender.com
+      - key: CSRF_TRUSTED_ORIGINS
+        value: https://portal-gestao-parcerias-demo.onrender.com
+      - key: DEMO_ADMIN_USERNAME
+        value: demo_admin
+      - key: DEMO_ADMIN_EMAIL
+        value: demo@exemplo.invalid
+      - key: DEMO_ADMIN_PASSWORD
+        sync: false

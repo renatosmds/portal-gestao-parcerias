@@ -1,3 +1,4 @@
+from django.conf import settings
 from .dashboard import usuario_eh_osc
 
 
@@ -11,6 +12,8 @@ def access_context(request):
         "usuario_area_osc": False,
         "area_portal": "Portal de Gestão de Parcerias",
         "notificacoes_nao_lidas": 0,
+        "pgp_ambiente_demo": getattr(settings, "PGP_AMBIENTE_DEMO", False),
+        "pgp_demo_mensagem": getattr(settings, "PGP_DEMO_MENSAGEM", ""),
     }
 
     if not user or not user.is_authenticated:

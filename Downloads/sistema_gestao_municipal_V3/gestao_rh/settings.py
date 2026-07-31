@@ -40,6 +40,11 @@ ALLOWED_HOSTS = _csv_config('ALLOWED_HOSTS', '127.0.0.1,localhost')
 CSRF_TRUSTED_ORIGINS = _csv_config('CSRF_TRUSTED_ORIGINS', '')
 PGP_SESSION_IDLE_MINUTES = config('PGP_SESSION_IDLE_MINUTES', default=60, cast=int)
 PGP_MAX_UPLOAD_MB = config('PGP_MAX_UPLOAD_MB', default=20, cast=int)
+PGP_AMBIENTE_DEMO = config('PGP_AMBIENTE_DEMO', default=False, cast=bool)
+PGP_DEMO_MENSAGEM = config(
+    'PGP_DEMO_MENSAGEM',
+    default='Ambiente exclusivamente demonstrativo. Todos os dados apresentados são fictícios.',
+)
 
 # Sprint 23 — análise assistida. A integração externa permanece desativada por padrão.
 PGP_IA_ATIVA = config('PGP_IA_ATIVA', default=False, cast=bool)
@@ -285,28 +290,20 @@ CELERY_TASK_SERIALIZER = 'json'
 
 DATABASE_ROUTERS = ['gestao_rh.DBRoutes.DBRoutes']
 
+# PostgreSQL em produção (Render) e SQLite no desenvolvimento local/portátil.
+default_dburl = 'sqlite:///' + os.path.join(PORTABLE_DATA_DIR or BASE_DIR, 'db.sqlite3')
 DATABASES = {
-      'default': {
-           'ENGINE': 'django.db.backends.sqlite3',
-           'NAME': os.path.join(PORTABLE_DATA_DIR or BASE_DIR, 'db.sqlite3'),
-       },
-    # 'default': {
-    #     'ENGINE': 'django.db.backends.postgresql_psycopg2',
-    #     'NAME': 'dc7td6n6idjhrb',
-    #     'USER': 'xblzifmmnchdfj',
-    #     'PASSWORD': '66dbfa4d7ebe483ea60eca648648ba19998bcc29004b3e28c48e079baedacc26',
-    #     'HOST': 'ec2-107-22-7-9.compute-1.amazonaws.com',
-    #     'PORT': '5432',
-    # },
-    #    'mysql': {
-    #        'ENGINE': 'django.db.backends.mysql',
-    #        'NAME': 'gestao_rh',
-    #        'USER': 'user_RLF',
-    #        'PASSWORD': 'r70742524H%!',
-    #        'HOST': 'localhost',
-    #        'PORT': '5432',
-    #    },
+    'default': config(
+        'DATABASE_URL',
+        default=default_dburl,
+        cast=dburl,
+    )
 }
+
+# O Render encerra a conexão ociosa; conexões persistentes melhoram o desempenho.
+if config('DATABASE_URL', default='').startswith(('postgres://', 'postgresql://')):
+    DATABASES['default']['CONN_MAX_AGE'] = 60
+    DATABASES['default']['OPTIONS'] = {'sslmode': 'require'}
 
 # LANGUAGES = (
 #     ('en', _('English')),
@@ -351,6 +348,9 @@ DATE_FORMAT = 'd/m/y'
 # Evita a criação automática de BigAutoField e elimina os avisos W042.
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
+
+# Render e outros proxies HTTPS informam o protocolo por X-Forwarded-Proto.
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Segurança por ambiente. Em produção, configure DEBUG=False no .env.
 SESSION_COOKIE_HTTPONLY = True

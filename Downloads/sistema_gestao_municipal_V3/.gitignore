@@ -25,3 +25,17 @@ __pycache__/
 staticfiles/
 *.sqlite3.sqbpro
 .env
+.env
+db.sqlite3
+media/
+logs/
+backups/
+portable_real/
+dist/
+build/
+staticfiles/
+.venv/
+venv/
+.idea/
+__pycache__/
+*.pyc

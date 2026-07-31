@@ -295,6 +295,12 @@
         </header>
 
         <main class="sgm-content">
+            {% if pgp_ambiente_demo %}
+            <div class="alert alert-warning border-warning shadow-sm mb-3" role="alert">
+                <strong><i class="fa fa-flask mr-1"></i> Ambiente de demonstração:</strong>
+                {{ pgp_demo_mensagem }}
+            </div>
+            {% endif %}
             {% if messages %}
             <div class="sgm-messages">
                 {% for message in messages %}
