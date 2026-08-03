@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Central de Treinamento{% endblock %}
+{% block page_name %}Central de Treinamento{% endblock %}
+{% block staticcss %}<link rel="stylesheet" href="{% static 'treinamento/treinamento.css' %}?v=30.0">{% endblock %}
+{% block main %}
+<div class="treino-cabecalho">
+  <div>
+    <span class="treino-kicker">APRENDA A USAR</span>
+    <h1>Central de Treinamento</h1>
+    <p>Guias rápidos por perfil, ajuda contextual 5W2H e acompanhamento do seu progresso.</p>
+  </div>
+  <form method="post" action="{% url 'treinamento_reiniciar' %}" onsubmit="return confirm('Reiniciar todo o progresso do treinamento?');">
+    {% csrf_token %}<button class="btn btn-outline-secondary"><i class="fa fa-refresh mr-1"></i> Reiniciar progresso</button>
+  </form>
+</div>
+
+<div class="treino-progresso-card">
+  <div class="treino-progresso-numero">{{ percentual }}%</div>
+  <div class="flex-grow-1">
+    <div class="d-flex justify-content-between"><strong>Seu progresso</strong><span>{{ quantidade }} de {{ total }} módulos</span></div>
+    <div class="progress mt-2" style="height:12px"><div class="progress-bar" role="progressbar" style="width:{{ percentual }}%" aria-valuenow="{{ percentual }}" aria-valuemin="0" aria-valuemax="100"></div></div>
+  </div>
+</div>
+
+<div class="treino-grid">
+  {% for item in modulos %}
+  <a class="treino-card {% if item.concluido %}concluido{% endif %}" href="{% url 'treinamento_modulo' item.slug %}">
+    <span class="treino-icone"><i class="fa {{ item.icone }}"></i></span>
+    <div><h2>{{ item.titulo }}</h2><p>{{ item.resumo }}</p></div>
+    <span class="treino-status">{% if item.concluido %}<i class="fa fa-check-circle"></i> Concluído{% else %}Iniciar <i class="fa fa-arrow-right"></i>{% endif %}</span>
+  </a>
+  {% endfor %}
+</div>
+
+<section class="treino-faq mt-4">
+  <h2><i class="fa fa-question-circle mr-2"></i>Perguntas frequentes</h2>
+  <div id="faqTreinamento">
+    {% for pergunta, resposta in faq %}
+    <details><summary>{{ pergunta }}</summary><p>{{ resposta }}</p></details>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

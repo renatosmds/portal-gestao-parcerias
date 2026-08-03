@@ -1,0 +1,17 @@
+{% load static %}
+<div class="modal fade" id="modalAjudaContextual" tabindex="-1" role="dialog" aria-labelledby="tituloAjudaContextual" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
+    <div class="modal-content ajuda5w2h-modal">
+      <div class="modal-header">
+        <div><span class="ajuda5w2h-kicker">ORIENTAÇÃO CONTEXTUAL 5W2H</span><h5 class="modal-title" id="tituloAjudaContextual">Ajuda</h5></div>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Fechar"><span aria-hidden="true">&times;</span></button>
+      </div>
+      <div class="modal-body" id="conteudoAjudaContextual"><p>Carregando orientação...</p></div>
+      <div class="modal-footer ajuda5w2h-footer">
+        <span class="mr-auto text-muted small">Esta orientação apoia o preenchimento e não substitui a norma aplicável.</span>
+        <a href="{% static 'manual/Manual_de_Uso_PGP_5W2H.docx' %}" class="btn btn-outline-secondary btn-sm" target="_blank" rel="noopener">Abrir manual</a>
+        <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">Entendi</button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,3 @@
+{% extends "base.html" %}
+{% block page_name %}Base de Conhecimento{% endblock %}
+{% block main %}<div class="container py-4"><a href="{% url 'suporte_painel' %}">&larr; Voltar</a><article class="card mt-3"><div class="card-body"><span class="badge badge-info mb-2">{{ artigo.get_categoria_display }}</span><h1 class="h3">{{ artigo.titulo }}</h1><p class="lead text-muted">{{ artigo.resumo }}</p><hr><div class="suporte-conteudo">{{ artigo.conteudo|linebreaks }}</div></div></article></div>{% endblock %}

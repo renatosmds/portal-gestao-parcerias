@@ -1,0 +1,35 @@
+SPRINT 30 — CENTRAL DE TREINAMENTO E CORREÇÕES DA SPRINT 29
+
+1. Copie o conteúdo desta pasta sobre a pasta principal do projeto.
+2. Execute:
+   python manage.py check
+   python manage.py migrate
+   python manage.py importar_ajudas_5w2h
+   python manage.py test apps.ajuda_contextual apps.treinamento
+   python manage.py collectstatic --noinput
+   python manage.py runserver
+
+ACESSOS
+- Central: /treinamento/
+- Gestão 5W2H: /ajuda-contextual/gestao/
+
+CORREÇÕES DA SPRINT 29
+- Resolução por aliases: empresa/OSC, termo/número, início/início da vigência, fim/fim da vigência etc.
+- Uso do texto do rótulo para localizar a ajuda quando o nome técnico divergir.
+- Detecção de campos inseridos dinamicamente.
+- Cache atualizado para versão 30.
+
+SPRINT 30
+- Central de treinamento por perfil.
+- Dez guias passo a passo.
+- Progresso por usuário.
+- Perguntas frequentes.
+- Reinício de progresso.
+
+GIT (somente depois dos testes)
+- Trabalhe na pasta portal-gestao-parcerias-deploy.
+- git status
+- git add .
+- git commit -m "Sprint 30: central de treinamento e correcoes da ajuda 5W2H"
+- git pull --rebase origin master
+- git push origin master

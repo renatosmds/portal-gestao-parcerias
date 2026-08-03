@@ -13,6 +13,7 @@
           href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="{% static 'css/sgm-v2.css' %}?v=24.0">
 
+    <link rel="stylesheet" href="{% static 'ajuda_contextual/ajuda_contextual.css' %}?v=29.0">
     {% block staticcss %}{% endblock %}
 </head>
 
@@ -181,6 +182,16 @@
             </a>
             {% endif %}
 
+            <a class="sgm-nav-item {% if request.resolver_match.url_name == 'treinamento_painel' or request.resolver_match.url_name == 'treinamento_modulo' %}active{% endif %}" href="{% url 'treinamento_painel' %}">
+                <i class="fa fa-graduation-cap" aria-hidden="true"></i>
+                <span>Central de Treinamento</span>
+            </a>
+
+            <a class="sgm-nav-item {% if 'suporte_' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'suporte_painel' %}">
+                <i class="fa fa-life-ring" aria-hidden="true"></i>
+                <span>Suporte e conhecimento</span>
+            </a>
+
             <a class="sgm-nav-item" href="{% url 'list_curso' %}">
                 <i class="fa fa-graduation-cap" aria-hidden="true"></i>
                 <span>Cursos</span>
@@ -216,7 +227,7 @@
 
         <div class="sgm-sidebar-footer">
             <small>Portal de Gestão de Parcerias</small>
-            <span>Sprint 27 · Beta</span>
+            <span>Sprint 31 · Beta</span>
         </div>
     </aside>
 
@@ -326,6 +337,8 @@
     </div>
 </div>
 
+{% include 'ajuda_contextual/modal_ajuda.html' %}
+
 {% block static %}
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
         integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
@@ -335,6 +348,7 @@
         crossorigin="anonymous"></script>
 <script src="{% static 'bootstrap/js/bootstrap.js' %}"></script>
 <script src="{% static 'js/sgm-v2.js' %}"></script>
+<script src="{% static 'ajuda_contextual/ajuda_contextual.js' %}?v=29.0"></script>
 {% endblock %}
 </body>
 </html>

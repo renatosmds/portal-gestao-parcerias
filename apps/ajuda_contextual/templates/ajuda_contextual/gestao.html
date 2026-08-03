@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Ajuda contextual 5W2H{% endblock %}
+{% block page_name %}Ajuda contextual 5W2H{% endblock %}
+{% block main %}
+<div class="container-fluid py-3">
+  <div class="d-flex justify-content-between align-items-center mb-3"><div><h2 class="h4 mb-1">Base de ajuda contextual</h2><p class="text-muted mb-0">Conteúdos utilizados pelos botões de interrogação dos formulários.</p></div><a class="btn btn-primary" href="/admin/ajuda_contextual/ajudacontextual/add/">Nova ajuda</a></div>
+  <form class="card card-body mb-3" method="get"><div class="form-row"><div class="col-md-5"><input class="form-control" name="q" value="{{ q }}" placeholder="Pesquisar título, chave ou campo"></div><div class="col-md-4"><select class="form-control" name="modulo"><option value="">Todos os módulos</option>{% for item in modulos %}<option value="{{ item }}" {% if item == modulo_atual %}selected{% endif %}>{{ item }}</option>{% endfor %}</select></div><div class="col-md-3"><button class="btn btn-outline-primary btn-block">Filtrar</button></div></div></form>
+  <div class="card"><div class="table-responsive"><table class="table table-hover mb-0"><thead><tr><th>Título</th><th>Módulo</th><th>Campo</th><th>Chave</th><th>Situação</th><th></th></tr></thead><tbody>{% for ajuda in ajudas %}<tr><td>{{ ajuda.titulo }}</td><td>{{ ajuda.modulo }}</td><td><code>{{ ajuda.campo }}</code></td><td><small>{{ ajuda.chave }}</small></td><td>{% if ajuda.ativo %}<span class="badge badge-success">Ativa</span>{% else %}<span class="badge badge-secondary">Inativa</span>{% endif %}</td><td><a href="/admin/ajuda_contextual/ajudacontextual/{{ ajuda.pk }}/change/">Editar</a></td></tr>{% empty %}<tr><td colspan="6" class="text-center text-muted py-4">Nenhuma orientação encontrada.</td></tr>{% endfor %}</tbody></table></div></div>
+</div>
+{% endblock %}

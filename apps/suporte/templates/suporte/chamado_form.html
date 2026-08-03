@@ -1,0 +1,3 @@
+{% extends "base.html" %}{% load bootstrap %}
+{% block page_name %}Novo chamado de suporte{% endblock %}
+{% block main %}<div class="container py-4"><div class="card"><div class="card-header"><strong>Abrir solicitação</strong></div><div class="card-body"><p class="text-muted">Descreva a dúvida, informe o que esperava acontecer e o que ocorreu.</p><form method="post" enctype="multipart/form-data">{% csrf_token %}{{ form|bootstrap }}<div class="d-flex justify-content-end"><a href="{% url 'suporte_painel' %}" class="btn btn-light mr-2">Cancelar</a><button class="btn btn-primary">Enviar chamado</button></div></form></div></div></div>{% endblock %}

@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ modulo.titulo }}{% endblock %}
+{% block page_name %}Treinamento — {{ modulo.titulo }}{% endblock %}
+{% block staticcss %}<link rel="stylesheet" href="{% static 'treinamento/treinamento.css' %}?v=30.0">{% endblock %}
+{% block main %}
+<a class="btn btn-link pl-0 mb-3" href="{% url 'treinamento_painel' %}"><i class="fa fa-arrow-left mr-1"></i> Voltar à Central</a>
+<div class="treino-modulo">
+  <div class="treino-modulo-titulo">
+    <span class="treino-icone grande"><i class="fa {{ modulo.icone }}"></i></span>
+    <div><span class="treino-kicker">GUIA PASSO A PASSO</span><h1>{{ modulo.titulo }}</h1><p>{{ modulo.resumo }}</p></div>
+  </div>
+  <ol class="treino-passos">
+    {% for passo in modulo.passos %}<li><span>{{ forloop.counter }}</span><p>{{ passo }}</p></li>{% endfor %}
+  </ol>
+  <div class="alert alert-info"><i class="fa fa-question-circle mr-1"></i> Nos formulários, procure o botão <strong>?</strong> ao lado dos campos para abrir a explicação 5W2H.</div>
+  <form method="post" action="{% url 'treinamento_concluir' modulo.slug %}">
+    {% csrf_token %}
+    {% if progresso.concluido %}
+      <input type="hidden" name="concluido" value="0"><button class="btn btn-outline-success"><i class="fa fa-check-circle mr-1"></i> Concluído — marcar como pendente</button>
+    {% else %}
+      <input type="hidden" name="concluido" value="1"><button class="btn btn-success"><i class="fa fa-check mr-1"></i> Marcar módulo como concluído</button>
+    {% endif %}
+  </form>
+</div>
+{% endblock %}

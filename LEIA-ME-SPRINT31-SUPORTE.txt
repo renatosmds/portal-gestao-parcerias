@@ -1,0 +1,26 @@
+SPRINT 31 — SUPORTE, FEEDBACK E BASE DE CONHECIMENTO
+
+CORREÇÕES DA SPRINT 30
+- Integra apps.treinamento ao INSTALLED_APPS.
+- Inclui as URLs /treinamento/.
+- Reescreve os testes do treinamento com importação absoluta e force_login.
+- Inclui os links Central de Treinamento e Suporte no menu.
+
+NOVO MÓDULO
+- Base de conhecimento pesquisável.
+- Chamados de suporte por usuário.
+- Anexos, categoria, prioridade e situação.
+- Respostas e histórico de interações.
+- Gestão administrativa pelo Django Admin.
+
+COMANDOS
+python manage.py check
+python manage.py migrate
+python manage.py test apps.ajuda_contextual apps.treinamento apps.suporte
+python manage.py collectstatic --noinput
+python manage.py runserver
+
+ACESSOS
+/treinamento/
+/suporte/
+/admin/suporte/

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block page_name %}Suporte e Base de Conhecimento{% endblock %}
+{% block main %}
+<div class="container-fluid py-3">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div><h1 class="h3 mb-1">Suporte e Base de Conhecimento</h1><p class="text-muted mb-0">Pesquise orientações ou acompanhe suas solicitações.</p></div>
+    <a class="btn btn-primary" href="{% url 'suporte_chamado_novo' %}?origem={{ request.path|urlencode }}"><i class="fa fa-plus mr-1"></i>Novo chamado</a>
+  </div>
+  <form method="get" class="card card-body mb-4"><div class="input-group"><input class="form-control" name="q" value="{{ q }}" placeholder="Pesquisar por assunto, módulo ou dúvida..."><div class="input-group-append"><button class="btn btn-outline-primary">Pesquisar</button></div></div></form>
+  <div class="row">
+    <div class="col-lg-7"><div class="card"><div class="card-header"><strong>Base de conhecimento</strong></div><div class="list-group list-group-flush">{% for artigo in artigos %}<a class="list-group-item list-group-item-action" href="{% url 'suporte_artigo' artigo.slug %}"><strong>{{ artigo.titulo }}</strong><div class="small text-muted">{{ artigo.resumo|default:artigo.get_categoria_display }}</div></a>{% empty %}<div class="p-4 text-muted">Nenhum artigo encontrado.</div>{% endfor %}</div></div></div>
+    <div class="col-lg-5"><div class="card"><div class="card-header"><strong>Chamados recentes</strong></div><div class="list-group list-group-flush">{% for chamado in chamados %}<a class="list-group-item list-group-item-action" href="{% url 'suporte_chamado_detalhe' chamado.pk %}"><span class="badge badge-light">#{{ chamado.pk }}</span> {{ chamado.assunto }}<div class="small text-muted">{{ chamado.get_situacao_display }} · {{ chamado.atualizado_em|date:"d/m/Y H:i" }}</div></a>{% empty %}<div class="p-4 text-muted">Nenhum chamado registrado.</div>{% endfor %}</div></div></div>
+  </div>
+</div>
+{% endblock %}

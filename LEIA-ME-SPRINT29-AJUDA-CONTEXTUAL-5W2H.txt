@@ -1,0 +1,14 @@
+SPRINT 29 — AJUDA CONTEXTUAL 5W2H
+
+1. Copie os arquivos sobre a pasta principal.
+2. Execute:
+   python manage.py check
+   python manage.py migrate
+   python manage.py test apps.ajuda_contextual
+   python manage.py collectstatic --noinput
+3. Inicie o sistema e abra qualquer formulário. Botões ? são inseridos automaticamente nos campos que possuem ajuda cadastrada.
+4. Gestão: /ajuda-contextual/gestao/ ou /admin/ajuda_contextual/ajudacontextual/
+5. Reimportação opcional:
+   python manage.py importar_ajudas_5w2h
+
+A ajuda é armazenada no banco, organizada em 5W2H. O manual Word é disponibilizado como referência complementar.
