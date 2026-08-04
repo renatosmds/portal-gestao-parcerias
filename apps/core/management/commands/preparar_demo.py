@@ -2,6 +2,7 @@ from decimal import Decimal
 import os
 
 from django.contrib.auth import get_user_model
+from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
@@ -70,6 +71,8 @@ class Command(BaseCommand):
             empresa.prestacao = prestacao
             empresa.termos = termo
             empresa.save(update_fields=["prestacao", "termos"])
+
+        call_command("preparar_demo_ciclo_completo")
 
         self.stdout.write(self.style.SUCCESS("Ambiente demonstrativo preparado com sucesso."))
         if not password:

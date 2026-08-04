@@ -4,7 +4,25 @@ from .views import home, celery, filtra_funcionarios, departamentos_ajax, filtra
     form_requerimento, form_habilitacao, form_aprovacao, relatorio_gestor, relatorio_comissao,  monitoramento,\
     auditoria, analise_auditoria, acompanhamento_auditorias, tomada_contas, analise, conferencia3_list, menu, diagnostico_portal
 
+
+from .views_sprint32 import (
+    execucao_em_desenvolvimento,
+    financeiro_em_desenvolvimento,
+)
+
 urlpatterns = [
+
+    path(
+        "execucao/em-desenvolvimento/",
+        execucao_em_desenvolvimento,
+        name="execucao_em_desenvolvimento",
+    ),
+    path(
+        "financeiro/em-desenvolvimento/",
+        financeiro_em_desenvolvimento,
+        name="financeiro_em_desenvolvimento",
+    ),
+
     path('', home, name='home'),
     path('execucao/', execucao, name='execucao'),
     path('conferencia3_list/', conferencia3_list, name='conferencia3_list'),

@@ -6,13 +6,12 @@ from .models import Empresa
 
 
 class EmpresaPermissaoMixin(LoginRequiredMixin, PermissionRequiredMixin):
-    """
-    Usuário sem login:
-        redireciona para a tela de login.
+    """Permite acesso integral ao superusuário e aplica permissões aos demais."""
 
-    Usuário autenticado sem permissão:
-        retorna erro 403.
-    """
+    def has_permission(self):
+        if self.request.user.is_superuser:
+            return True
+        return super().has_permission()
 
     def handle_no_permission(self):
         if not self.request.user.is_authenticated:
@@ -21,37 +20,21 @@ class EmpresaPermissaoMixin(LoginRequiredMixin, PermissionRequiredMixin):
                 self.get_login_url(),
                 self.get_redirect_field_name(),
             )
-
         raise PermissionDenied(
             "Seu perfil não possui permissão para acessar este recurso."
         )
 
 
 class EmpresaEscopoMixin(LoginRequiredMixin):
-    """
-    Superusuários visualizam todas as empresas.
-
-    Usuários comuns visualizam somente a empresa vinculada
-    ao próprio cadastro de funcionário.
-    """
+    """Superusuários veem todas as OSCs; usuários comuns, apenas a vinculada."""
 
     def get_empresa_usuario(self):
-        try:
-            funcionario = self.request.user.funcionario
-        except Exception:
-            return None
-
-        return getattr(funcionario, "empresa", None)
+        funcionario = getattr(self.request.user, "funcionario", None)
+        return getattr(funcionario, "empresa", None) if funcionario else None
 
     def get_queryset(self):
         queryset = Empresa.objects.all().order_by("nome")
-
         if self.request.user.is_superuser:
             return queryset
-
         empresa = self.get_empresa_usuario()
-
-        if not empresa:
-            return queryset.none()
-
-        return queryset.filter(pk=empresa.pk)
+        return queryset.filter(pk=empresa.pk) if empresa else queryset.none()

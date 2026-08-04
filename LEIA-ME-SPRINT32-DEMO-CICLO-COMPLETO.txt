@@ -1,0 +1,43 @@
+SPRINT 32 — ESTABILIZAÇÃO + BASE FICTÍCIA DO CICLO COMPLETO
+
+Esta revisão acrescenta uma carga demonstrativa idempotente.
+
+O comando cria:
+- 3 prefeituras municipais fictícias, representadas no cadastro de Empresas;
+- 3 OSCs fictícias, uma vinculada a cada prefeitura por meio de Parceria, Termo e Prestação;
+- 11 rubricas demonstrativas;
+- 3 lançamentos por rubrica e por OSC;
+- 33 lançamentos por OSC;
+- 99 lançamentos no total;
+- fornecedores, documentos, movimentos bancários e vínculos de conciliação;
+- metas e indicadores;
+- análises;
+- diligências e respostas;
+- cenários de aprovação, aprovação com ressalvas e reprovação com glosa;
+- publicação demonstrativa na transparência.
+
+RUBRICAS:
+1. Recursos humanos
+2. Encargos sociais
+3. Material de consumo
+4. Gêneros alimentícios
+5. Serviços de terceiros — pessoa jurídica
+6. Serviços de terceiros — pessoa física
+7. Locação de bens e equipamentos
+8. Transporte e deslocamento
+9. Comunicação e divulgação
+10. Tributos e taxas
+11. Outras despesas previstas
+
+COMANDO:
+python manage.py preparar_demo_ciclo_completo
+
+O comando tradicional também executa a nova carga:
+python manage.py preparar_demo
+
+TESTES:
+python manage.py test apps.core.tests_sprint32 apps.core.tests_sprint32_demo
+
+IMPORTANTE:
+Todos os nomes, CNPJs, documentos, valores e fatos são fictícios.
+Não usar a base demonstrativa como registro oficial.

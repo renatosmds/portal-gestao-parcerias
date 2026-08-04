@@ -38,6 +38,11 @@ class FuncionarioEdit(PermissaoFuncionarioMixin, FuncionarioPorEmpresaMixin, Upd
     form_class = FuncionarioForm
     success_url = reverse_lazy("list_funcionarios")
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
+
 
 class FuncionarioDelete(PermissaoFuncionarioMixin, FuncionarioPorEmpresaMixin, DeleteView):
     permission_required = "funcionarios.delete_funcionario"
@@ -51,10 +56,16 @@ class FuncionarioCreate(PermissaoFuncionarioMixin, EmpresaAtualMixin, CreateView
     form_class = FuncionarioForm
     success_url = reverse_lazy("list_funcionarios")
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
+
     @transaction.atomic
     def form_valid(self, form):
         funcionario = form.save(commit=False)
-        funcionario.empresa = self.empresa_atual
+        if not self.request.user.is_superuser:
+            funcionario.empresa = self.empresa_atual
         funcionario.user = criar_usuario_para_funcionario(funcionario.usuario)
         funcionario.save()
         form.save_m2m()
@@ -154,66 +165,92 @@ class PdfDebug(PermissaoFuncionarioMixin, EmpresaAtualMixin, TemplateView):
 
 
 def _empresa(request):
+    if request.user.is_superuser:
+        return None
     return get_empresa_do_usuario(request.user)
 
 def _exigir(request, perm):
     if not (request.user.is_superuser or request.user.has_perm(perm)):
         raise PermissionDenied
 
+def _funcionarios_queryset(request):
+    qs = Funcionario.objects.all()
+    empresa = _empresa(request)
+    return qs if request.user.is_superuser else qs.filter(empresa=empresa)
+
+def _pontos_queryset(request):
+    qs = FolhaPonto.objects.select_related("funcionario")
+    empresa = _empresa(request)
+    return qs if request.user.is_superuser else qs.filter(funcionario__empresa=empresa)
+
+def _pagamentos_queryset(request):
+    qs = FolhaPagamento.objects.select_related("funcionario", "folha_ponto")
+    empresa = _empresa(request)
+    return qs if request.user.is_superuser else qs.filter(funcionario__empresa=empresa)
+
 @login_required
 def folhas_ponto_list(request):
     _exigir(request, "funcionarios.view_folhaponto")
-    empresa = _empresa(request)
-    objetos = FolhaPonto.objects.filter(funcionario__empresa=empresa).select_related("funcionario")
-    return render(request, "funcionarios/folha_ponto_list.html", {"object_list": objetos})
+    return render(request, "funcionarios/folha_ponto_list.html", {"object_list": _pontos_queryset(request)})
 
 @login_required
 def folha_ponto_form(request, pk=None):
     _exigir(request, "funcionarios.change_folhaponto" if pk else "funcionarios.add_folhaponto")
-    empresa = _empresa(request)
-    obj = get_object_or_404(FolhaPonto, pk=pk, funcionario__empresa=empresa) if pk else None
+    obj = get_object_or_404(_pontos_queryset(request), pk=pk) if pk else None
     form = FolhaPontoForm(request.POST or None, instance=obj)
-    form.fields["funcionario"].queryset = Funcionario.objects.filter(empresa=empresa, ativo=True)
+    form.fields["funcionario"].queryset = _funcionarios_queryset(request).filter(ativo=True)
     if form.is_valid():
-        form.save(); messages.success(request, "Folha de ponto salva com sucesso."); return redirect("folhas_ponto_list")
+        form.save()
+        messages.success(request, "Folha de ponto salva com sucesso.")
+        return redirect("folhas_ponto_list")
     return render(request, "funcionarios/folha_ponto_form.html", {"form": form, "object": obj})
 
 @login_required
 def fechar_folha_ponto(request, pk):
     _exigir(request, "funcionarios.change_folhaponto")
-    obj = get_object_or_404(FolhaPonto, pk=pk, funcionario__empresa=_empresa(request))
+    obj = get_object_or_404(_pontos_queryset(request), pk=pk)
     if request.method == "POST":
-        obj.status="fechada"; obj.fechado_em=timezone.now(); obj.fechado_por=request.user; obj.save(update_fields=["status","fechado_em","fechado_por","atualizado_em"]); messages.success(request,"Folha de ponto fechada.")
+        obj.status = "fechada"
+        obj.fechado_em = timezone.now()
+        obj.fechado_por = request.user
+        obj.save(update_fields=["status", "fechado_em", "fechado_por", "atualizado_em"])
+        messages.success(request, "Folha de ponto fechada.")
     return redirect("folhas_ponto_list")
 
 @login_required
 def folhas_pagamento_list(request):
     _exigir(request, "funcionarios.view_folhapagamento")
-    objetos = FolhaPagamento.objects.filter(funcionario__empresa=_empresa(request)).select_related("funcionario","folha_ponto")
-    return render(request, "funcionarios/folha_pagamento_list.html", {"object_list": objetos})
+    return render(request, "funcionarios/folha_pagamento_list.html", {"object_list": _pagamentos_queryset(request)})
 
 @login_required
 def folha_pagamento_form(request, pk=None):
     _exigir(request, "funcionarios.change_folhapagamento" if pk else "funcionarios.add_folhapagamento")
-    empresa = _empresa(request)
-    obj = get_object_or_404(FolhaPagamento, pk=pk, funcionario__empresa=empresa) if pk else None
+    obj = get_object_or_404(_pagamentos_queryset(request), pk=pk) if pk else None
     form = FolhaPagamentoForm(request.POST or None, instance=obj)
-    form.fields["funcionario"].queryset = Funcionario.objects.filter(empresa=empresa, ativo=True)
-    form.fields["folha_ponto"].queryset = FolhaPonto.objects.filter(funcionario__empresa=empresa, status="fechada")
+    form.fields["funcionario"].queryset = _funcionarios_queryset(request).filter(ativo=True)
+    pontos = _pontos_queryset(request).filter(status="fechada")
+    form.fields["folha_ponto"].queryset = pontos
     if form.is_valid():
-        folha=form.save(); messages.success(request,"Contracheque calculado e salvo."); return redirect("folha_pagamento_detail", pk=folha.pk)
-    return render(request, "funcionarios/folha_pagamento_form.html", {"form":form,"object":obj})
+        folha = form.save()
+        messages.success(request, "Contracheque calculado e salvo.")
+        return redirect("folha_pagamento_detail", pk=folha.pk)
+    return render(request, "funcionarios/folha_pagamento_form.html", {"form": form, "object": obj})
 
 @login_required
 def folha_pagamento_detail(request, pk):
     _exigir(request, "funcionarios.view_folhapagamento")
-    obj=get_object_or_404(FolhaPagamento,pk=pk,funcionario__empresa=_empresa(request))
-    return render(request,"funcionarios/folha_pagamento_detail.html",{"folha":obj})
+    obj = get_object_or_404(_pagamentos_queryset(request), pk=pk)
+    return render(request, "funcionarios/folha_pagamento_detail.html", {"folha": obj})
 
 @login_required
 def fechar_folha_pagamento(request, pk):
     _exigir(request, "funcionarios.change_folhapagamento")
-    obj=get_object_or_404(FolhaPagamento,pk=pk,funcionario__empresa=_empresa(request))
-    if request.method=="POST":
-        obj.status="fechada"; obj.fechado_em=timezone.now(); obj.fechado_por=request.user; obj.save(update_fields=["status","fechado_em","fechado_por","atualizado_em"]); messages.success(request,"Folha de pagamento fechada.")
-    return redirect("folha_pagamento_detail",pk=obj.pk)
+    obj = get_object_or_404(_pagamentos_queryset(request), pk=pk)
+    if request.method == "POST":
+        obj.status = "fechada"
+        obj.fechado_em = timezone.now()
+        obj.fechado_por = request.user
+        obj.save(update_fields=["status", "fechado_em", "fechado_por", "atualizado_em"])
+        messages.success(request, "Folha de pagamento fechada.")
+    return redirect("folha_pagamento_detail", pk=obj.pk)
+

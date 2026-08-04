@@ -1,160 +1,109 @@
 import csv
 import json
 
-from django.http import HttpResponse
-from django.urls import reverse_lazy, reverse
-from django.views import View
-
-from .models import RegistroHoraExtra
-from .forms import RegistroHoraExtraForm
-from django.views.generic import (
-    ListView,
-    UpdateView,
-    DeleteView,
-    CreateView
-)
 import xlwt
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import PermissionDenied
+from django.http import HttpResponse
+from django.urls import reverse_lazy
+from django.views import View
+from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 
-from apps.empresas.models import Empresa
-from apps.funcionarios.models import Funcionario
-from apps.registro_hora_extra.models import RegistroHoraExtra
+from .forms import RegistroHoraExtraForm
+from .models import RegistroHoraExtra
 
-class HoraExtraList(ListView):
-    model = RegistroHoraExtra
 
+class HoraExtraEscopoMixin(LoginRequiredMixin):
     def get_queryset(self):
-        empresa_logada = self.request.user.funcionario.empresa
-        return RegistroHoraExtra.objects.filter(
-            empresa=empresa_logada)
-
-    success_url = reverse_lazy('list_hora_extra_base')
-
-class HoraExtraEdit(UpdateView):
-    model = RegistroHoraExtra
-    form_class = RegistroHoraExtraForm
-    # fields = ['motivo', 'funcionario', 'horas']
+        queryset = RegistroHoraExtra.objects.select_related("funcionario", "empresa")
+        if self.request.user.is_superuser:
+            return queryset
+        funcionario = getattr(self.request.user, "funcionario", None)
+        empresa = getattr(funcionario, "empresa", None) if funcionario else None
+        if not empresa:
+            raise PermissionDenied("O usuário não possui OSC/empresa vinculada.")
+        return queryset.filter(empresa=empresa)
 
     def get_form_kwargs(self):
-        kwargs = super(HoraExtraEdit, self).get_form_kwargs()
-        kwargs.update({'user': self.request.user})
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
         return kwargs
 
-    success_url = reverse_lazy('list_hora_extra')
+    def form_valid(self, form):
+        registro = form.save(commit=False)
+        registro.user = self.request.user
+        registro.empresa = registro.funcionario.empresa
+        registro.save()
+        self.object = registro
+        return super().form_valid(form)
 
 
-class HoraExtraEditBase(UpdateView):
+class HoraExtraList(HoraExtraEscopoMixin, ListView):
+    model = RegistroHoraExtra
+    paginate_by = 20
+
+
+class HoraExtraEdit(HoraExtraEscopoMixin, UpdateView):
     model = RegistroHoraExtra
     form_class = RegistroHoraExtraForm
-    success_url = reverse_lazy('update_hora_extra_base')  # Ou esta linha ou a função abaixo
-
-    def get_success_url(self):
-        return reverse_lazy('list_hora_extra_base', args=[self.object.id])
-
-    def get_form_kwargs(self):
-        kwargs = super(HoraExtraEditBase, self).get_form_kwargs()
-        kwargs.update({'user': self.request.user})
-        return kwargs
+    success_url = reverse_lazy("list_hora_extra")
 
 
-class HoraExtraDelete(DeleteView):
+class HoraExtraEditBase(HoraExtraEdit):
+    pass
+
+
+class HoraExtraDelete(HoraExtraEscopoMixin, DeleteView):
     model = RegistroHoraExtra
-    success_url = reverse_lazy('list_hora_extra')
+    success_url = reverse_lazy("list_hora_extra")
 
 
-class HoraExtraCreate(CreateView):
+class HoraExtraCreate(HoraExtraEscopoMixin, CreateView):
     model = RegistroHoraExtra
     form_class = RegistroHoraExtraForm
-
-    def get_form_kwargs(self):
-        kwargs = super(HoraExtraCreate, self).get_form_kwargs()
-        kwargs.update({'user': self.request.user})
-        return kwargs
-
-    success_url = reverse_lazy('list_hora_extra')
-
-class UtilizouHoraExtra(View):
-    def post(self, *args, **kwargs):
-
-        registro_hora_extra = RegistroHoraExtra.objects.get(id=kwargs['pk'])
-        registro_hora_extra.utilizada = True
-        registro_hora_extra.save()
-
-        empregado = self.request.user.funcionario
-
-        response = json.dumps(
-            {'mensagem': 'Requisicao executada',
-             'horas': float(empregado.total_horas_extra)
-             }
-        )
-
-        return HttpResponse(response, content_type='application/json')
-
-class NaoUtilizouHE(View):
-
-    def post(self, *args,**kwargs):
-
-        registro_hora_extra = RegistroHoraExtra.objects.get(id=kwargs['pk'])
-        registro_hora_extra.utilizada =False
-        registro_hora_extra.save()
-
-        empregado =self.request.user.funcionario
-
-        response = json.dumps({'mensagem': 'Requisicao executada',
-                               'horas': float(empregado.total_horas_extras)}
-                              )
-
-        return HttpResponse(response, content_type='application/json')
+    success_url = reverse_lazy("list_hora_extra")
 
 
-class ExportarParaCSV(View):
+class UtilizouHoraExtra(HoraExtraEscopoMixin, View):
+    def post(self, request, *args, **kwargs):
+        registro = self.get_queryset().get(pk=kwargs["pk"])
+        registro.utilizada = True
+        registro.save(update_fields=["utilizada"])
+        return HttpResponse(json.dumps({"mensagem": "Requisição executada"}), content_type="application/json")
+
+
+class NaoUtilizouHE(HoraExtraEscopoMixin, View):
+    def post(self, request, *args, **kwargs):
+        registro = self.get_queryset().get(pk=kwargs["pk"])
+        registro.utilizada = False
+        registro.save(update_fields=["utilizada"])
+        return HttpResponse(json.dumps({"mensagem": "Requisição executada"}), content_type="application/json")
+
+
+class ExportarParaCSV(HoraExtraEscopoMixin, View):
     def get(self, request):
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="Banco de Horas.csv"'
-
-        registro_he = RegistroHoraExtra.objects.filter(utilizada=False)
-
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = 'attachment; filename="Banco de Horas.csv"'
         writer = csv.writer(response)
-        writer.writerow(['Id', 'Motivo', 'Funcionario', 'Rest. Func', 'Horas'])
-
-        for registro in registro_he:
-            writer.writerow(
-                [registro.id, registro.motivo, registro.funcionario,
-                 registro.funcionario.total_horas_extra, registro.horas
-                 ])
-
+        writer.writerow(["Id", "Motivo", "Funcionário", "Horas", "Utilizada"])
+        for registro in self.get_queryset():
+            writer.writerow([registro.id, registro.motivo, registro.funcionario, registro.horas, registro.utilizada])
         return response
 
 
-class ExportarExcel(View):
+class ExportarExcel(HoraExtraEscopoMixin, View):
     def get(self, request):
-        response = HttpResponse(content_type='application/ms-excel')
-        response['Content-Disposition'] = 'attachment; filename="Banco de Horas.xls"'
-
-        wb = xlwt.Workbook(encoding='utf-8')
-        ws = wb.add_sheet('Banco de Horas')
-
-        row_num = 0
-
-        font_style = xlwt.XFStyle()
-        font_style.font.bold = True
-
-        columns = ['Id', 'Motivo', 'Funcionario', 'Rest. Func', 'Horas']
-
-        for col_num in range(len(columns)):
-            ws.write(row_num, col_num, columns[col_num], font_style)
-
-        font_style = xlwt.XFStyle()
-
-        registros = RegistroHoraExtra.objects.filter(utilizada=False)
-
-        row_num = 1
-        for registro in registros:
-            ws.write(row_num, 0, registro.id, font_style)
-            ws.write(row_num, 1, registro.motivo, font_style)
-            ws.write(row_num, 2, registro.funcionario.nome, font_style)
-            ws.write(row_num, 3, registro.funcionario.total_horas_extra, font_style)
-            ws.write(row_num, 4, registro.horas, font_style)
-            row_num += 1
-
+        response = HttpResponse(content_type="application/ms-excel")
+        response["Content-Disposition"] = 'attachment; filename="Banco de Horas.xls"'
+        wb = xlwt.Workbook(encoding="utf-8")
+        ws = wb.add_sheet("Banco de Horas")
+        for col, titulo in enumerate(["Id", "Motivo", "Funcionário", "Horas", "Utilizada"]):
+            ws.write(0, col, titulo)
+        for row, registro in enumerate(self.get_queryset(), start=1):
+            ws.write(row, 0, registro.id)
+            ws.write(row, 1, registro.motivo or "")
+            ws.write(row, 2, str(registro.funcionario))
+            ws.write(row, 3, float(registro.horas or 0))
+            ws.write(row, 4, "Sim" if registro.utilizada else "Não")
         wb.save(response)
         return response

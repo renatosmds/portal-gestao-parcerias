@@ -1,0 +1,33 @@
+SPRINT 32 — ESTABILIZAÇÃO DOS MÓDULOS LEGADOS
+
+Correções:
+- OSCs / Empresas: elimina falhas de agregação e garante acesso do superusuário.
+- Empregados: superusuário acessa todos os registros; formulário permite selecionar empresa.
+- Folha de Ponto: superusuário acessa todas as folhas e funcionários.
+- Contracheques: superusuário acessa todas as folhas de pagamento.
+- Banco de Horas: remove dependência obrigatória de user.funcionario para superusuário.
+- Cursos: remove consultas a campos empresa/user que não existem no modelo legado.
+- Execução e Financeiro: passam a exibir página padronizada “Módulo em desenvolvimento”.
+
+Instalação:
+1. Copie o conteúdo desta pasta sobre portal-gestao-parcerias-deploy.
+2. Execute:
+   python manage.py check
+   python manage.py migrate
+   python manage.py test apps.core.tests_sprint32
+   python manage.py collectstatic --noinput
+   python manage.py runserver
+
+Teste manual como administrador:
+- OSCs / Empresas
+- Empregados
+- Folha de Ponto
+- Contracheques
+- Banco de Horas
+- Cursos
+- Execução
+- Financeiro
+
+Resultado esperado:
+- Nenhuma dessas páginas deve retornar 403 ou 500 para superusuário.
+- Execução e Financeiro devem informar claramente que estão em desenvolvimento.

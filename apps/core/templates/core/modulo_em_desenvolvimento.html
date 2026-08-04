@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}{{ modulo }} | PGP{% endblock %}
+{% block main %}
+<section class="sgm-panel p-5 text-center">
+  <div style="font-size:3rem;opacity:.65"><i class="fa fa-wrench"></i></div>
+  <h1 class="mt-3">{{ modulo }}</h1>
+  <p class="lead">Módulo em desenvolvimento.</p>
+  <p class="text-muted">Esta funcionalidade será disponibilizada em uma próxima sprint. Os demais módulos permanecem disponíveis normalmente.</p>
+  <a class="btn btn-primary" href="{% url 'home' %}">Voltar ao painel</a>
+</section>
+{% endblock %}

@@ -7,6 +7,7 @@ class FuncionarioForm(forms.ModelForm):
     class Meta:
         model = Funcionario
         fields = [
+            "empresa",
             "nome",
             "usuario",
             "cargo",
@@ -40,6 +41,16 @@ class FuncionarioForm(forms.ModelForm):
             "curso",
             "conferencia3",
         ]
+
+
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if user and not user.is_superuser:
+            funcionario = getattr(user, "funcionario", None)
+            empresa = getattr(funcionario, "empresa", None) if funcionario else None
+            if empresa:
+                self.fields["empresa"].queryset = self.fields["empresa"].queryset.filter(pk=empresa.pk)
+                self.fields["empresa"].initial = empresa
 
     def clean_usuario(self):
         usuario = (self.cleaned_data.get("usuario") or "").strip()
