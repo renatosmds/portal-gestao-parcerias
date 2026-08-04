@@ -154,7 +154,7 @@ class Command(BaseCommand):
             empresa=prefeitura,
             numtermo=dados["termo"],
             defaults={
-                "nomeosc": dados["osc"],
+                "nomeosc": dados["osc"][:50],
                 "termo": f"Termo de Colaboração nº {dados['termo']}",
                 "tipo": "Termo de Colaboração",
                 "objeto": dados["objeto"],
@@ -166,7 +166,7 @@ class Command(BaseCommand):
                 "valorrepasse": valor_global,
                 "valorsaldo": Decimal("0.00"),
                 "status": "Encerrado para demonstração",
-                "nomemunicipio": dados["municipio"],
+                "nomemunicipio": dados["municipio"][:50],
                 "nomerepresentante": f"Representante fictício da OSC {indice}",
                 "observacoes": "Registro criado exclusivamente para demonstração.",
             },
