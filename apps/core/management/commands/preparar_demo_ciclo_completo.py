@@ -178,7 +178,7 @@ class Command(BaseCommand):
             defaults={
                 "tipo": "cnpj",
                 "tipoTermo": "TC",
-                "credor": dados["osc"],
+                "credor": dados["osc"][:50],
                 "CpfCnpj": dados["cnpj"],
                 "valorContrato": float(valor_global),
                 "qtdParcelas": "12",
