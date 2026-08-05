@@ -37,24 +37,30 @@ class Command(BaseCommand):
             user.save()
 
         empresa, _ = Empresa.objects.get_or_create(nome="Instituto Caminhos — Demonstração")
-        termo, _ = Termos.objects.get_or_create(
-            numtermo="001/2026",
-            defaults={
-                "nomeosc": empresa.nome,
-                "termo": "Termo de Colaboração nº 001/2026",
-                "tipo": "Termo de Colaboração",
-                "objeto": "Atendimento socioassistencial demonstrativo",
-                "vigencia": "01/01/2026 a 31/12/2026",
-                "valorglobal": Decimal("240000.00"),
-                "valorrepasse": Decimal("120000.00"),
-                "valorsaldo": Decimal("120000.00"),
-                "status": "Vigente",
-                "empresa": empresa,
-            },
+        termo = (
+            Termos.objects
+            .filter(
+                numtermo="001/2026",
+                empresa=empresa,
+            )
+            .order_by("pk")
+            .first()
         )
-        if termo.empresa_id is None:
-            termo.empresa = empresa
-            termo.save(update_fields=["empresa"])
+
+        if termo is None:
+            termo = Termos.objects.create(
+                numtermo="001/2026",
+                nomeosc=empresa.nome[:50],
+                termo="Termo de Colabora??o n? 001/2026",
+                tipo="Termo de Colabora??o",
+                objeto="Atendimento socioassistencial demonstrativo",
+                vigencia="01/01/2026 a 31/12/2026",
+                valorglobal=Decimal("240000.00"),
+                valorrepasse=Decimal("120000.00"),
+                valorsaldo=Decimal("120000.00"),
+                status="Vigente",
+                empresa=empresa,
+            )
 
         prestacao, _ = Prestacao.objects.get_or_create(
             numtermo="001/2026",
