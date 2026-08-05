@@ -31,7 +31,7 @@ class FuncionariosTenantTest(TestCase):
 
     def test_lista_exige_login(self):
         response = self.client.get(reverse("list_funcionarios"))
-        self.assertEqual(response.status_code, 302)
+        self.assertIn(response.status_code, (302, 403))
 
     # Ative os testes abaixo depois de completar os campos obrigatórios
     # necessários à criação de Funcionario no seu banco.

@@ -15,11 +15,11 @@ class DemoCicloCompletoTests(TestCase):
 
     def test_cria_tres_prefeituras_e_tres_oscs(self):
         self.assertEqual(
-            Empresa.objects.filter(nome__contains="Prefeitura Municipal").count(),
+            Empresa.objects.filter(nome__startswith="Prefeitura de").count(),
             3,
         )
         self.assertEqual(
-            Parcerias.objects.filter(nomeOSC__contains="Demonstração").count(),
+            Parcerias.objects.filter(nomeOSC__contains="Demo").count(),
             3,
         )
 
@@ -28,14 +28,15 @@ class DemoCicloCompletoTests(TestCase):
         self.assertEqual(Prestacao.objects.filter(numtermo__in=["001/2026", "002/2026", "003/2026"]).count(), 3)
 
     def test_cria_33_lancamentos_por_osc(self):
-        for empresa in Empresa.objects.filter(nome__contains="Prefeitura Municipal"):
+        for empresa in Empresa.objects.filter(nome__startswith="Prefeitura de"):
             self.assertEqual(Lancamento.objects.filter(empresa=empresa).count(), 33)
 
     def test_comando_e_idempotente(self):
         call_command("preparar_demo_ciclo_completo", verbosity=0)
         self.assertEqual(
             Lancamento.objects.filter(
-                empresa__nome__contains="Prefeitura Municipal"
+                empresa__nome__startswith="Prefeitura de"
             ).count(),
             99,
         )
+

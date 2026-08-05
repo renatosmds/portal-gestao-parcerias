@@ -23,7 +23,11 @@
                 <div>
                     <span class="sgm-eyebrow">PARCERIA</span>
                     <h1>
-                        {{ parceria.numtermo.termo|default:parceria.numtermo.numtermo|default:"Termo não informado" }}
+                        {% if parceria.numtermo %}
+                            {{ parceria.numtermo.termo|default:"Termo n?o informado" }}
+                        {% else %}
+                            Termo n?o informado
+                        {% endif %}
                     </h1>
                     <p>{{ parceria.nomeOSC|default:"OSC não informada" }}</p>
                 </div>

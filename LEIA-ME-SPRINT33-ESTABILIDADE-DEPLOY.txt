@@ -1,0 +1,21 @@
+SPRINT 33 — ESTABILIDADE DO DEPLOY E DIAGNÓSTICO
+
+Principais correções:
+- nomes fictícios reduzidos na origem para compatibilidade com PostgreSQL;
+- proteção automática dos campos Termos.nomeosc, Termos.nomemunicipio e Prestacao.credor;
+- cada ciclo demonstrativo é executado em transação própria;
+- novo comando: python manage.py diagnosticar_sistema;
+- preservação das rotas e views atuais da Sprint 32.
+
+VALIDAÇÃO RECOMENDADA
+python manage.py check
+python manage.py makemigrations --check --dry-run
+python manage.py migrate
+python manage.py preparar_demo_ciclo_completo
+python manage.py preparar_demo_ciclo_completo
+python manage.py diagnosticar_sistema
+python manage.py test
+
+DEPLOY NO RENDER
+O comando de inicialização pode permanecer:
+python manage.py migrate --noinput && python manage.py preparar_demo && gunicorn gestao_rh.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120

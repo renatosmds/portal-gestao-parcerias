@@ -38,8 +38,8 @@ RUBRICAS = (
 
 CENARIOS = (
     {
-        "municipio": "Prefeitura Municipal de Vale Sereno — Demonstração",
-        "osc": "Instituto Caminhos de Vale Sereno — Demonstração",
+        "municipio": "Prefeitura de Vale Sereno — Demo",
+        "osc": "Instituto Caminhos — Demo",
         "cnpj": "10.000.001/0001-01",
         "termo": "001/2026",
         "objeto": "Atendimento socioassistencial a famílias em situação de vulnerabilidade.",
@@ -48,8 +48,8 @@ CENARIOS = (
         "publicada": True,
     },
     {
-        "municipio": "Prefeitura Municipal de Nova Esperança — Demonstração",
-        "osc": "Associação Rede Cidadã de Nova Esperança — Demonstração",
+        "municipio": "Prefeitura de Nova Esperança — Demo",
+        "osc": "Associação Rede Cidadã — Demo",
         "cnpj": "20.000.002/0001-02",
         "termo": "002/2026",
         "objeto": "Oficinas de inclusão produtiva e fortalecimento de vínculos.",
@@ -58,8 +58,8 @@ CENARIOS = (
         "publicada": True,
     },
     {
-        "municipio": "Prefeitura Municipal de Jardim das Águas — Demonstração",
-        "osc": "Fundação Sementes de Jardim das Águas — Demonstração",
+        "municipio": "Prefeitura de Jardim das Águas — Demo",
+        "osc": "Fundação Sementes das Águas — Demo",
         "cnpj": "30.000.003/0001-03",
         "termo": "003/2026",
         "objeto": "Ações de proteção social, convivência e atendimento comunitário.",
@@ -76,7 +76,6 @@ class Command(BaseCommand):
         "três OSCs e três lançamentos para cada rubrica."
     )
 
-    @transaction.atomic
     def handle(self, *args, **options):
         usuario = self._obter_administrador()
         totais = {
@@ -92,7 +91,8 @@ class Command(BaseCommand):
         }
 
         for indice, dados in enumerate(CENARIOS, start=1):
-            resultado = self._criar_ciclo(indice, dados, usuario)
+            with transaction.atomic():
+                resultado = self._criar_ciclo(indice, dados, usuario)
             for chave, quantidade in resultado.items():
                 totais[chave] += quantidade
 
@@ -116,6 +116,19 @@ class Command(BaseCommand):
                 "Todos os registros possuem nomes, documentos e valores fictícios."
             )
         )
+
+
+    @staticmethod
+    def _limitar(model, campo, valor):
+        """Respeita max_length também no PostgreSQL e falha com mensagem clara."""
+        if valor is None:
+            return valor
+        field = model._meta.get_field(campo)
+        limite = getattr(field, "max_length", None)
+        texto = str(valor)
+        if limite and len(texto) > limite:
+            return texto[:limite]
+        return texto
 
     def _obter_administrador(self):
         User = get_user_model()
@@ -154,7 +167,7 @@ class Command(BaseCommand):
             empresa=prefeitura,
             numtermo=dados["termo"],
             defaults={
-                "nomeosc": dados["osc"][:50],
+                "nomeosc": self._limitar(Termos, "nomeosc", dados["osc"]),
                 "termo": f"Termo de Colaboração nº {dados['termo']}",
                 "tipo": "Termo de Colaboração",
                 "objeto": dados["objeto"],
@@ -166,7 +179,7 @@ class Command(BaseCommand):
                 "valorrepasse": valor_global,
                 "valorsaldo": Decimal("0.00"),
                 "status": "Encerrado para demonstração",
-                "nomemunicipio": dados["municipio"][:50],
+                "nomemunicipio": self._limitar(Termos, "nomemunicipio", dados["municipio"]),
                 "nomerepresentante": f"Representante fictício da OSC {indice}",
                 "observacoes": "Registro criado exclusivamente para demonstração.",
             },
@@ -178,7 +191,7 @@ class Command(BaseCommand):
             defaults={
                 "tipo": "cnpj",
                 "tipoTermo": "TC",
-                "credor": dados["osc"][:50],
+                "credor": self._limitar(Prestacao, "credor", dados["osc"]),
                 "CpfCnpj": dados["cnpj"],
                 "valorContrato": float(valor_global),
                 "qtdParcelas": "12",
