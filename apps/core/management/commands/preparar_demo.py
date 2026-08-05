@@ -62,17 +62,23 @@ class Command(BaseCommand):
                 empresa=empresa,
             )
 
-        prestacao, _ = Prestacao.objects.get_or_create(
-            numtermo="001/2026",
-            defaults={
-                "tipo": "cnpj",
-                "tipoTermo": "TC",
-                "credor": empresa.nome,
-                "CpfCnpj": "00.000.000/0001-00",
-                "valorContrato": 240000.00,
-                "situacao_workflow": "em_analise",
-            },
+        prestacao = (
+            Prestacao.objects
+            .filter(numtermo="001/2026")
+            .order_by("pk")
+            .first()
         )
+
+        if prestacao is None:
+            prestacao = Prestacao.objects.create(
+                numtermo="001/2026",
+                tipo="cnpj",
+                tipoTermo="TC",
+                credor=empresa.nome[:50],
+                CpfCnpj="00.000.000/0001-00",
+                valorContrato=240000.00,
+                situacao_workflow="em_analise",
+            )
         if empresa.prestacao_id is None:
             empresa.prestacao = prestacao
             empresa.termos = termo
