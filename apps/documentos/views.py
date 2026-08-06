@@ -5,6 +5,7 @@ from django.utils import timezone
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
 from apps.empresas.models import Empresa
+from apps.core.acesso import empresa_do_usuario, usuario_pode_ver_todas_empresas
 
 from .forms import ConferenciaDocumentoForm, DocumentoForm
 from .mixins import DocumentoEscopoMixin, DocumentoPermissaoMixin
@@ -45,7 +46,7 @@ class DocumentoList(
         if tipo:
             queryset = queryset.filter(tipo=tipo)
 
-        if empresa_id and self.request.user.is_superuser:
+        if empresa_id and usuario_pode_ver_todas_empresas(self.request.user):
             queryset = queryset.filter(empresa_id=empresa_id)
 
         return queryset
@@ -77,7 +78,7 @@ class DocumentoList(
         ).count()
         context["empresas_disponiveis"] = (
             Empresa.objects.order_by("nome")
-            if self.request.user.is_superuser
+            if usuario_pode_ver_todas_empresas(self.request.user)
             else Empresa.objects.none()
         )
         return context
@@ -101,7 +102,7 @@ class DocumentoCreate(DocumentoPermissaoMixin, CreateView):
     permission_required = "documentos.add_documento"
 
     def get_empresa_destino(self):
-        if self.request.user.is_superuser:
+        if usuario_pode_ver_todas_empresas(self.request.user):
             empresa_id = (
                 self.request.GET.get("empresa")
                 or self.request.POST.get("empresa")
@@ -113,7 +114,7 @@ class DocumentoCreate(DocumentoPermissaoMixin, CreateView):
             )
 
         try:
-            return self.request.user.funcionario.empresa
+            return empresa_do_usuario(self.request.user)
         except Exception:
             return None
 
@@ -126,7 +127,7 @@ class DocumentoCreate(DocumentoPermissaoMixin, CreateView):
         context = super().get_context_data(**kwargs)
         context["empresas_disponiveis"] = (
             Empresa.objects.order_by("nome")
-            if self.request.user.is_superuser
+            if usuario_pode_ver_todas_empresas(self.request.user)
             else Empresa.objects.none()
         )
         return context

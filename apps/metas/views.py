@@ -2,27 +2,21 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Q, Sum
 from django.shortcuts import get_object_or_404, redirect, render
+from django.contrib.auth.decorators import permission_required
+
+from apps.core.acesso import empresa_do_usuario, filtrar_por_empresa
 
 from .forms import MetaExecucaoForm
 from .models import AtualizacaoMeta, MetaExecucao
 
 
-def _empresa_usuario(user):
-    try:
-        return user.funcionario.empresa
-    except Exception:
-        return None
-
-
 def _qs_usuario(user):
     qs = MetaExecucao.objects.select_related("prestacao", "prestacao__empresa")
-    if user.is_staff or user.is_superuser:
-        return qs
-    empresa = _empresa_usuario(user)
-    return qs.filter(prestacao__empresa=empresa) if empresa else qs.none()
+    return filtrar_por_empresa(qs, user, campo="prestacao__empresa")
 
 
 @login_required
+@permission_required("metas.view_metaexecucao", raise_exception=True)
 def painel(request):
     qs = _qs_usuario(request.user)
     termo = request.GET.get("q", "").strip()
@@ -45,8 +39,9 @@ def painel(request):
 
 
 @login_required
+@permission_required("metas.add_metaexecucao", raise_exception=True)
 def nova(request):
-    form = MetaExecucaoForm(request.POST or None)
+    form = MetaExecucaoForm(request.POST or None, user=request.user)
     if form.is_valid():
         obj = form.save(commit=False)
         obj.criado_por = request.user
@@ -59,15 +54,17 @@ def nova(request):
 
 
 @login_required
+@permission_required("metas.view_metaexecucao", raise_exception=True)
 def detalhe(request, pk):
     obj = get_object_or_404(_qs_usuario(request.user), pk=pk)
     return render(request, "metas/detalhe.html", {"meta": obj, "historico": obj.atualizacoes.all()})
 
 
 @login_required
+@permission_required("metas.change_metaexecucao", raise_exception=True)
 def editar(request, pk):
     obj = get_object_or_404(_qs_usuario(request.user), pk=pk)
-    form = MetaExecucaoForm(request.POST or None, instance=obj)
+    form = MetaExecucaoForm(request.POST or None, instance=obj, user=request.user)
     if form.is_valid():
         atualizado = form.save(commit=False)
         atualizado.atualizado_por = request.user

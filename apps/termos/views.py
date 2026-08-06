@@ -4,6 +4,7 @@ from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
 from apps.empresas.models import Empresa
+from apps.core.acesso import empresa_do_usuario, usuario_pode_ver_todas_empresas
 
 from .forms import TermosForm
 from .mixins import TermoEscopoMixin, TermoPermissaoMixin
@@ -33,7 +34,7 @@ class TermosList(TermoPermissaoMixin, TermoEscopoMixin, ListView):
             )
         if status:
             queryset = queryset.filter(status__icontains=status)
-        if empresa_id and self.request.user.is_superuser:
+        if empresa_id and usuario_pode_ver_todas_empresas(self.request.user):
             queryset = queryset.filter(empresa_id=empresa_id)
 
         return queryset.order_by("termo", "numtermo")
@@ -47,7 +48,7 @@ class TermosList(TermoPermissaoMixin, TermoEscopoMixin, ListView):
         context["total_termos"] = queryset.count()
         context["empresas_disponiveis"] = (
             Empresa.objects.order_by("nome")
-            if self.request.user.is_superuser
+            if usuario_pode_ver_todas_empresas(self.request.user)
             else Empresa.objects.none()
         )
         return context
@@ -67,11 +68,11 @@ class TermosCreate(TermoPermissaoMixin, CreateView):
     permission_required = "termos.add_termos"
 
     def get_empresa_destino(self):
-        if self.request.user.is_superuser:
+        if usuario_pode_ver_todas_empresas(self.request.user):
             empresa_id = self.request.GET.get("empresa") or self.request.POST.get("empresa")
             return Empresa.objects.filter(pk=empresa_id).first() if empresa_id else None
         try:
-            return self.request.user.funcionario.empresa
+            return empresa_do_usuario(self.request.user)
         except Exception:
             return None
 
@@ -85,7 +86,7 @@ class TermosCreate(TermoPermissaoMixin, CreateView):
         context["empresa_destino"] = self.get_empresa_destino()
         context["empresas_disponiveis"] = (
             Empresa.objects.order_by("nome")
-            if self.request.user.is_superuser
+            if usuario_pode_ver_todas_empresas(self.request.user)
             else Empresa.objects.none()
         )
         return context

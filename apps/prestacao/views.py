@@ -7,6 +7,7 @@ from django.utils import timezone
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
 from apps.empresas.models import Empresa
+from apps.core.acesso import empresa_do_usuario, filtrar_por_empresa, usuario_pode_ver_todas_empresas
 
 from .forms import MovimentarPrestacaoForm, PrestacaoForm
 from .mixins import PrestacaoEscopoMixin, PrestacaoPermissaoMixin
@@ -40,7 +41,7 @@ class PrestacaoList(PrestacaoPermissaoMixin, PrestacaoEscopoMixin, ListView):
         elif situacao == "andamento":
             queryset = queryset.filter(concluida=False)
 
-        if empresa_id and self.request.user.is_superuser:
+        if empresa_id and usuario_pode_ver_todas_empresas(self.request.user):
             queryset = queryset.filter(empresa_id=empresa_id)
 
         return queryset.order_by("concluida", "numtermo", "credor")
@@ -60,7 +61,7 @@ class PrestacaoList(PrestacaoPermissaoMixin, PrestacaoEscopoMixin, ListView):
         context["total_concluidas"] = queryset.filter(concluida=True).count()
         context["empresas_disponiveis"] = (
             Empresa.objects.order_by("nome")
-            if self.request.user.is_superuser
+            if usuario_pode_ver_todas_empresas(self.request.user)
             else Empresa.objects.none()
         )
         return context
@@ -87,7 +88,7 @@ class PrestacaoCreate(PrestacaoPermissaoMixin, CreateView):
     permission_required = "prestacao.add_prestacao"
 
     def get_empresa_destino(self):
-        if self.request.user.is_superuser:
+        if usuario_pode_ver_todas_empresas(self.request.user):
             empresa_id = (
                 self.request.GET.get("empresa")
                 or self.request.POST.get("empresa")
@@ -99,7 +100,7 @@ class PrestacaoCreate(PrestacaoPermissaoMixin, CreateView):
             )
 
         try:
-            return self.request.user.funcionario.empresa
+            return empresa_do_usuario(self.request.user)
         except Exception:
             return None
 
@@ -113,7 +114,7 @@ class PrestacaoCreate(PrestacaoPermissaoMixin, CreateView):
         context["empresa_destino"] = self.get_empresa_destino()
         context["empresas_disponiveis"] = (
             Empresa.objects.order_by("nome")
-            if self.request.user.is_superuser
+            if usuario_pode_ver_todas_empresas(self.request.user)
             else Empresa.objects.none()
         )
         return context
@@ -191,7 +192,7 @@ TRANSICOES = {
 @login_required
 @permission_required("prestacao.change_prestacao", raise_exception=True)
 def movimentar_prestacao(request, pk):
-    prestacao = get_object_or_404(Prestacao, pk=pk)
+    prestacao = get_object_or_404(filtrar_por_empresa(Prestacao.objects.all(), request.user), pk=pk)
     permitidas = TRANSICOES.get(prestacao.situacao_workflow, set())
     form = MovimentarPrestacaoForm(request.POST or None, situacoes_permitidas=permitidas)
     if request.method == "POST" and form.is_valid():

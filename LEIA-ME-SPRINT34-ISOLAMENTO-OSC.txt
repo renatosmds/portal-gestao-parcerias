@@ -1,0 +1,16 @@
+SPRINT 34 - ISOLAMENTO DE DADOS POR OSC
+
+Entregas:
+- Centralização das regras de escopo em apps/core/acesso.py.
+- Usuário da OSC limitado à empresa vinculada no cadastro de Funcionário.
+- Grupos municipais com visão global conforme configuração funcional.
+- Proteção de listagem, detalhe, edição e exclusão em Parcerias, Termos,
+  Prestação de Contas, Lançamentos e Documentos.
+- Metas limitadas à empresa e formulário sem opção de prestação de outra OSC.
+- Workflow de Prestação protegido contra acesso direto por URL.
+- Testes automatizados do isolamento.
+
+Comandos:
+python manage.py check
+python manage.py test apps.core.tests_sprint34_acesso
+python manage.py test

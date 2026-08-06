@@ -2,6 +2,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMix
 from django.contrib.auth.views import redirect_to_login
 from django.core.exceptions import PermissionDenied
 
+from apps.core.acesso import filtrar_por_empresa
+
 from .models import Prestacao
 
 
@@ -20,21 +22,6 @@ class PrestacaoPermissaoMixin(LoginRequiredMixin, PermissionRequiredMixin):
 
 
 class PrestacaoEscopoMixin(LoginRequiredMixin):
-    def get_empresa_usuario(self):
-        try:
-            return self.request.user.funcionario.empresa
-        except Exception:
-            return None
-
     def get_queryset(self):
         queryset = Prestacao.objects.select_related("empresa")
-
-        if self.request.user.is_superuser:
-            return queryset
-
-        empresa = self.get_empresa_usuario()
-
-        if not empresa:
-            return queryset.none()
-
-        return queryset.filter(empresa=empresa)
+        return filtrar_por_empresa(queryset, self.request.user)
