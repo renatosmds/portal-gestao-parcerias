@@ -1,4 +1,4 @@
-"""Serviços do dashboard integrado do Portal de Gestão de Parcerias.
+﻿"""Serviços do dashboard integrado do Portal de Gestão de Parcerias.
 
 A Sprint 15 mantém os modelos existentes e consolida os dados em uma única
 camada de leitura. Nenhuma migração é necessária.
@@ -6,7 +6,7 @@ camada de leitura. Nenhuma migração é necessária.
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, timedelta
 from decimal import Decimal
 from typing import Iterable
 
@@ -23,7 +23,7 @@ from apps.fornecedores.models import Fornecedores
 from apps.lancamentos.models import Lancamento
 from apps.prestacao.models import Prestacao
 from apps.termos.models import Termos
-
+from apps.metas.models import MetaExecucao
 
 OSC_GROUP_MARKERS = (
     "osc",
@@ -299,10 +299,23 @@ def montar_contexto_dashboard(request):
 
     if termo_selecionado:
         termos = termos.filter(pk=termo_selecionado.pk)
-        prestacoes = _filtro_prestacao_por_termo(prestacoes, termo_selecionado)
-        lancamentos = lancamentos.filter(termo=termo_selecionado)
-        documentos = documentos.filter(termo=termo_selecionado)
-        analises = analises.filter(numtermo=termo_selecionado)
+        prestacoes = _filtro_prestacao_por_termo(
+            prestacoes,
+            termo_selecionado,
+        )
+        lancamentos = lancamentos.filter(
+            termo=termo_selecionado
+        )
+        documentos = documentos.filter(
+            termo=termo_selecionado
+        )
+        analises = analises.filter(
+            numtermo=termo_selecionado
+        )
+
+    metas = MetaExecucao.objects.filter(
+        prestacao__in=prestacoes
+    )
 
     # Indicadores principais.
     termos_total = termos.count()
@@ -314,6 +327,88 @@ def montar_contexto_dashboard(request):
     prestacoes_total = prestacoes.count()
     prestacoes_concluidas = prestacoes.filter(concluida=True).count()
     prestacoes_abertas = prestacoes_total - prestacoes_concluidas
+    prestacoes_elaboracao = prestacoes.filter(
+        situacao_workflow=Prestacao.SituacaoWorkflow.ELABORACAO
+    ).count()
+
+    prestacoes_enviadas = prestacoes.filter(
+        situacao_workflow=Prestacao.SituacaoWorkflow.ENVIADA
+    ).count()
+
+    prestacoes_recebidas = prestacoes.filter(
+        situacao_workflow=Prestacao.SituacaoWorkflow.RECEBIDA
+    ).count()
+
+    prestacoes_em_analise = prestacoes.filter(
+        situacao_workflow=Prestacao.SituacaoWorkflow.EM_ANALISE
+    ).count()
+
+    prestacoes_em_diligencia = prestacoes.filter(
+        situacao_workflow=Prestacao.SituacaoWorkflow.DILIGENCIA
+    ).count()
+
+    prestacoes_corrigidas = prestacoes.filter(
+        situacao_workflow=Prestacao.SituacaoWorkflow.CORRIGIDA
+    ).count()
+
+    prestacoes_aprovadas = prestacoes.filter(
+        situacao_workflow=Prestacao.SituacaoWorkflow.APROVADA
+    ).count()
+
+    prestacoes_aprovadas_ressalvas = prestacoes.filter(
+        situacao_workflow=Prestacao.SituacaoWorkflow.APROVADA_RESSALVAS
+    ).count()
+
+    prestacoes_reprovadas = prestacoes.filter(
+        situacao_workflow=Prestacao.SituacaoWorkflow.REPROVADA
+    ).count()
+
+    prestacoes_encerradas = prestacoes.filter(
+        situacao_workflow=Prestacao.SituacaoWorkflow.ENCERRADA
+    ).count()
+
+
+    metas_total = metas.count()
+
+    metas_nao_iniciadas = metas.filter(
+        situacao=MetaExecucao.Situacao.NAO_INICIADA
+    ).count()
+
+    metas_em_andamento = metas.filter(
+        situacao=MetaExecucao.Situacao.EM_ANDAMENTO
+    ).count()
+
+    metas_atingidas = metas.filter(
+        situacao=MetaExecucao.Situacao.ATINGIDA
+    ).count()
+
+    metas_parciais = metas.filter(
+        situacao=MetaExecucao.Situacao.PARCIAL
+    ).count()
+
+    metas_nao_atingidas = metas.filter(
+        situacao=MetaExecucao.Situacao.NAO_ATINGIDA
+    ).count()
+
+    metas_suspensas = metas.filter(
+        situacao=MetaExecucao.Situacao.SUSPENSA
+    ).count()
+
+    metas_criticas = metas_parciais + metas_nao_atingidas
+
+    percentual_metas_atingidas = _percentual(
+        metas_atingidas,
+        metas_total,
+    )
+
+    metas_atrasadas = metas.filter(
+        fim__lt=timezone.localdate()
+    ).exclude(
+        situacao__in=[
+            MetaExecucao.Situacao.ATINGIDA,
+            MetaExecucao.Situacao.SUSPENSA,
+        ]
+    ).count()
 
     lancamentos_total = lancamentos.count()
     lancamentos_nao_analisados = lancamentos.filter(
@@ -361,7 +456,19 @@ def montar_contexto_dashboard(request):
     diligencias_pendentes = diligencias_abertas.count()
     diligencias_vencidas = diligencias_abertas.filter(
         prazo_resposta__lt=hoje
+
     ).count()
+    limite_proximos_7_dias = hoje + timedelta(days=7)
+
+    diligencias_proximas_vencimento = diligencias_abertas.filter(
+        prazo_resposta__gte=hoje,
+        prazo_resposta__lte=limite_proximos_7_dias,
+    ).count()
+
+    diligencias_urgentes = diligencias_abertas.filter(
+        prioridade=Diligencia.Prioridade.URGENTE
+    ).count()
+
     diligencias_respondidas = diligencias.filter(
         status__in=[Diligencia.Status.RESPONDIDA, Diligencia.Status.REANALISE]
     ).count()
@@ -376,6 +483,18 @@ def montar_contexto_dashboard(request):
     valor_global = _somar(termos, "valorglobal")
     valor_repassado = _somar(termos, "valorrepasse")
     saldo_termos = _somar(termos, "valorsaldo")
+
+    valor_executado = valor_lancado
+
+    saldo_a_executar = max(
+        valor_global - valor_executado,
+        Decimal("0.00"),
+    )
+
+    percentual_execucao = _percentual(
+        valor_executado,
+        valor_global,
+    )
 
     distribuicao_lancamentos = [
         _item_distribuicao(
@@ -447,6 +566,20 @@ def montar_contexto_dashboard(request):
             "classe": "perigo" if diligencias_vencidas else "sucesso",
             "url_name": "list_diligencias",
         },
+        {
+            "rotulo": "Diligências vencendo em até 7 dias",
+            "valor": diligencias_proximas_vencimento,
+            "icone": "fa-clock-o",
+            "classe": "alerta" if diligencias_proximas_vencimento else "sucesso",
+            "url_name": "list_diligencias",
+        },
+        {
+            "rotulo": "Diligências urgentes em aberto",
+            "valor": diligencias_urgentes,
+            "icone": "fa-bolt",
+            "classe": "perigo" if diligencias_urgentes else "sucesso",
+            "url_name": "list_diligencias",
+        },
     ]
 
     atividade_mensal = _serie_mensal(
@@ -489,6 +622,26 @@ def montar_contexto_dashboard(request):
         "prestacoes_total": prestacoes_total,
         "prestacoes_abertas": prestacoes_abertas,
         "prestacoes_concluidas": prestacoes_concluidas,
+        "prestacoes_elaboracao": prestacoes_elaboracao,
+        "prestacoes_enviadas": prestacoes_enviadas,
+        "prestacoes_recebidas": prestacoes_recebidas,
+        "prestacoes_em_analise": prestacoes_em_analise,
+        "prestacoes_em_diligencia": prestacoes_em_diligencia,
+        "prestacoes_corrigidas": prestacoes_corrigidas,
+        "prestacoes_aprovadas": prestacoes_aprovadas,
+        "prestacoes_aprovadas_ressalvas": prestacoes_aprovadas_ressalvas,
+        "prestacoes_reprovadas": prestacoes_reprovadas,
+        "prestacoes_encerradas": prestacoes_encerradas,
+        "metas_total": metas_total,
+        "metas_nao_iniciadas": metas_nao_iniciadas,
+        "metas_em_andamento": metas_em_andamento,
+        "metas_atingidas": metas_atingidas,
+        "metas_parciais": metas_parciais,
+        "metas_nao_atingidas": metas_nao_atingidas,
+        "metas_suspensas": metas_suspensas,
+        "metas_criticas": metas_criticas,
+        "metas_atrasadas": metas_atrasadas,
+        "percentual_metas_atingidas": percentual_metas_atingidas,
         "lancamentos_total": lancamentos_total,
         "lancamentos_nao_analisados": lancamentos_nao_analisados,
         "lancamentos_analisados": lancamentos_total - lancamentos_nao_analisados,
@@ -507,6 +660,8 @@ def montar_contexto_dashboard(request):
         "diligencias_pendentes": diligencias_pendentes,
         "diligencias_vencidas": diligencias_vencidas,
         "diligencias_respondidas": diligencias_respondidas,
+        "diligencias_proximas_vencimento": diligencias_proximas_vencimento,
+        "diligencias_urgentes": diligencias_urgentes,
         "valor_lancado": valor_lancado,
         "valor_analisado": valor_analisado,
         "valor_glosado": valor_glosado,
@@ -514,6 +669,9 @@ def montar_contexto_dashboard(request):
         "valor_global": valor_global,
         "valor_repassado": valor_repassado,
         "saldo_termos": saldo_termos,
+        "valor_executado": valor_executado,
+        "saldo_a_executar": saldo_a_executar,
+        "percentual_execucao": percentual_execucao,
         "percentual_documentos": _percentual(documentos_conferidos, documentos_total),
         "percentual_lancamentos": _percentual(
             lancamentos_total - lancamentos_nao_analisados, lancamentos_total
