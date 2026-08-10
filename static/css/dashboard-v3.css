@@ -1,4 +1,4 @@
-.pgp-dashboard {
+﻿.pgp-dashboard {
     display: grid;
     gap: 24px;
 }
@@ -278,18 +278,20 @@
 
 .pgp-metric-value {
     display: block;
-    overflow: hidden;
     margin: 4px 0 8px;
     color: var(--sgm-text);
     font-size: clamp(1.42rem, 2.2vw, 2rem);
     font-weight: 850;
     letter-spacing: -.045em;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    overflow-wrap: anywhere;
 }
 
 .pgp-metric-money .pgp-metric-value {
-    font-size: clamp(1.12rem, 1.6vw, 1.55rem);
+    font-size: clamp(1.05rem, 1.35vw, 1.42rem);
+    line-height: 1.15;
 }
 
 .pgp-metric-card p {
@@ -776,3 +778,4 @@
 .pgp-shortcuts {
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
+
