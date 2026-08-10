@@ -1,3 +1,4 @@
+
 from apps.analise.api.viewsets import AnaliseViewSet
 from apps.clientes.api.viewsets import ClientesViewSet
 from apps.conferencia3.api.viewsets import Conferencia3ViewSet
@@ -20,6 +21,7 @@ from rest_framework import routers
 
 from .views import articles
 from .views import fname
+from apps.core.health_views import health
 from .views import hello
 
 # from home import urls as home_urls
@@ -84,6 +86,7 @@ urlpatterns = [
                   path('login/', RedirectView.as_view(pattern_name='login', permanent=False), name='legacy_login'),
 
 
+                  path('health/', health, name='health'),
                   path('hello/', hello),
                   path('articles/<int:year>/', articles),
                   path('pessoa/<str:nome>/', fname),

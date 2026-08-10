@@ -51,3 +51,20 @@ class PaginasCriticasSprint35Test(TestCase):
         for nome, url in rotas:
             with self.subTest(nome=nome, url=url):
                 self.verificar_rota(nome, url)
+
+    def test_health_check(self):
+        response = self.client.get(
+            "/health/",
+            HTTP_HOST="localhost",
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(
+            response.json(),
+            {
+                "status": "ok",
+                "application": "ok",
+                "database": "ok",
+            },
+        )
