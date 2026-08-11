@@ -530,6 +530,50 @@ def montar_contexto_dashboard(request):
 
     alertas = [
         {
+            "rotulo": "Diligências vencidas",
+            "valor": diligencias_vencidas,
+            "icone": "fa-comments-o",
+            "classe": "perigo" if diligencias_vencidas else "sucesso",
+            "url_name": "list_diligencias",
+        },
+        {
+            "rotulo": "Metas atrasadas",
+            "valor": metas_atrasadas,
+            "icone": "fa-flag",
+            "classe": "perigo" if metas_atrasadas else "sucesso",
+            "url_name": "metas_painel",
+        },
+        {
+            "rotulo": "Diligências urgentes em aberto",
+            "valor": diligencias_urgentes,
+            "icone": "fa-bolt",
+            "classe": "perigo" if diligencias_urgentes else "sucesso",
+            "url_name": "list_diligencias",
+        },
+        {
+            "rotulo": "Documentos com problema",
+            "valor": documentos_com_pendencia + documentos_reprovados,
+            "icone": "fa-exclamation-triangle",
+            "classe": "perigo"
+            if documentos_com_pendencia + documentos_reprovados
+            else "sucesso",
+            "url_name": "list_documentos",
+        },
+        {
+            "rotulo": "Prestações em diligência",
+            "valor": prestacoes_em_diligencia,
+            "icone": "fa-folder-open-o",
+            "classe": "alerta" if prestacoes_em_diligencia else "sucesso",
+            "url_name": "list_prestacao",
+        },
+        {
+            "rotulo": "Diligências vencendo em até 7 dias",
+            "valor": diligencias_proximas_vencimento,
+            "icone": "fa-clock-o",
+            "classe": "alerta" if diligencias_proximas_vencimento else "sucesso",
+            "url_name": "list_diligencias",
+        },
+        {
             "rotulo": "Lançamentos aguardando análise",
             "valor": lancamentos_nao_analisados,
             "icone": "fa-list-alt",
@@ -544,44 +588,14 @@ def montar_contexto_dashboard(request):
             "url_name": "list_documentos",
         },
         {
-            "rotulo": "Documentos com problema",
-            "valor": documentos_com_pendencia + documentos_reprovados,
-            "icone": "fa-exclamation-triangle",
-            "classe": "perigo"
-            if documentos_com_pendencia + documentos_reprovados
-            else "sucesso",
-            "url_name": "list_documentos",
-        },
-        {
             "rotulo": "Análises técnicas em aberto",
             "valor": analises_abertas,
             "icone": "fa-search",
             "classe": "roxo" if analises_abertas else "sucesso",
             "url_name": "list_analise",
         },
-        {
-            "rotulo": "Diligências vencidas",
-            "valor": diligencias_vencidas,
-            "icone": "fa-comments-o",
-            "classe": "perigo" if diligencias_vencidas else "sucesso",
-            "url_name": "list_diligencias",
-        },
-        {
-            "rotulo": "Diligências vencendo em até 7 dias",
-            "valor": diligencias_proximas_vencimento,
-            "icone": "fa-clock-o",
-            "classe": "alerta" if diligencias_proximas_vencimento else "sucesso",
-            "url_name": "list_diligencias",
-        },
-        {
-            "rotulo": "Diligências urgentes em aberto",
-            "valor": diligencias_urgentes,
-            "icone": "fa-bolt",
-            "classe": "perigo" if diligencias_urgentes else "sucesso",
-            "url_name": "list_diligencias",
-        },
     ]
-
+    prioridades_ativas = sum(1 for alerta in alertas if alerta["valor"] > 0)
     atividade_mensal = _serie_mensal(
         [
             (lancamentos, "criado_em"),
@@ -682,6 +696,7 @@ def montar_contexto_dashboard(request):
         "distribuicao_lancamentos": distribuicao_lancamentos,
         "distribuicao_documentos": distribuicao_documentos,
         "alertas_dashboard": alertas,
+        "prioridades_ativas": prioridades_ativas,
         "atividade_mensal": atividade_mensal,
         "lancamentos_recentes": lancamentos.order_by("-atualizado_em")[:6],
         "documentos_recentes": documentos.order_by("-atualizado_em")[:6],
@@ -695,3 +710,8 @@ def montar_contexto_dashboard(request):
         ),
     }
     return contexto
+
+
+
+
+

@@ -328,26 +328,41 @@
     </div>
 
     <div class="pgp-dashboard-grid pgp-dashboard-grid-main">
-        <section class="pgp-panel">
+                <section class="pgp-panel">
             <div class="pgp-panel-header">
                 <div>
                     <span class="sgm-eyebrow">PRIORIDADES</span>
                     <h2>Pendências que exigem atenção</h2>
                 </div>
+                {% if prioridades_ativas %}
+                <span class="pgp-panel-badge">{{ prioridades_ativas }} ativas</span>
+                {% else %}
+                <span class="pgp-panel-badge">Tudo em dia</span>
+                {% endif %}
             </div>
 
+            {% if prioridades_ativas %}
             <div class="pgp-alert-list">
                 {% for alerta in alertas_dashboard %}
-                <a href="{% url alerta.url_name %}" class="pgp-alert-item pgp-alert-{{ alerta.classe }}">
-                    <span><i class="fa {{ alerta.icone }}"></i></span>
-                    <div>
-                        <strong>{{ alerta.valor }}</strong>
-                        <small>{{ alerta.rotulo }}</small>
-                    </div>
-                    <i class="fa fa-angle-right"></i>
-                </a>
+                    {% if alerta.valor %}
+                    <a href="{% url alerta.url_name %}" class="pgp-alert-item pgp-alert-{{ alerta.classe }}">
+                        <span><i class="fa {{ alerta.icone }}"></i></span>
+                        <div>
+                            <strong>{{ alerta.valor }}</strong>
+                            <small>{{ alerta.rotulo }}</small>
+                        </div>
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+                    {% endif %}
                 {% endfor %}
             </div>
+            {% else %}
+            <div class="pgp-empty-state">
+                <i class="fa fa-check-circle"></i>
+                <strong>Tudo em dia</strong>
+                <p>Não há pendências prioritárias que exijam atenção neste momento.</p>
+            </div>
+            {% endif %}
         </section>
 
         <section class="pgp-panel">
@@ -698,6 +713,9 @@
     </div>
 </section>
 {% endblock %}
+
+
+
 
 
 

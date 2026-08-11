@@ -779,3 +779,17 @@
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
+
+/* Sprint 37.4 - itens sem pendencia ficam visualmente secundarios */
+.pgp-alert-item.pgp-alert-zero {
+    opacity: .58;
+    box-shadow: none;
+}
+
+.pgp-alert-item.pgp-alert-zero strong {
+    font-weight: 700;
+}
+
+.pgp-alert-item:not(.pgp-alert-zero) {
+    opacity: 1;
+}
