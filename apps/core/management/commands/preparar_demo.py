@@ -40,6 +40,7 @@ class Command(BaseCommand):
         if changed:
             user.save()
 
+        call_command("limpar_demo_legado")
         call_command("preparar_demo_ciclo_completo")
 
         self.stdout.write(
