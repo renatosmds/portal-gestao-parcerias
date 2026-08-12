@@ -250,6 +250,6 @@ class LimparDemoLegadoTests(TestCase):
         )
 
         self.assertIn(
-            "Higienizacao definitiva da base demo concluida.",
+            "Higienizacao definitiva concluida.",
             saida.getvalue(),
         )
