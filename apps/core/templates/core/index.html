@@ -1,4 +1,4 @@
-﻿{% extends 'base.html' %}
+{% extends 'base.html' %}
 {% load static humanize %}
 
 {% block title %}Dashboard | Portal de Gestão de Parcerias{% endblock %}
@@ -575,8 +575,7 @@
             <div><span>Saldo informado nos termos</span><strong>R$ {{ saldo_termos|floatformat:2 }}</strong></div>
             <div><span>Valor analisado</span><strong>R$ {{ valor_analisado|floatformat:2 }}</strong></div>
             <div><span>Valor aprovado após glosas</span><strong>R$ {{ valor_aprovado|floatformat:2 }}</strong></div>
-            <div class="pgp-finance-danger"><span>Valor glosado</span><strong>R$ {{ valor_glosado|floatformat:2
-                }}</strong></div>
+            <div class="pgp-finance-danger"><span>Valor glosado</span><strong>R$ {{ valor_glosado|floatformat:2 }}</strong></div>
         </div>
     </section>
 
@@ -608,11 +607,9 @@
                 <tr>
                     <td>
                         <a href="{% url 'detail_termo' item.objeto.pk %}">
-                            <strong>{{ item.objeto.termo|default:item.objeto.numtermo|default:item.objeto.apelido
-                                }}</strong>
+                            <strong>{{ item.objeto.termo|default:item.objeto.numtermo|default:item.objeto.apelido }}</strong>
                         </a>
-                        <small>{{ item.objeto.empresa.nome|default:item.objeto.nomeosc|default:'OSC não informada'
-                            }}</small>
+                        <small>{{ item.objeto.empresa.nome|default:item.objeto.nomeosc|default:'OSC não informada' }}</small>
                     </td>
                     <td>{{ item.prestacoes }}</td>
                     <td>{{ item.lancamentos }}</td>
@@ -697,8 +694,7 @@
                     <span class="pgp-record-icon"><i class="fa fa-search"></i></span>
                     <div>
                         <strong>{{ analise.numRA|default:'Análise sem RA' }}</strong>
-                        <small>{{ analise.inconformidade|default:'Sem inconformidade registrada'|truncatechars:55
-                            }}</small>
+                        <small>{{ analise.inconformidade|default:'Sem inconformidade registrada'|truncatechars:55 }}</small>
                     </div>
                     <div class="pgp-record-value">
                         <strong>{% if analise.concluida %}Concluída{% else %}Aberta{% endif %}</strong>
@@ -713,9 +709,3 @@
     </div>
 </section>
 {% endblock %}
-
-
-
-
-
-

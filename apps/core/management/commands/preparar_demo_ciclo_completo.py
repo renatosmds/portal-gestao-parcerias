@@ -53,8 +53,8 @@ CENARIOS = (
         "cnpj": "20.000.002/0001-02",
         "termo": "002/2026",
         "objeto": "Oficinas de inclusão produtiva e fortalecimento de vínculos.",
-        "situacao": Prestacao.SituacaoWorkflow.APROVADA_RESSALVAS,
-        "analise_status": "Aprovada com ressalvas",
+        "situacao": Prestacao.SituacaoWorkflow.DILIGENCIA,
+        "analise_status": "Em dilig?ncia",
         "publicada": True,
     },
     {
@@ -63,8 +63,8 @@ CENARIOS = (
         "cnpj": "30.000.003/0001-03",
         "termo": "003/2026",
         "objeto": "Ações de proteção social, convivência e atendimento comunitário.",
-        "situacao": Prestacao.SituacaoWorkflow.REPROVADA,
-        "analise_status": "Reprovada com glosa parcial",
+        "situacao": Prestacao.SituacaoWorkflow.DILIGENCIA,
+        "analise_status": "Em dilig?ncia cr?tica",
         "publicada": True,
     },
 )
@@ -208,6 +208,22 @@ class Command(BaseCommand):
             },
         )
 
+        prestacao.situacao_workflow = dados["situacao"]
+        prestacao.concluida = dados["situacao"] in {
+            Prestacao.SituacaoWorkflow.APROVADA,
+            Prestacao.SituacaoWorkflow.APROVADA_RESSALVAS,
+            Prestacao.SituacaoWorkflow.REPROVADA,
+            Prestacao.SituacaoWorkflow.ENCERRADA,
+        }
+        prestacao.analista_responsavel = usuario
+        prestacao.save(
+            update_fields=[
+                "situacao_workflow",
+                "concluida",
+                "analista_responsavel",
+            ]
+        )
+
         parceria, criada_parceria = Parcerias.objects.get_or_create(
             empresa=prefeitura,
             numtermo=termo,
@@ -274,6 +290,27 @@ class Command(BaseCommand):
             },
         )
 
+        percentual_execucao_demo = {
+            1: Decimal("0.95"),
+            2: Decimal("0.82"),
+            3: Decimal("0.76"),
+        }[indice]
+
+        valor_alvo_demo = (
+            valor_global * percentual_execucao_demo
+        ).quantize(Decimal("0.01"))
+
+        total_base_demo = sum(
+            (
+                valor_base
+                + Decimal(indice * 25 + repeticao * 10)
+            )
+            for _, _, valor_base in RUBRICAS
+            for repeticao in range(1, 4)
+        )
+
+        fator_execucao_demo = valor_alvo_demo / total_base_demo
+
         total_despesas = Decimal("0.00")
         qtd_lancamentos = 0
         qtd_documentos = 0
@@ -301,7 +338,18 @@ class Command(BaseCommand):
             for repeticao in range(1, 4):
                 sequencial = (rubrica_indice - 1) * 3 + repeticao
                 data_documento = inicio + timedelta(days=10 + sequencial * 5)
-                valor = valor_base + Decimal(indice * 25 + repeticao * 10)
+                valor_original = (
+                    valor_base
+                    + Decimal(indice * 25 + repeticao * 10)
+                )
+
+                valor = (
+                    valor_original * fator_execucao_demo
+                ).quantize(Decimal("0.01"))
+
+                if rubrica_indice == len(RUBRICAS) and repeticao == 3:
+                    valor = valor_alvo_demo - total_despesas
+
                 numero = f"{indice:02d}-{codigo}-{repeticao:02d}"
 
                 situacao = Lancamento.Situacao.REGULAR
@@ -327,7 +375,7 @@ class Command(BaseCommand):
                     recomendacao = "Restituir o valor glosado e reforçar os controles."
                     primeiro_com_pendencia = primeiro_com_pendencia or numero
 
-                lancamento, criado_lancamento = Lancamento.objects.get_or_create(
+                lancamento, criado_lancamento = Lancamento.objects.update_or_create(
                     empresa=prefeitura,
                     numero_lancamento=numero,
                     defaults={
@@ -361,13 +409,13 @@ class Command(BaseCommand):
 
                 total_despesas += lancamento.valor_documento
 
-                movimento, criado_movimento = Movimentacao.objects.get_or_create(
+                movimento, criado_movimento = Movimentacao.objects.update_or_create(
                     conciliacao=conciliacao,
                     data=lancamento.data_pagamento,
                     descricao=f"Pagamento {lancamento.numero_lancamento}",
-                    valor=lancamento.valor_documento,
                     tipo=Movimentacao.Tipo.DEBITO,
                     defaults={
+                        "valor": lancamento.valor_documento,
                         "categoria": Movimentacao.Categoria.PAGAMENTO,
                         "documento": lancamento.numero_documento,
                         "favorecido": str(fornecedor),
@@ -377,7 +425,7 @@ class Command(BaseCommand):
                 if criado_movimento:
                     qtd_movimentacoes += 1
 
-                VinculoConciliacao.objects.get_or_create(
+                VinculoConciliacao.objects.update_or_create(
                     movimentacao=movimento,
                     lancamento=lancamento,
                     defaults={
@@ -441,6 +489,10 @@ class Command(BaseCommand):
                 )
 
         saldo_final = valor_global - total_despesas
+
+        termo.valorsaldo = saldo_final
+        termo.save(update_fields=["valorsaldo"])
+
         conciliacao.saldo_final_informado = saldo_final
         conciliacao.save(update_fields=["saldo_final_informado", "atualizado_em"])
         conciliacao.recalcular_situacao()
@@ -457,7 +509,11 @@ class Command(BaseCommand):
                 realizado = previsto * Decimal("0.65")
                 situacao_meta = MetaExecucao.Situacao.NAO_ATINGIDA
 
-            MetaExecucao.objects.get_or_create(
+            fim_meta = fim
+            if indice == 3:
+                fim_meta = timezone.localdate() - timedelta(days=15)
+
+            meta, _ = MetaExecucao.objects.update_or_create(
                 prestacao=prestacao,
                 codigo=f"M{indice}.{meta_indice}",
                 defaults={
@@ -467,7 +523,7 @@ class Command(BaseCommand):
                     "valor_previsto": previsto,
                     "valor_realizado": realizado,
                     "inicio": inicio,
-                    "fim": fim,
+                    "fim": fim_meta,
                     "situacao": situacao_meta,
                     "justificativa": (
                         "Resultado fictício utilizado para demonstrar o acompanhamento."
@@ -484,7 +540,7 @@ class Command(BaseCommand):
                 empresa=prefeitura,
                 numero_lancamento=primeiro_com_pendencia,
             ).first()
-            diligencia, criada_diligencia = Diligencia.objects.get_or_create(
+            diligencia, criada_diligencia = Diligencia.objects.update_or_create(
                 empresa=prefeitura,
                 prestacao=prestacao,
                 assunto=f"Diligência demonstrativa — {dados['termo']}",
@@ -493,19 +549,27 @@ class Command(BaseCommand):
                         "Apresentar esclarecimentos e documentação complementar."
                     ),
                     "fundamento": "Procedimento fictício para treinamento.",
-                    "prioridade": Diligencia.Prioridade.NORMAL,
-                    "status": (
-                        Diligencia.Status.ATENDIDA
+                    "prioridade": (
+                        Diligencia.Prioridade.ALTA
                         if indice == 2
-                        else Diligencia.Status.NAO_ATENDIDA
+                        else Diligencia.Prioridade.URGENTE
                     ),
-                    "prazo_resposta": timezone.localdate() + timedelta(days=10),
+                    "status": (
+                        Diligencia.Status.VISUALIZADA
+                        if indice == 2
+                        else Diligencia.Status.EM_RESPOSTA
+                    ),
+                    "prazo_resposta": (
+                        timezone.localdate() + timedelta(days=5)
+                        if indice == 2
+                        else timezone.localdate() - timedelta(days=7)
+                    ),
                     "lancamento": lancamento_pendente,
                     "responsavel": usuario,
                     "criada_por": usuario,
                     "enviada_em": timezone.now() - timedelta(days=15),
                     "visualizada_em": timezone.now() - timedelta(days=14),
-                    "encerrada_em": timezone.now() - timedelta(days=5),
+                    "encerrada_em": None,
                 },
             )
             if criada_diligencia:
