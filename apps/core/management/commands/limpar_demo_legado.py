@@ -8,6 +8,7 @@ from apps.documentos.models import Documento
 from apps.empresas.models import Empresa
 from apps.lancamentos.models import Lancamento
 from apps.metas.models import MetaExecucao
+from apps.parcerias.models import Parcerias
 from apps.prestacao.models import Prestacao
 from apps.termos.models import Termos
 from apps.transparencia.models import PublicacaoDocumento
@@ -167,10 +168,23 @@ class Command(BaseCommand):
             ).delete()
 
         if termos_ids:
+            # Parcerias possuem FK PROTECT para Termos.
+            parcerias_legadas = Parcerias.objects.filter(
+                numtermo_id__in=termos_ids
+            )
+
+            # Parcerias possuem FK PROTECT para Termos.
+            # PublicacaoParceria aponta diretamente para Termos
+            # com CASCADE, portanto sera removida automaticamente
+            # quando o Termo legado for excluido.
+            parcerias_legadas.delete()
+
+            # Remove refer?ncias mantidas por Empresa.
             Empresa.objects.filter(
                 termos_id__in=termos_ids
             ).update(termos=None)
 
+            # Agora os Termos legados podem ser exclu?dos.
             Termos.objects.filter(
                 pk__in=termos_ids
             ).delete()
