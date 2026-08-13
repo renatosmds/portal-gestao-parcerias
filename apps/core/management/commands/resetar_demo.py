@@ -8,6 +8,7 @@ from apps.analise.models import Analise
 from apps.conciliacao.models import Conciliacao, Movimentacao, VinculoConciliacao
 from apps.diligencias.models import Diligencia
 from apps.documentos.models import Documento
+from apps.departamentos.models import Departamento
 from apps.empresas.models import Empresa
 from apps.fornecedores.models import Fornecedores
 from apps.lancamentos.models import Lancamento
@@ -63,6 +64,10 @@ class Command(BaseCommand):
 
         Prestacao.objects.all().delete()
         Termos.objects.all().delete()
+
+        # Departamento.empresa usa PROTECT e nao aceita NULL.
+        Departamento.objects.all().delete()
+
         Empresa.objects.all().delete()
 
         self.stdout.write(
