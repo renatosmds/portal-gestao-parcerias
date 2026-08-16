@@ -14,5 +14,16 @@ class MotorRegrasPGP:
             contexto=contexto,
         )
 
+    def analisar_lancamento(self, lancamento, contexto=None):
+        from apps.regras.lancamentos import analisar_lancamento
+
+        contexto = contexto or ContextoRegras()
+
+        return analisar_lancamento(
+            lancamento=lancamento,
+            contexto=contexto,
+        )
+
 
 motor_regras = MotorRegrasPGP()
+

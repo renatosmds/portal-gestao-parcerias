@@ -30,6 +30,7 @@ def _achado(
     *,
     regra="",
     categoria="documental",
+    resultado="achado",
     fato_verificado="",
     evidencia="",
     fundamentacao="",
@@ -44,7 +45,7 @@ def _achado(
         descricao=descricao,
         regra=regra or codigo,
         categoria=categoria,
-        resultado="achado",
+        resultado=resultado,
         fato_verificado=fato_verificado or descricao,
         evidencia=evidencia,
         fundamentacao=fundamentacao,
@@ -52,7 +53,6 @@ def _achado(
         recomendacao=recomendacao,
         origem_normativa=origem_normativa,
     )
-
 
 def avaliar_documento(documento, contexto=None):
     """
@@ -308,3 +308,6 @@ def avaliar_documento(documento, contexto=None):
         )
 
     return achados
+
+
+
