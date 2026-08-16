@@ -25,5 +25,16 @@ class MotorRegrasPGP:
         )
 
 
+    def analisar_folha_pagamento(self, folha, contexto=None):
+        from apps.regras.rh import analisar_folha_pagamento
+
+        contexto = contexto or ContextoRegras()
+
+        return analisar_folha_pagamento(
+            folha=folha,
+            contexto=contexto,
+        )
+
 motor_regras = MotorRegrasPGP()
+
 
