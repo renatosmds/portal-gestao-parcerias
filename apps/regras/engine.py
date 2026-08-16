@@ -45,7 +45,18 @@ class MotorRegrasPGP:
             contexto=contexto,
         )
 
+    def analisar_conciliacao_rh(self, folha, contexto=None):
+        from apps.regras.rh_conciliacao import analisar_conciliacao_rh
+
+        contexto = contexto or ContextoRegras()
+
+        return analisar_conciliacao_rh(
+            folha=folha,
+            contexto=contexto,
+        )
+
 motor_regras = MotorRegrasPGP()
+
 
 
 
