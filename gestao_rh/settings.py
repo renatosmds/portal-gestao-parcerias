@@ -1,4 +1,4 @@
-import sys
+﻿import sys
 import os
 from importlib.util import find_spec
 # import pandas as pd
@@ -19,7 +19,7 @@ from importlib.util import find_spec
 #             documento-row['documento_coluna_excel'],
 #             idade-row['idade_coluna_excel'],
 #         )
-#     print("Importação concluída!")
+#     print("ImportaÃ§Ã£o concluÃ­da!")
 #
 # if __name__== '__main__':
 #     importar_excel()
@@ -43,10 +43,10 @@ PGP_MAX_UPLOAD_MB = config('PGP_MAX_UPLOAD_MB', default=20, cast=int)
 PGP_AMBIENTE_DEMO = config('PGP_AMBIENTE_DEMO', default=False, cast=bool)
 PGP_DEMO_MENSAGEM = config(
     'PGP_DEMO_MENSAGEM',
-    default='Ambiente exclusivamente demonstrativo. Todos os dados apresentados são fictícios.',
+    default='Ambiente exclusivamente demonstrativo. Todos os dados apresentados sÃ£o fictÃ­cios.',
 )
 
-# Sprint 23 — análise assistida. A integração externa permanece desativada por padrão.
+# Sprint 23 â€” anÃ¡lise assistida. A integraÃ§Ã£o externa permanece desativada por padrÃ£o.
 PGP_IA_ATIVA = config('PGP_IA_ATIVA', default=False, cast=bool)
 OPENAI_API_KEY = config('OPENAI_API_KEY', default='')
 PGP_IA_MODELO = config('PGP_IA_MODELO', default='')
@@ -76,6 +76,7 @@ INSTALLED_APPS = [
 
     'apps.analise',
     'apps.assistente_ia.apps.AssistenteIaConfig',
+    'apps.regras.apps.RegrasConfig',
     'apps.transparencia.apps.TransparenciaConfig',
     'apps.conciliacao.apps.ConciliacaoConfig',
     'apps.metas.apps.MetasConfig',
@@ -87,20 +88,20 @@ INSTALLED_APPS = [
     'apps.conferencia3',
     #'apps.bpm',
     'apps.core',
-    'apps.departamentos',  # gestão_rh
-    'apps.documentos',  # gestão_rh
+    'apps.departamentos',  # gestÃ£o_rh
+    'apps.documentos',  # gestÃ£o_rh
     # 'apps.diligencias',
     'apps.diligencias.apps.DiligenciasConfig',
-    'apps.empresas',  # gestão_rh
+    'apps.empresas',  # gestÃ£o_rh
     'apps.fornecedores',
-    'apps.funcionarios',  # gestão_rh
+    'apps.funcionarios',  # gestÃ£o_rh
     'apps.lancamentos',
     'apps.importacoes.apps.ImportacoesConfig',
     'apps.parcerias',
     'apps.prestacao',
     'apps.receitas',
     'apps.relatorios.apps.RelatoriosConfig',
-    'apps.registro_hora_extra',  # gestão_rh
+    'apps.registro_hora_extra',  # gestÃ£o_rh
     'apps.termos',
     'apps.curso',
     #'menu',
@@ -162,7 +163,7 @@ SITE_ID = 1
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    # Serve os arquivos coletados também com DEBUG=False e no modo portátil.
+    # Serve os arquivos coletados tambÃ©m com DEBUG=False e no modo portÃ¡til.
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
@@ -183,7 +184,7 @@ MIDDLEWARE = [
 MIDDLEWARE.insert(6, 'gestao_rh.middleware.SessionIdleTimeoutMiddleware')
 MIDDLEWARE.append('gestao_rh.middleware.AuditRequestMiddleware')
 if DEBUG_TOOLBAR_AVAILABLE:
-    # Após AuthenticationMiddleware para que o callback possa verificar o usuário.
+    # ApÃ³s AuthenticationMiddleware para que o callback possa verificar o usuÃ¡rio.
     MIDDLEWARE.insert(7, 'debug_toolbar.middleware.DebugToolbarMiddleware')
 
 ROOT_URLCONF = 'gestao_rh.urls'
@@ -241,7 +242,7 @@ TIME_ZONE = 'America/Sao_Paulo'
 
 USE_I18N = True  # Multi idiomas
 
-USE_L10N = True  # padrão True ( Multi localização)
+USE_L10N = True  # padrÃ£o True ( Multi localizaÃ§Ã£o)
 
 USE_TZ = True  # Time zone
 
@@ -255,7 +256,7 @@ STATICFILES_DIRS = [
 # Destino do collectstatic. Mantido separado dos arquivos-fonte.
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# WhiteNoise mantém CSS/JS disponíveis em homologação, produção local e pendrive.
+# WhiteNoise mantÃ©m CSS/JS disponÃ­veis em homologaÃ§Ã£o, produÃ§Ã£o local e pendrive.
 # O backend simples evita falhas por manifesto durante o desenvolvimento incremental.
 IS_TESTING = "test" in sys.argv
 
@@ -293,7 +294,7 @@ CELERY_TASK_SERIALIZER = 'json'
 
 DATABASE_ROUTERS = ['gestao_rh.DBRoutes.DBRoutes']
 
-# PostgreSQL em produção (Render) e SQLite no desenvolvimento local/portátil.
+# PostgreSQL em produÃ§Ã£o (Render) e SQLite no desenvolvimento local/portÃ¡til.
 default_dburl = 'sqlite:///' + os.path.join(PORTABLE_DATA_DIR or BASE_DIR, 'db.sqlite3')
 DATABASES = {
     'default': config(
@@ -303,7 +304,7 @@ DATABASES = {
     )
 }
 
-# O Render encerra a conexão ociosa; conexões persistentes melhoram o desempenho.
+# O Render encerra a conexÃ£o ociosa; conexÃµes persistentes melhoram o desempenho.
 if config('DATABASE_URL', default='').startswith(('postgres://', 'postgresql://')):
     DATABASES['default']['CONN_MAX_AGE'] = 60
     DATABASES['default']['OPTIONS'] = {'sslmode': 'require'}
@@ -347,15 +348,15 @@ USE_THOUSAND_SEPARATOR = True
 DATE_FORMAT = 'd/m/y'
 
 
-# Mantém compatibilidade com os models e migrations legados do projeto.
-# Evita a criação automática de BigAutoField e elimina os avisos W042.
+# MantÃ©m compatibilidade com os models e migrations legados do projeto.
+# Evita a criaÃ§Ã£o automÃ¡tica de BigAutoField e elimina os avisos W042.
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 
 # Render e outros proxies HTTPS informam o protocolo por X-Forwarded-Proto.
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-# Segurança por ambiente. Em produção, configure DEBUG=False no .env.
+# SeguranÃ§a por ambiente. Em produÃ§Ã£o, configure DEBUG=False no .env.
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = True
 X_FRAME_OPTIONS = 'DENY'
@@ -397,3 +398,4 @@ LOGGING = {
         'django.request': {'handlers': ['error_file'], 'level': 'ERROR', 'propagate': True},
     },
 }
+
