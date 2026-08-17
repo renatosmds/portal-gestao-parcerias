@@ -94,7 +94,27 @@ class MotorRegrasPGP:
             dados_minimizados=dados_minimizados,
         )
 
+    def analisar_rh_completo(
+        self,
+        folha,
+        contexto=None,
+        *,
+        uso_ia=False,
+        dados_minimizados=False,
+    ):
+        from apps.regras.rh_consolidado import analisar_rh_completo
+
+        contexto = contexto or ContextoRegras()
+
+        return analisar_rh_completo(
+            folha=folha,
+            contexto=contexto,
+            uso_ia=uso_ia,
+            dados_minimizados=dados_minimizados,
+        )
+
 motor_regras = MotorRegrasPGP()
+
 
 
 
