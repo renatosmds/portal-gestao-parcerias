@@ -77,6 +77,7 @@ INSTALLED_APPS = [
     'apps.analise',
     'apps.assistente_ia.apps.AssistenteIaConfig',
     'apps.regras.apps.RegrasConfig',
+    'apps.planos_trabalho.apps.PlanosTrabalhoConfig',
     'apps.transparencia.apps.TransparenciaConfig',
     'apps.conciliacao.apps.ConciliacaoConfig',
     'apps.metas.apps.MetasConfig',
@@ -398,4 +399,5 @@ LOGGING = {
         'django.request': {'handlers': ['error_file'], 'level': 'ERROR', 'propagate': True},
     },
 }
+
 
