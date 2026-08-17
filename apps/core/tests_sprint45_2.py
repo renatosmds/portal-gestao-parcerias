@@ -31,13 +31,21 @@ class PlanoTrabalhoSprint452Tests(TestCase):
     def criar_plano(
         self,
         versao=1,
+        situacao=None,
     ):
+        if situacao is None:
+            situacao = (
+                PlanoTrabalho.Situacao.VIGENTE
+                if versao == 1
+                else PlanoTrabalho.Situacao.RASCUNHO
+            )
+
         return PlanoTrabalho.objects.create(
             termo=self.termo,
             versao=versao,
             titulo="Plano estruturado Sprint 45.2",
             origem=PlanoTrabalho.Origem.INICIAL,
-            situacao=PlanoTrabalho.Situacao.VIGENTE,
+            situacao=situacao,
             inicio_vigencia=date(2026, 1, 1),
             fim_vigencia=date(2026, 12, 31),
         )
@@ -124,3 +132,4 @@ class PlanoTrabalhoSprint452Tests(TestCase):
             ValidationError
         ):
             plano.full_clean()
+

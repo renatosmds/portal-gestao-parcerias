@@ -14,8 +14,12 @@ class PlanoTrabalhoForm(forms.ModelForm):
             "termo",
             "versao",
             "titulo",
+            "versao_anterior",
             "origem",
             "situacao",
+            "data_eficacia",
+            "instrumento_alteracao",
+            "justificativa_alteracao",
             "inicio_vigencia",
             "fim_vigencia",
             "data_aprovacao",
@@ -32,6 +36,12 @@ class PlanoTrabalhoForm(forms.ModelForm):
             ),
             "data_aprovacao": forms.DateInput(
                 attrs={"type": "date"}
+            ),
+            "data_eficacia": forms.DateInput(
+                attrs={"type": "date"}
+            ),
+            "justificativa_alteracao": forms.Textarea(
+                attrs={"rows": 3}
             ),
             "observacoes": forms.Textarea(
                 attrs={"rows": 3}
@@ -71,3 +81,4 @@ class ItemPlanoTrabalhoForm(forms.ModelForm):
                 attrs={"rows": 3}
             ),
         }
+

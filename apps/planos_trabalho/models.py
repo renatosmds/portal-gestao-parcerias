@@ -37,6 +37,36 @@ class PlanoTrabalho(models.Model):
         verbose_name="Título",
     )
 
+    versao_anterior = models.ForeignKey(
+        "self",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="versoes_subsequentes",
+        verbose_name="Versão anterior",
+    )
+
+    data_eficacia = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="Data de eficácia da versão",
+    )
+
+    instrumento_alteracao = models.CharField(
+        max_length=150,
+        blank=True,
+        verbose_name="Instrumento da alteração",
+        help_text=(
+            "Ex.: Termo Aditivo nº 01, autorização de remanejamento "
+            "ou outro instrumento aplicável."
+        ),
+    )
+
+    justificativa_alteracao = models.TextField(
+        blank=True,
+        verbose_name="Justificativa da alteração",
+    )
+
     origem = models.CharField(
         max_length=20,
         choices=Origem.choices,
@@ -97,28 +127,118 @@ class PlanoTrabalho(models.Model):
                     "versao",
                 ],
                 name="uniq_plano_termo_versao",
-            )
+            ),
+            models.UniqueConstraint(
+                fields=[
+                    "termo",
+                ],
+                condition=models.Q(
+                    situacao="vigente"
+                ),
+                name="uniq_plano_vigente_por_termo",
+            ),
         ]
 
         verbose_name = "Plano de Trabalho"
         verbose_name_plural = "Planos de Trabalho"
 
+    @property
+    def inicio_eficacia(self):
+        return (
+            self.data_eficacia
+            or self.inicio_vigencia
+        )
+
+    def aplicavel_em(self, data_referencia):
+        if not data_referencia:
+            return False
+
+        if self.situacao in {
+            self.Situacao.RASCUNHO,
+            self.Situacao.CANCELADO,
+        }:
+            return False
+
+        inicio = self.inicio_eficacia
+
+        if (
+            inicio
+            and data_referencia < inicio
+        ):
+            return False
+
+        if (
+            self.fim_vigencia
+            and data_referencia > self.fim_vigencia
+        ):
+            return False
+
+        return True
+
     def clean(self):
         super().clean()
+
+        erros = {}
 
         if (
             self.inicio_vigencia
             and self.fim_vigencia
             and self.fim_vigencia < self.inicio_vigencia
         ):
-            raise ValidationError(
-                {
-                    "fim_vigencia": (
-                        "O término da vigência não pode ser "
-                        "anterior ao início."
-                    )
-                }
+            erros["fim_vigencia"] = (
+                "O término da vigência não pode ser "
+                "anterior ao início."
             )
+
+        if (
+            self.versao_anterior_id
+            and self.pk
+            and self.versao_anterior_id == self.pk
+        ):
+            erros["versao_anterior"] = (
+                "Uma versão não pode apontar para si própria."
+            )
+
+        if self.versao_anterior:
+            if (
+                self.termo_id
+                and self.versao_anterior.termo_id
+                != self.termo_id
+            ):
+                erros["versao_anterior"] = (
+                    "A versão anterior deve pertencer "
+                    "ao mesmo Termo."
+                )
+
+            if (
+                self.versao
+                <= self.versao_anterior.versao
+            ):
+                erros["versao"] = (
+                    "A nova versão deve possuir número "
+                    "superior ao da versão anterior."
+                )
+
+        if (
+            self.origem != self.Origem.INICIAL
+            and not self.versao_anterior
+        ):
+            erros["versao_anterior"] = (
+                "Versões decorrentes de alteração devem "
+                "indicar a versão anterior."
+            )
+
+        if (
+            self.origem == self.Origem.INICIAL
+            and self.versao_anterior
+        ):
+            erros["origem"] = (
+                "Uma versão vinculada a outra versão não "
+                "pode ser classificada como Plano inicial."
+            )
+
+        if erros:
+            raise ValidationError(erros)
 
     def __str__(self):
         termo = (
@@ -297,3 +417,5 @@ class ItemPlanoTrabalho(models.Model):
 
     def __str__(self):
         return f"{self.codigo} - {self.descricao}"
+
+

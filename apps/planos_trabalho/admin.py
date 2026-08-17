@@ -17,8 +17,10 @@ class PlanoTrabalhoAdmin(admin.ModelAdmin):
     list_display = (
         "termo",
         "versao",
+        "versao_anterior",
         "origem",
         "situacao",
+        "data_eficacia",
         "inicio_vigencia",
         "fim_vigencia",
     )
@@ -64,3 +66,4 @@ class ItemPlanoTrabalhoAdmin(admin.ModelAdmin):
         "rubrica_nivel_2",
         "rubrica_nivel_3",
     )
+
