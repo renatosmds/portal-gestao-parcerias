@@ -65,7 +65,18 @@ class MotorRegrasPGP:
             contexto=contexto,
         )
 
+    def analisar_verbas_rh(self, folha, contexto=None):
+        from apps.regras.rh_verbas import analisar_verbas_rh
+
+        contexto = contexto or ContextoRegras()
+
+        return analisar_verbas_rh(
+            folha=folha,
+            contexto=contexto,
+        )
+
 motor_regras = MotorRegrasPGP()
+
 
 
 
