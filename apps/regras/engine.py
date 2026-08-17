@@ -75,7 +75,27 @@ class MotorRegrasPGP:
             contexto=contexto,
         )
 
+    def analisar_lgpd_rh(
+        self,
+        funcionario,
+        contexto=None,
+        *,
+        uso_ia=False,
+        dados_minimizados=False,
+    ):
+        from apps.regras.lgpd_rh import analisar_lgpd_rh
+
+        contexto = contexto or ContextoRegras()
+
+        return analisar_lgpd_rh(
+            funcionario=funcionario,
+            contexto=contexto,
+            uso_ia=uso_ia,
+            dados_minimizados=dados_minimizados,
+        )
+
 motor_regras = MotorRegrasPGP()
+
 
 
 
