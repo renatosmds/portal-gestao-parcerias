@@ -1,4 +1,4 @@
-{% load static %}
+﻿{% load static %}
 <!doctype html>
 <html lang="pt-br" data-theme="light">
 <head>
@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
-    <title>{% block title %}Portal de Gestão de Parcerias{% endblock %}</title>
+    <title>{% block title %}Portal de GestÃ£o de Parcerias{% endblock %}</title>
 
     <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}">
     <link rel="stylesheet"
@@ -32,7 +32,7 @@
         </div>
 
         <nav class="sgm-nav">
-            <span class="sgm-nav-label">VISÃO GERAL</span>
+            <span class="sgm-nav-label">VISÃƒO GERAL</span>
 
             <a class="sgm-nav-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}"
                href="{% url 'home' %}">
@@ -40,7 +40,7 @@
                 <span>Dashboard</span>
             </a>
 
-            <span class="sgm-nav-label">{% if usuario_area_osc %}GESTÃO DA OSC{% else %}GESTÃO DAS PARCERIAS{% endif %}</span>
+            <span class="sgm-nav-label">{% if usuario_area_osc %}GESTÃƒO DA OSC{% else %}GESTÃƒO DAS PARCERIAS{% endif %}</span>
 
             {% if perms.empresas.view_empresa or user.is_superuser %}
             <a class="sgm-nav-item {% if request.resolver_match.url_name == 'list_empresas' or request.resolver_match.url_name == 'detail_empresa' or request.resolver_match.url_name == 'create_empresa' or request.resolver_match.url_name == 'edit_empresa' or request.resolver_match.url_name == 'delete_empresa' %}active{% endif %}"
@@ -86,7 +86,7 @@
 
             <a class="sgm-nav-item" href="{% url 'list_conferencia3' %}">
                 <i class="fa fa-check-square-o" aria-hidden="true"></i>
-                <span>Execução</span>
+                <span>ExecuÃ§Ã£o</span>
             </a>
 
             <a class="sgm-nav-item" href="{% url 'list_receitas' %}">
@@ -97,24 +97,24 @@
             <a class="sgm-nav-item {% if request.resolver_match.url_name == 'list_diligencias' or request.resolver_match.url_name == 'detail_diligencia' or request.resolver_match.url_name == 'create_diligencia' %}active{% endif %}"
                href="{% url 'list_diligencias' %}">
                 <i class="fa fa-comments-o" aria-hidden="true"></i>
-                <span>Diligências{% if notificacoes_nao_lidas %} <strong>({{ notificacoes_nao_lidas }})</strong>{% endif %}</span>
+                <span>DiligÃªncias{% if notificacoes_nao_lidas %} <strong>({{ notificacoes_nao_lidas }})</strong>{% endif %}</span>
             </a>
 
             <a class="sgm-nav-item {% if request.resolver_match.url_name == 'relatorios_painel' or 'relatorio_' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'relatorios_painel' %}">
                 <i class="fa fa-bar-chart" aria-hidden="true"></i>
-                <span>Relatórios</span>
+                <span>RelatÃ³rios</span>
             </a>
 
             {% if user.is_staff or user.is_superuser %}
             <a class="sgm-nav-item {% if 'importacao' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'list_importacoes' %}">
                 <i class="fa fa-upload" aria-hidden="true"></i>
-                <span>Importações</span>
+                <span>ImportaÃ§Ãµes</span>
             </a>
             {% endif %}
 
             <a class="sgm-nav-item {% if 'conciliacao_' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'conciliacao_painel' %}">
                 <i class="fa fa-exchange" aria-hidden="true"></i>
-                <span>Conciliação bancária</span>
+                <span>ConciliaÃ§Ã£o bancÃ¡ria</span>
             </a>
 
             <a class="sgm-nav-item {% if 'metas_' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'metas_painel' %}">
@@ -122,15 +122,21 @@
                 <span>Metas e indicadores</span>
             </a>
 
+            <a class="sgm-nav-item {% if request.resolver_match.namespace == 'planos_trabalho' %}active{% endif %}"
+               href="{% url 'planos_trabalho:plano_lista' %}">
+                <i class="fa fa-tasks" aria-hidden="true"></i>
+                <span>Planos de Trabalho</span>
+            </a>
+
             <a class="sgm-nav-item {% if 'assistente_ia' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'assistente_ia_central' %}">
                 <i class="fa fa-magic" aria-hidden="true"></i>
-                <span>Análise Assistida</span>
+                <span>AnÃ¡lise Assistida</span>
             </a>
 
             {% if user.is_staff or user.is_superuser %}
             <a class="sgm-nav-item {% if 'transparencia_' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'transparencia_painel' %}">
                 <i class="fa fa-eye" aria-hidden="true"></i>
-                <span>Transparência</span>
+                <span>TransparÃªncia</span>
             </a>
             {% endif %}
 
@@ -146,7 +152,7 @@
             <a class="sgm-nav-item {% if request.resolver_match.url_name == 'list_lancamentos' or request.resolver_match.url_name == 'detail_lancamento' or request.resolver_match.url_name == 'create_lancamento' or request.resolver_match.url_name == 'update_lancamento' or request.resolver_match.url_name == 'delete_lancamento' %}active{% endif %}"
                href="{% url 'list_lancamentos' %}">
                 <i class="fa fa-list-alt" aria-hidden="true"></i>
-                <span>Lançamentos</span>
+                <span>LanÃ§amentos</span>
             </a>
             {% endif %}
 
@@ -154,7 +160,7 @@
             <a class="sgm-nav-item {% if request.resolver_match.url_name == 'list_analise' or request.resolver_match.url_name == 'detail_analise' or request.resolver_match.url_name == 'create_analise' or request.resolver_match.url_name == 'update_analise' or request.resolver_match.url_name == 'delete_analise' %}active{% endif %}"
                href="{% url 'list_analise' %}">
                 <i class="fa fa-search" aria-hidden="true"></i>
-                <span>Análises</span>
+                <span>AnÃ¡lises</span>
             </a>
             {% endif %}
 
@@ -162,7 +168,7 @@
             <a class="sgm-nav-item {% if request.resolver_match.url_name == 'list_prestacao' or request.resolver_match.url_name == 'detail_prestacao' or request.resolver_match.url_name == 'create_prestacao' or request.resolver_match.url_name == 'update_prestacao' or request.resolver_match.url_name == 'delete_prestacao' %}active{% endif %}"
                href="{% url 'list_prestacao' %}">
                 <i class="fa fa-folder-open-o" aria-hidden="true"></i>
-                <span>Prestações</span>
+                <span>PrestaÃ§Ãµes</span>
             </a>
             {% endif %}
 
@@ -200,7 +206,7 @@
             {% if user.is_staff or user.is_superuser %}
             <a class="sgm-nav-item {% if request.resolver_match.url_name == 'diagnostico_portal' %}active{% endif %}" href="{% url 'diagnostico_portal' %}">
                 <i class="fa fa-stethoscope" aria-hidden="true"></i>
-                <span>Diagnóstico</span>
+                <span>DiagnÃ³stico</span>
             </a>
             {% endif %}
 
@@ -209,25 +215,25 @@
             <a class="sgm-nav-item" target="_blank" rel="noopener noreferrer"
                href="https://portal.contagem.mg.gov.br/portal/diario-oficial">
                 <i class="fa fa-newspaper-o" aria-hidden="true"></i>
-                <span>Diário Oficial</span>
+                <span>DiÃ¡rio Oficial</span>
             </a>
 
             <a class="sgm-nav-item" target="_blank" rel="noopener noreferrer"
                href="https://portal.contagem.mg.gov.br/portal/transparencia">
                 <i class="fa fa-eye" aria-hidden="true"></i>
-                <span>Transparência</span>
+                <span>TransparÃªncia</span>
             </a>
 
             <a class="sgm-nav-item" target="_blank" rel="noopener noreferrer"
                href="https://legislacao.contagem.mg.gov.br/legislacao/legislacaop">
                 <i class="fa fa-balance-scale" aria-hidden="true"></i>
-                <span>Legislação</span>
+                <span>LegislaÃ§Ã£o</span>
             </a>
         </nav>
 
         <div class="sgm-sidebar-footer">
-            <small>Portal de Gestão de Parcerias</small>
-            <span>PGP Demo • v0.39</span>
+            <small>Portal de GestÃ£o de Parcerias</small>
+            <span>PGP Demo â€¢ v0.39</span>
         </div>
     </aside>
 
@@ -243,12 +249,12 @@
 
                 <div class="sgm-page-identity">
                     <span class="sgm-page-kicker">{{ area_portal|upper }}</span>
-                    <strong>{% block page_name %}Portal de Gestão de Parcerias{% endblock %}</strong>
+                    <strong>{% block page_name %}Portal de GestÃ£o de Parcerias{% endblock %}</strong>
                 </div>
             </div>
 
             <div class="sgm-topbar-actions">
-                <a class="sgm-icon-button" href="{% url 'notificacoes' %}" aria-label="Notificações" title="Notificações">
+                <a class="sgm-icon-button" href="{% url 'notificacoes' %}" aria-label="NotificaÃ§Ãµes" title="NotificaÃ§Ãµes">
                     <i class="fa fa-bell-o" aria-hidden="true"></i>{% if notificacoes_nao_lidas %}<span class="badge badge-danger">{{ notificacoes_nao_lidas }}</span>{% endif %}
                 </a>
                 <button type="button" class="sgm-icon-button" id="themeToggle"
@@ -267,8 +273,8 @@
                         <span class="sgm-user-text">
                                 <strong>{{ user.get_full_name|default:user.get_username }}</strong>
                                 <small>
-                                    {{ perfil_usuario|default:"Usuário autenticado" }}
-                                    {% if empresa_usuario %} · {{ empresa_usuario }}{% endif %}
+                                    {{ perfil_usuario|default:"UsuÃ¡rio autenticado" }}
+                                    {% if empresa_usuario %} Â· {{ empresa_usuario }}{% endif %}
                                 </small>
                             </span>
                     </button>
@@ -283,7 +289,7 @@
                         </a>
                         {% if user.is_staff %}
                         <a class="dropdown-item" href="{% url 'admin:index' %}">
-                            <i class="fa fa-users-cog mr-2"></i>Administrar usuários e perfis
+                            <i class="fa fa-users-cog mr-2"></i>Administrar usuÃ¡rios e perfis
                         </a>
                         {% endif %}
                         <div class="dropdown-divider"></div>
@@ -308,7 +314,7 @@
         <main class="sgm-content">
             {% if pgp_ambiente_demo %}
             <div class="alert alert-warning border-warning shadow-sm mb-3" role="alert">
-                <strong><i class="fa fa-flask mr-1"></i> Ambiente de demonstração:</strong>
+                <strong><i class="fa fa-flask mr-1"></i> Ambiente de demonstraÃ§Ã£o:</strong>
                 {{ pgp_demo_mensagem }}
             </div>
             {% endif %}
@@ -332,7 +338,7 @@
 
         <footer class="sgm-footer">
             <span>&copy; {% now "Y" %} Prefeitura de Contagem</span>
-            <span>Portal de Gestão de Parcerias</span>
+            <span>Portal de GestÃ£o de Parcerias</span>
         </footer>
     </div>
 </div>
@@ -352,3 +358,4 @@
 {% endblock %}
 </body>
 </html>
+
