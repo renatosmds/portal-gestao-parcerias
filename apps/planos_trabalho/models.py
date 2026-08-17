@@ -419,3 +419,142 @@ class ItemPlanoTrabalho(models.Model):
         return f"{self.codigo} - {self.descricao}"
 
 
+
+
+class VinculoLancamentoItemPlano(models.Model):
+
+    class OrigemVinculo(models.TextChoices):
+        MANUAL = "manual", "Vínculo manual"
+        AUTOMATICO = "automatico", "Sugestão automática"
+        IMPORTACAO = "importacao", "Importação"
+        MIGRACAO = "migracao", "Migração de legado"
+
+    lancamento = models.ForeignKey(
+        "lancamentos.Lancamento",
+        on_delete=models.CASCADE,
+        related_name="vinculos_itens_plano",
+        verbose_name="Lançamento",
+    )
+
+    item_plano = models.ForeignKey(
+        ItemPlanoTrabalho,
+        on_delete=models.PROTECT,
+        related_name="vinculos_lancamentos",
+        verbose_name="Item do Plano de Trabalho",
+    )
+
+    origem = models.CharField(
+        max_length=20,
+        choices=OrigemVinculo.choices,
+        default=OrigemVinculo.MANUAL,
+        verbose_name="Origem do vínculo",
+    )
+
+    confianca = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        validators=[
+            MinValueValidator(
+                Decimal("0.00")
+            )
+        ],
+        verbose_name="Confiança (%)",
+    )
+
+    justificativa = models.TextField(
+        blank=True,
+        verbose_name="Justificativa",
+    )
+
+    ativo = models.BooleanField(
+        default=True,
+        verbose_name="Vínculo ativo",
+    )
+
+    criado_em = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    atualizado_em = models.DateTimeField(
+        auto_now=True
+    )
+
+    class Meta:
+        ordering = [
+            "-ativo",
+            "-criado_em",
+        ]
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    "lancamento",
+                ],
+                condition=models.Q(
+                    ativo=True
+                ),
+                name="uniq_item_plano_ativo_por_lancamento",
+            ),
+        ]
+
+        verbose_name = (
+            "Vínculo entre lançamento e item do Plano"
+        )
+
+        verbose_name_plural = (
+            "Vínculos entre lançamentos e itens do Plano"
+        )
+
+    def clean(self):
+        super().clean()
+
+        erros = {}
+
+        if self.confianca is not None:
+            if self.confianca > Decimal("100.00"):
+                erros["confianca"] = (
+                    "A confiança não pode ultrapassar 100%."
+                )
+
+        if (
+            self.lancamento_id
+            and self.item_plano_id
+        ):
+            termo_lancamento_id = getattr(
+                self.lancamento,
+                "termo_id",
+                None,
+            )
+
+            termo_plano_id = (
+                self.item_plano
+                .plano
+                .termo_id
+            )
+
+            if not termo_lancamento_id:
+                erros["lancamento"] = (
+                    "O lançamento precisa estar vinculado "
+                    "a um Termo para ser associado ao "
+                    "Plano de Trabalho."
+                )
+
+            elif (
+                termo_lancamento_id
+                != termo_plano_id
+            ):
+                erros["item_plano"] = (
+                    "O item do Plano pertence a Termo "
+                    "diferente do lançamento."
+                )
+
+        if erros:
+            raise ValidationError(erros)
+
+    def __str__(self):
+        return (
+            f"Lançamento {self.lancamento_id} "
+            f"→ {self.item_plano}"
+        )

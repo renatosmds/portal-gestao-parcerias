@@ -3,6 +3,7 @@
 from .models import (
     ItemPlanoTrabalho,
     PlanoTrabalho,
+    VinculoLancamentoItemPlano,
 )
 
 
@@ -67,3 +68,33 @@ class ItemPlanoTrabalhoAdmin(admin.ModelAdmin):
         "rubrica_nivel_3",
     )
 
+
+@admin.register(VinculoLancamentoItemPlano)
+class VinculoLancamentoItemPlanoAdmin(
+    admin.ModelAdmin
+):
+
+    list_display = (
+        "lancamento",
+        "item_plano",
+        "origem",
+        "confianca",
+        "ativo",
+        "criado_em",
+    )
+
+    list_filter = (
+        "ativo",
+        "origem",
+    )
+
+    search_fields = (
+        "item_plano__codigo",
+        "item_plano__descricao",
+        "justificativa",
+    )
+
+    readonly_fields = (
+        "criado_em",
+        "atualizado_em",
+    )
