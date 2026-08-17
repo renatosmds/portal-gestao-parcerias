@@ -1,4 +1,4 @@
-
+﻿
 from apps.analise.api.viewsets import AnaliseViewSet
 from apps.clientes.api.viewsets import ClientesViewSet
 from apps.conferencia3.api.viewsets import Conferencia3ViewSet
@@ -14,7 +14,7 @@ from django.conf import settings
 #from django.conf.urls import url
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import include, path, include
 from django.views.generic import RedirectView
 from django.contrib.auth import views as auth_views
 from rest_framework import routers
@@ -77,6 +77,10 @@ router.register(r'conferencia3', Conferencia3ViewSet)
 #router.register(r'bpm', Conferencia3ViewSet)
 
 urlpatterns = [
+    path(
+        "planos-trabalho/",
+        include("apps.planos_trabalho.urls"),
+    ),
                   path('', include('apps.core.urls')), # ok
                   path('', include('home.urls')),  # no original 'apps.core.urls' # ok
                   path('funcionarios/', include('apps.funcionarios.urls')),
@@ -154,14 +158,20 @@ urlpatterns = [
 if getattr(settings, 'DEBUG_TOOLBAR_AVAILABLE', False):
     import debug_toolbar
     urlpatterns = [
+    path(
+        "planos-trabalho/",
+        include("apps.planos_trabalho.urls"),
+    ),
         path('__debug__/', include(debug_toolbar.urls)),
     ] + urlpatterns
 
-admin.site.site_header = "Portal de Gestão de Parcerias"
-admin.site.index_title = "Administração do Portal"
-admin.site.site_title = "Portal de Gestão de Parcerias"
+admin.site.site_header = "Portal de GestÃ£o de Parcerias"
+admin.site.index_title = "AdministraÃ§Ã£o do Portal"
+admin.site.site_title = "Portal de GestÃ£o de Parcerias"
 
 handler400 = 'gestao_rh.error_views.bad_request'
 handler403 = 'gestao_rh.error_views.permission_denied'
 handler404 = 'gestao_rh.error_views.page_not_found'
 handler500 = 'gestao_rh.error_views.server_error'
+
+
