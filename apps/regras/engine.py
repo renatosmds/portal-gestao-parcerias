@@ -113,7 +113,24 @@ class MotorRegrasPGP:
             dados_minimizados=dados_minimizados,
         )
 
+    def analisar_execucao_item_plano(
+        self,
+        item,
+        contexto=None,
+    ):
+        from apps.regras.plano_execucao import (
+            analisar_execucao_item_plano,
+        )
+
+        contexto = contexto or ContextoRegras()
+
+        return analisar_execucao_item_plano(
+            item=item,
+            contexto=contexto,
+        )
+
 motor_regras = MotorRegrasPGP()
+
 
 
 
