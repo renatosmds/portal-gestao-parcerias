@@ -193,7 +193,24 @@ class MotorRegrasPGP:
             contexto=contexto,
         )
 
+    def analisar_plano_trabalho_completo(
+        self,
+        plano,
+        contexto=None,
+    ):
+        from apps.regras.plano_consolidado import (
+            analisar_plano_trabalho_completo,
+        )
+
+        contexto = contexto or ContextoRegras()
+
+        return analisar_plano_trabalho_completo(
+            plano=plano,
+            contexto=contexto,
+        )
+
 motor_regras = MotorRegrasPGP()
+
 
 
 
