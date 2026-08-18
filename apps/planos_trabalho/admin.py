@@ -78,6 +78,9 @@ class VinculoLancamentoItemPlanoAdmin(
         "lancamento",
         "item_plano",
         "origem",
+        "quantidade_executada",
+        "valor_unitario_executado",
+        "unidade_executada",
         "confianca",
         "ativo",
         "criado_em",
@@ -98,3 +101,4 @@ class VinculoLancamentoItemPlanoAdmin(
         "criado_em",
         "atualizado_em",
     )
+

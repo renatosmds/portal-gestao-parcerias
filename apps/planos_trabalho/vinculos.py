@@ -128,6 +128,9 @@ def vincular_lancamento_item(
     ),
     confianca=None,
     justificativa="",
+    quantidade_executada=None,
+    valor_unitario_executado=None,
+    unidade_executada="",
 ):
     """
     Cria novo vínculo preservando histórico.
@@ -154,6 +157,9 @@ def vincular_lancamento_item(
         origem=origem,
         confianca=confianca,
         justificativa=justificativa,
+        quantidade_executada=quantidade_executada,
+        valor_unitario_executado=valor_unitario_executado,
+        unidade_executada=unidade_executada,
         ativo=True,
     )
 
@@ -176,3 +182,4 @@ def vinculo_ativo_lancamento(lancamento):
         )
         .first()
     )
+

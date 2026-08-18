@@ -468,6 +468,38 @@ class VinculoLancamentoItemPlano(models.Model):
         verbose_name="Justificativa",
     )
 
+    quantidade_executada = models.DecimalField(
+        max_digits=14,
+        decimal_places=4,
+        null=True,
+        blank=True,
+        validators=[
+            MinValueValidator(
+                Decimal("0.0000")
+            )
+        ],
+        verbose_name="Quantidade executada",
+    )
+
+    valor_unitario_executado = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        validators=[
+            MinValueValidator(
+                Decimal("0.00")
+            )
+        ],
+        verbose_name="Valor unitário executado",
+    )
+
+    unidade_executada = models.CharField(
+        max_length=50,
+        blank=True,
+        verbose_name="Unidade executada",
+    )
+
     ativo = models.BooleanField(
         default=True,
         verbose_name="Vínculo ativo",
@@ -553,8 +585,24 @@ class VinculoLancamentoItemPlano(models.Model):
         if erros:
             raise ValidationError(erros)
 
+    @property
+    def valor_calculado_execucao(self):
+        if (
+            self.quantidade_executada is None
+            or self.valor_unitario_executado is None
+        ):
+            return None
+
+        return (
+            self.quantidade_executada
+            * self.valor_unitario_executado
+        ).quantize(
+            Decimal("0.01")
+        )
+
     def __str__(self):
         return (
             f"Lançamento {self.lancamento_id} "
             f"→ {self.item_plano}"
         )
+

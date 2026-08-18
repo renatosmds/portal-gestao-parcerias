@@ -129,7 +129,24 @@ class MotorRegrasPGP:
             contexto=contexto,
         )
 
+    def analisar_execucao_quantitativa_item(
+        self,
+        item,
+        contexto=None,
+    ):
+        from apps.regras.plano_quantitativo import (
+            analisar_execucao_quantitativa_item,
+        )
+
+        contexto = contexto or ContextoRegras()
+
+        return analisar_execucao_quantitativa_item(
+            item=item,
+            contexto=contexto,
+        )
+
 motor_regras = MotorRegrasPGP()
+
 
 
 
