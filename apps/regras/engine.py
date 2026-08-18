@@ -177,7 +177,24 @@ class MotorRegrasPGP:
             contexto=contexto,
         )
 
+    def analisar_item_plano_completo(
+        self,
+        item,
+        contexto=None,
+    ):
+        from apps.regras.plano_item_consolidado import (
+            analisar_item_plano_completo,
+        )
+
+        contexto = contexto or ContextoRegras()
+
+        return analisar_item_plano_completo(
+            item=item,
+            contexto=contexto,
+        )
+
 motor_regras = MotorRegrasPGP()
+
 
 
 
