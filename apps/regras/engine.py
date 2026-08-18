@@ -145,7 +145,24 @@ class MotorRegrasPGP:
             contexto=contexto,
         )
 
+    def analisar_execucao_temporal_item(
+        self,
+        item,
+        contexto=None,
+    ):
+        from apps.regras.plano_temporal import (
+            analisar_execucao_temporal_item,
+        )
+
+        contexto = contexto or ContextoRegras()
+
+        return analisar_execucao_temporal_item(
+            item=item,
+            contexto=contexto,
+        )
+
 motor_regras = MotorRegrasPGP()
+
 
 
 
