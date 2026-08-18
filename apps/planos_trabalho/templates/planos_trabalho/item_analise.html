@@ -218,14 +218,14 @@
                     <p>
                         Mesma OSC:
                         <strong>
-                            {{ resultado.meta_objeto.resumo.empresa_compativel|default:"-" }}
+                            {{ resultado.meta_objeto.resumo.empresa_compativel|yesno:"Sim,Não,Não verificável" }}
                         </strong>
                     </p>
 
                     <p class="mb-0">
                         Mesmo Termo:
                         <strong>
-                            {{ resultado.meta_objeto.resumo.numero_termo_compativel|default:"-" }}
+                            {{ resultado.meta_objeto.resumo.numero_termo_compativel|yesno:"Sim,Não,Não verificável" }}
                         </strong>
                     </p>
 

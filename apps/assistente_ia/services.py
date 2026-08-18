@@ -36,30 +36,30 @@ def gerar_rascunhos(documento, achados):
     relevantes = [a for a in achados if a["severidade"] in {"alerta", "critico"}]
     resumo = (
         f"Foram executadas validaÃ§Ãµes locais no documento â€œ{documento}â€. "
-        f"Foram identificados {len(relevantes)} ponto(s) que exigem conferÃªncia humana."
+        f"Foram identificados {len(relevantes)} ponto(s) que exigem conferência humana."
     )
     if not relevantes:
         return {
             "resumo": resumo,
             "inconformidade": "",
             "diligencia": "",
-            "recomendacao": "Manter a conferÃªncia documental e financeira antes da decisÃ£o final.",
+            "recomendacao": "Manter a conferência documental e financeira antes da decisão final.",
         }
 
     itens = "; ".join(a["titulo"].lower() for a in relevantes)
     return {
         "resumo": resumo,
         "inconformidade": (
-            "Na anÃ¡lise preliminar assistida foram identificados os seguintes pontos: "
-            f"{itens}. Os apontamentos devem ser confirmados pelo analista antes de qualquer conclusÃ£o."
+            "Na análise preliminar assistida foram identificados os seguintes pontos: "
+            f"{itens}. Os apontamentos devem ser confirmados pelo analista antes de qualquer conclusão."
         ),
         "diligencia": (
-            "Solicita-se Ã  OSC que apresente esclarecimentos e, quando aplicÃ¡vel, documentaÃ§Ã£o complementar "
+            "Solicita-se à OSC que apresente esclarecimentos e, quando aplicável, documentação complementar "
             f"para sanar os seguintes pontos: {itens}."
         ),
         "recomendacao": (
-            "Recomenda-se conferir os documentos vinculados, os dados do lanÃ§amento, a comprovaÃ§Ã£o do pagamento "
-            "e a compatibilidade com a vigÃªncia e o objeto da parceria."
+            "Recomenda-se conferir os documentos vinculados, os dados do lançamento, a comprovação do pagamento "
+            "e a compatibilidade com a vigência e o objeto da parceria."
         ),
     }
 

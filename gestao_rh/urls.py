@@ -165,13 +165,11 @@ if getattr(settings, 'DEBUG_TOOLBAR_AVAILABLE', False):
         path('__debug__/', include(debug_toolbar.urls)),
     ] + urlpatterns
 
-admin.site.site_header = "Portal de GestÃ£o de Parcerias"
-admin.site.index_title = "AdministraÃ§Ã£o do Portal"
-admin.site.site_title = "Portal de GestÃ£o de Parcerias"
+admin.site.site_header = "Portal de Gestão de Parcerias"
+admin.site.index_title = "Administração do Portal"
+admin.site.site_title = "Portal de Gestão de Parcerias"
 
 handler400 = 'gestao_rh.error_views.bad_request'
 handler403 = 'gestao_rh.error_views.permission_denied'
 handler404 = 'gestao_rh.error_views.page_not_found'
 handler500 = 'gestao_rh.error_views.server_error'
-
-

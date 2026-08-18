@@ -57,6 +57,7 @@ def _ordenar_achados(achados):
 @dataclass
 class ResultadoConsolidadoItemPlano:
     item_id: int
+    item_codigo: str
 
     financeiro: object
     quantitativo: object
@@ -331,6 +332,7 @@ def analisar_item_plano_completo(
     resultado = (
         ResultadoConsolidadoItemPlano(
             item_id=item.pk,
+            item_codigo=str(item.codigo or item.pk),
             financeiro=financeiro,
             quantitativo=quantitativo,
             temporal=temporal,
