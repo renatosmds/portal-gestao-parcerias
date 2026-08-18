@@ -1,0 +1,67 @@
+﻿from dataclasses import dataclass, field
+
+from apps.planos_trabalho.metas_objeto import (
+    resumo_meta_objeto_item,
+)
+from apps.regras.context import ContextoRegras
+from apps.regras.rules.plano_meta_objeto import (
+    avaliar_meta_objeto_item,
+)
+
+
+@dataclass
+class ResultadoMetaObjetoItem:
+    item_id: int
+    resumo: object
+    achados: list = field(
+        default_factory=list
+    )
+
+    @property
+    def criticos(self):
+        return [
+            item
+            for item in self.achados
+            if item.severidade == "critico"
+        ]
+
+    @property
+    def alertas(self):
+        return [
+            item
+            for item in self.achados
+            if item.severidade == "alerta"
+        ]
+
+    @property
+    def resultado_preliminar(self):
+        if self.criticos:
+            return "pendencia_critica"
+
+        if self.alertas:
+            return "requer_conferencia"
+
+        return (
+            "sem_inconsistencia_relevante_detectada"
+        )
+
+
+def analisar_meta_objeto_item(
+    item,
+    contexto=None,
+):
+    contexto = contexto or ContextoRegras()
+
+    resumo = resumo_meta_objeto_item(
+        item
+    )
+
+    achados = avaliar_meta_objeto_item(
+        resumo
+    )
+
+    return ResultadoMetaObjetoItem(
+        item_id=item.pk,
+        resumo=resumo,
+        achados=achados,
+    )

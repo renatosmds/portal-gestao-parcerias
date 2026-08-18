@@ -161,7 +161,24 @@ class MotorRegrasPGP:
             contexto=contexto,
         )
 
+    def analisar_meta_objeto_item(
+        self,
+        item,
+        contexto=None,
+    ):
+        from apps.regras.plano_meta_objeto import (
+            analisar_meta_objeto_item,
+        )
+
+        contexto = contexto or ContextoRegras()
+
+        return analisar_meta_objeto_item(
+            item=item,
+            contexto=contexto,
+        )
+
 motor_regras = MotorRegrasPGP()
+
 
 
 
