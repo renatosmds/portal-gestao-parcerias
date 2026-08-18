@@ -6,6 +6,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from apps.empresas.models import Empresa
+from apps.funcionarios.models import Funcionario
 from apps.planos_trabalho.models import (
     ItemPlanoTrabalho,
     PlanoTrabalho,
@@ -40,6 +41,22 @@ class PlanoTrabalhoInterfaceSprint4521Tests(TestCase):
             situacao=PlanoTrabalho.Situacao.VIGENTE,
             inicio_vigencia=date(2026, 1, 1),
             fim_vigencia=date(2026, 12, 31),
+        )
+
+        Funcionario.objects.create(
+            nome="Usuário Sprint 45.2.1",
+            usuario="pt4521",
+            endereco="Endereço fictício",
+            bairro="Bairro fictício",
+            cep="00000-000",
+            cidade="Contagem",
+            estado="MG",
+            email="pt4521@example.test",
+            Telefone="000000000",
+            user=self.user,
+            empresa=self.empresa,
+            termo=self.termo,
+            imagem="funcionarios/teste.jpg",
         )
 
         self.client.login(
@@ -138,3 +155,4 @@ class PlanoTrabalhoInterfaceSprint4521Tests(TestCase):
             response,
             "Plano Interface",
         )
+

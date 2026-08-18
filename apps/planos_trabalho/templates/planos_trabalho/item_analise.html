@@ -1,0 +1,304 @@
+﻿{% extends "base.html" %}
+
+{% block main %}
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-start mb-4">
+
+        <div>
+            <h2>Análise do Item do Plano</h2>
+
+            <p class="text-muted">
+                {{ item.codigo }}
+                — {{ item.descricao }}
+            </p>
+        </div>
+
+        <a
+            href="{% url 'planos_trabalho:plano_analise' plano.pk %}"
+            class="btn btn-outline-secondary"
+        >
+            Voltar à análise do Plano
+        </a>
+
+    </div>
+
+    {% if resultado.resultado_preliminar == "pendencia_critica" %}
+        <div class="alert alert-danger">
+            <strong>Pendência crítica</strong>
+        </div>
+
+    {% elif resultado.resultado_preliminar == "requer_conferencia" %}
+        <div class="alert alert-warning">
+            <strong>Requer conferência</strong>
+        </div>
+
+    {% else %}
+        <div class="alert alert-success">
+            <strong>
+                Sem inconsistência relevante detectada
+            </strong>
+        </div>
+    {% endif %}
+
+    <div class="card mb-4">
+
+        <div class="card-header">
+            <strong>Conclusão executiva</strong>
+        </div>
+
+        <div class="card-body">
+            {{ resultado.conclusao_executiva }}
+        </div>
+
+    </div>
+
+    <div class="row">
+
+        <div class="col-md-6 mb-4">
+
+            <div class="card h-100">
+
+                <div class="card-header">
+                    <strong>Financeiro</strong>
+                </div>
+
+                <div class="card-body">
+
+                    <p>
+                        Previsto:
+                        <strong>
+                            R$
+                            {{ resultado.financeiro.resumo.valor_previsto }}
+                        </strong>
+                    </p>
+
+                    <p>
+                        Executado:
+                        <strong>
+                            R$
+                            {{ resultado.financeiro.resumo.valor_executado }}
+                        </strong>
+                    </p>
+
+                    <p>
+                        Saldo:
+                        <strong>
+                            R$
+                            {{ resultado.financeiro.resumo.saldo }}
+                        </strong>
+                    </p>
+
+                    <p class="mb-0">
+                        Execução:
+                        <strong>
+                            {{ resultado.financeiro.resumo.percentual_execucao }}%
+                        </strong>
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-6 mb-4">
+
+            <div class="card h-100">
+
+                <div class="card-header">
+                    <strong>Quantitativo</strong>
+                </div>
+
+                <div class="card-body">
+
+                    <p>
+                        Quantidade prevista:
+                        <strong>
+                            {{ resultado.quantitativo.resumo.quantidade_prevista|default:"-" }}
+                        </strong>
+                    </p>
+
+                    <p>
+                        Quantidade executada:
+                        <strong>
+                            {{ resultado.quantitativo.resumo.quantidade_executada }}
+                        </strong>
+                    </p>
+
+                    <p>
+                        Valor unitário previsto:
+                        <strong>
+                            {{ resultado.quantitativo.resumo.valor_unitario_previsto|default:"-" }}
+                        </strong>
+                    </p>
+
+                    <p class="mb-0">
+                        Maior valor unitário executado:
+                        <strong>
+                            {{ resultado.quantitativo.resumo.maior_valor_unitario_executado|default:"-" }}
+                        </strong>
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-6 mb-4">
+
+            <div class="card h-100">
+
+                <div class="card-header">
+                    <strong>Temporal</strong>
+                </div>
+
+                <div class="card-body">
+
+                    <p>
+                        Início previsto:
+                        <strong>
+                            {{ resultado.temporal.resumo.inicio_previsto|default:"-" }}
+                        </strong>
+                    </p>
+
+                    <p>
+                        Fim previsto:
+                        <strong>
+                            {{ resultado.temporal.resumo.fim_previsto|default:"-" }}
+                        </strong>
+                    </p>
+
+                    <p>
+                        Lançamentos:
+                        <strong>
+                            {{ resultado.temporal.resumo.quantidade_lancamentos }}
+                        </strong>
+                    </p>
+
+                    <p class="mb-0">
+                        Fora do período:
+                        <strong>
+                            {{ resultado.temporal.resumo.fora_periodo|length }}
+                        </strong>
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-6 mb-4">
+
+            <div class="card h-100">
+
+                <div class="card-header">
+                    <strong>Meta / Objeto</strong>
+                </div>
+
+                <div class="card-body">
+
+                    <p>
+                        Meta:
+                        <strong>
+                            {{ resultado.meta_objeto.resumo.meta_codigo|default:"-" }}
+                        </strong>
+                    </p>
+
+                    <p>
+                        Situação:
+                        <strong>
+                            {{ resultado.meta_objeto.resumo.meta_situacao|default:"-" }}
+                        </strong>
+                    </p>
+
+                    <p>
+                        Mesma OSC:
+                        <strong>
+                            {{ resultado.meta_objeto.resumo.empresa_compativel|default:"-" }}
+                        </strong>
+                    </p>
+
+                    <p class="mb-0">
+                        Mesmo Termo:
+                        <strong>
+                            {{ resultado.meta_objeto.resumo.numero_termo_compativel|default:"-" }}
+                        </strong>
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="card mb-4">
+
+        <div class="card-header">
+            <strong>Pendências por gravidade</strong>
+        </div>
+
+        <div class="card-body">
+
+            {% for achado in resultado.achados %}
+
+                <div class="border-bottom pb-3 mb-3">
+
+                    {% if achado.severidade == "critico" %}
+                        <span class="badge bg-danger">
+                            CRÍTICO
+                        </span>
+
+                    {% elif achado.severidade == "alerta" %}
+                        <span class="badge bg-warning text-dark">
+                            ALERTA
+                        </span>
+
+                    {% else %}
+                        <span class="badge bg-secondary">
+                            INFORMATIVO
+                        </span>
+                    {% endif %}
+
+                    <strong class="ms-2">
+                        {{ achado.titulo }}
+                    </strong>
+
+                    <div class="mt-2">
+                        {{ achado.descricao }}
+                    </div>
+
+                    {% if achado.recomendacao %}
+                        <div class="mt-2">
+                            <strong>Recomendação:</strong>
+                            {{ achado.recomendacao }}
+                        </div>
+                    {% endif %}
+
+                </div>
+
+            {% empty %}
+
+                <p class="text-muted mb-0">
+                    Nenhum achado registrado.
+                </p>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+    <div class="alert alert-info">
+        Esta análise é assistiva e não altera automaticamente
+        glosa, situação ou decisão administrativa do lançamento.
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,310 @@
+﻿{% extends "base.html" %}
+
+{% block main %}
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-start mb-4">
+
+        <div>
+            <h2>Análise da Execução do Plano</h2>
+
+            <p class="text-muted mb-0">
+                {{ plano.termo }}
+                — versão {{ plano.versao }}
+            </p>
+        </div>
+
+        <a
+            href="{% url 'planos_trabalho:plano_detalhe' plano.pk %}"
+            class="btn btn-outline-secondary"
+        >
+            Voltar ao Plano
+        </a>
+
+    </div>
+
+    <div class="card mb-4">
+
+        <div class="card-header">
+            <strong>Conclusão executiva</strong>
+        </div>
+
+        <div class="card-body">
+
+            {% if resultado.resultado_preliminar == "pendencia_critica" %}
+                <div class="alert alert-danger">
+                    <strong>Pendência crítica</strong>
+                </div>
+
+            {% elif resultado.resultado_preliminar == "requer_conferencia" %}
+                <div class="alert alert-warning">
+                    <strong>Requer conferência</strong>
+                </div>
+
+            {% else %}
+                <div class="alert alert-success">
+                    <strong>
+                        Sem inconsistência relevante detectada
+                    </strong>
+                </div>
+            {% endif %}
+
+            <p class="mb-0">
+                {{ resultado.conclusao_executiva }}
+            </p>
+
+        </div>
+
+    </div>
+
+    <div class="row mb-4">
+
+        <div class="col-md-3 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <small class="text-muted">
+                        Valor previsto
+                    </small>
+
+                    <h4>
+                        R$ {{ resultado.valor_previsto }}
+                    </h4>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <small class="text-muted">
+                        Valor executado
+                    </small>
+
+                    <h4>
+                        R$ {{ resultado.valor_executado }}
+                    </h4>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <small class="text-muted">
+                        Saldo
+                    </small>
+
+                    <h4>
+                        R$ {{ resultado.saldo }}
+                    </h4>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <small class="text-muted">
+                        Execução
+                    </small>
+
+                    <h4>
+                        {{ resultado.percentual_execucao }}%
+                    </h4>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="card mb-4">
+
+        <div class="card-header">
+            <strong>Resumo dos itens</strong>
+        </div>
+
+        <div class="card-body p-0">
+
+            <div class="table-responsive">
+
+                <table class="table table-striped mb-0">
+
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Previsto</th>
+                            <th>Executado</th>
+                            <th>Saldo</th>
+                            <th>Resultado</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for analise in resultado.itens %}
+
+                        <tr>
+
+                            <td>
+                                {{ analise.financeiro.resumo.item_id }}
+                            </td>
+
+                            <td>
+                                R$
+                                {{ analise.financeiro.resumo.valor_previsto }}
+                            </td>
+
+                            <td>
+                                R$
+                                {{ analise.financeiro.resumo.valor_executado }}
+                            </td>
+
+                            <td>
+                                R$
+                                {{ analise.financeiro.resumo.saldo }}
+                            </td>
+
+                            <td>
+                                {% if analise.resultado_preliminar == "pendencia_critica" %}
+                                    <span class="badge bg-danger">
+                                        Crítico
+                                    </span>
+
+                                {% elif analise.resultado_preliminar == "requer_conferencia" %}
+                                    <span class="badge bg-warning text-dark">
+                                        Alerta
+                                    </span>
+
+                                {% else %}
+                                    <span class="badge bg-success">
+                                        OK
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                <a
+                                    href="{% url 'planos_trabalho:item_analise' analise.item_id %}"
+                                    class="btn btn-sm btn-outline-primary"
+                                >
+                                    Detalhar
+                                </a>
+                            </td>
+
+                        </tr>
+
+                        {% empty %}
+
+                        <tr>
+                            <td
+                                colspan="6"
+                                class="text-center text-muted p-4"
+                            >
+                                Nenhum item ativo para análise.
+                            </td>
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="card mb-4">
+
+        <div class="card-header">
+            <strong>
+                Pendências e observações
+            </strong>
+        </div>
+
+        <div class="card-body">
+
+            {% for achado in resultado.achados %}
+
+                <div class="border-bottom pb-3 mb-3">
+
+                    <div class="mb-1">
+
+                        {% if achado.severidade == "critico" %}
+                            <span class="badge bg-danger">
+                                CRÍTICO
+                            </span>
+
+                        {% elif achado.severidade == "alerta" %}
+                            <span class="badge bg-warning text-dark">
+                                ALERTA
+                            </span>
+
+                        {% else %}
+                            <span class="badge bg-secondary">
+                                INFORMATIVO
+                            </span>
+                        {% endif %}
+
+                        <strong class="ms-2">
+                            {{ achado.titulo }}
+                        </strong>
+
+                    </div>
+
+                    <div>
+                        {{ achado.descricao }}
+                    </div>
+
+                    {% if achado.evidencia %}
+                        <div class="small text-muted mt-1">
+                            Evidência:
+                            {{ achado.evidencia }}
+                        </div>
+                    {% endif %}
+
+                    {% if achado.risco_glosa %}
+                        <div class="mt-2">
+                            <strong>Risco de glosa:</strong>
+                            {{ achado.risco_glosa }}
+                        </div>
+                    {% endif %}
+
+                    {% if achado.recomendacao %}
+                        <div class="mt-1">
+                            <strong>Recomendação:</strong>
+                            {{ achado.recomendacao }}
+                        </div>
+                    {% endif %}
+
+                </div>
+
+            {% empty %}
+
+                <p class="text-muted mb-0">
+                    Nenhum achado registrado.
+                </p>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+    <div class="alert alert-info">
+
+        <strong>Análise assistida:</strong>
+
+        os resultados apresentados constituem apoio técnico à
+        conferência e não aplicam glosa nem substituem a decisão
+        administrativa do responsável pela prestação de contas.
+
+    </div>
+
+</div>
+
+{% endblock %}

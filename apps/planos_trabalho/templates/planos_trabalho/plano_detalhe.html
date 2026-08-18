@@ -22,6 +22,13 @@
         <div>
 
             <a
+                href="{% url 'planos_trabalho:plano_analise' plano.pk %}"
+                class="btn btn-success"
+            >
+                Analisar execução
+            </a>
+
+            <a
                 href="{% url 'planos_trabalho:plano_editar' plano.pk %}"
                 class="btn btn-outline-secondary"
             >
@@ -174,6 +181,13 @@
                             <td>
 
                                 <a
+                                    href="{% url 'planos_trabalho:item_analise' item.pk %}"
+                                    class="btn btn-sm btn-outline-primary"
+                                >
+                                    Analisar
+                                </a>
+
+                                <a
                                     href="{% url 'planos_trabalho:item_editar' item.pk %}"
                                     class="btn btn-sm btn-outline-secondary"
                                 >
@@ -212,5 +226,6 @@
 </div>
 
 {% endblock %}
+
 
 

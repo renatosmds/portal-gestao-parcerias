@@ -1,5 +1,13 @@
 ﻿from django import forms
 
+from apps.metas.models import MetaExecucao
+from apps.termos.models import Termos
+
+from .escopo import (
+    metas_permitidas,
+    planos_permitidos,
+    termos_permitidos,
+)
 from .models import (
     ItemPlanoTrabalho,
     PlanoTrabalho,
@@ -8,8 +16,66 @@ from .models import (
 
 class PlanoTrabalhoForm(forms.ModelForm):
 
+    def __init__(
+        self,
+        *args,
+        user=None,
+        **kwargs,
+    ):
+        super().__init__(
+            *args,
+            **kwargs,
+        )
+
+        if user is None:
+            self.fields[
+                "termo"
+            ].queryset = Termos.objects.none()
+
+            self.fields[
+                "versao_anterior"
+            ].queryset = PlanoTrabalho.objects.none()
+
+            return
+
+        self.fields[
+            "termo"
+        ].queryset = termos_permitidos(
+            user
+        )
+
+        anteriores = planos_permitidos(
+            user
+        )
+
+        if self.instance.pk:
+            anteriores = anteriores.exclude(
+                pk=self.instance.pk
+            )
+
+        termo_id = None
+
+        if self.is_bound:
+            termo_id = self.data.get(
+                "termo"
+            )
+        elif self.instance.pk:
+            termo_id = (
+                self.instance.termo_id
+            )
+
+        if termo_id:
+            anteriores = anteriores.filter(
+                termo_id=termo_id
+            )
+
+        self.fields[
+            "versao_anterior"
+        ].queryset = anteriores
+
     class Meta:
         model = PlanoTrabalho
+
         fields = [
             "termo",
             "versao",
@@ -51,8 +117,37 @@ class PlanoTrabalhoForm(forms.ModelForm):
 
 class ItemPlanoTrabalhoForm(forms.ModelForm):
 
+    def __init__(
+        self,
+        *args,
+        user=None,
+        plano=None,
+        **kwargs,
+    ):
+        super().__init__(
+            *args,
+            **kwargs,
+        )
+
+        if plano is None and self.instance.pk:
+            plano = self.instance.plano
+
+        if user is None or plano is None:
+            self.fields[
+                "meta"
+            ].queryset = MetaExecucao.objects.none()
+            return
+
+        self.fields[
+            "meta"
+        ].queryset = metas_permitidas(
+            user,
+            plano=plano,
+        )
+
     class Meta:
         model = ItemPlanoTrabalho
+
         fields = [
             "codigo",
             "rubrica_nivel_1",
@@ -81,4 +176,3 @@ class ItemPlanoTrabalhoForm(forms.ModelForm):
                 attrs={"rows": 3}
             ),
         }
-

@@ -5,11 +5,16 @@ from django.shortcuts import (
     render,
 )
 
+from apps.regras.engine import motor_regras
+
+from .escopo import (
+    itens_permitidos,
+    planos_permitidos,
+)
 from .forms import (
     ItemPlanoTrabalhoForm,
     PlanoTrabalhoForm,
 )
-
 from .models import (
     ItemPlanoTrabalho,
     PlanoTrabalho,
@@ -19,10 +24,14 @@ from .models import (
 @login_required
 def plano_lista(request):
     planos = (
-        PlanoTrabalho.objects
-        .select_related("termo")
+        planos_permitidos(
+            request.user
+        )
         .prefetch_related("itens")
-        .all()
+        .order_by(
+            "termo_id",
+            "-versao",
+        )
     )
 
     return render(
@@ -37,10 +46,21 @@ def plano_lista(request):
 @login_required
 def plano_detalhe(request, pk):
     plano = get_object_or_404(
-        PlanoTrabalho.objects
-        .select_related("termo")
-        .prefetch_related("itens"),
+        planos_permitidos(
+            request.user
+        ).prefetch_related(
+            "itens"
+        ),
         pk=pk,
+    )
+
+    itens = (
+        plano.itens
+        .select_related("meta")
+        .order_by(
+            "codigo",
+            "pk",
+        )
     )
 
     return render(
@@ -48,18 +68,18 @@ def plano_detalhe(request, pk):
         "planos_trabalho/plano_detalhe.html",
         {
             "plano": plano,
-            "itens": plano.itens.all(),
+            "itens": itens,
         },
     )
 
 
 @login_required
 def plano_criar(request):
-
     if request.method == "POST":
         form = PlanoTrabalhoForm(
             request.POST,
             request.FILES,
+            user=request.user,
         )
 
         if form.is_valid():
@@ -71,7 +91,9 @@ def plano_criar(request):
             )
 
     else:
-        form = PlanoTrabalhoForm()
+        form = PlanoTrabalhoForm(
+            user=request.user
+        )
 
     return render(
         request,
@@ -86,7 +108,9 @@ def plano_criar(request):
 @login_required
 def plano_editar(request, pk):
     plano = get_object_or_404(
-        PlanoTrabalho,
+        planos_permitidos(
+            request.user
+        ),
         pk=pk,
     )
 
@@ -95,6 +119,7 @@ def plano_editar(request, pk):
             request.POST,
             request.FILES,
             instance=plano,
+            user=request.user,
         )
 
         if form.is_valid():
@@ -107,7 +132,8 @@ def plano_editar(request, pk):
 
     else:
         form = PlanoTrabalhoForm(
-            instance=plano
+            instance=plano,
+            user=request.user,
         )
 
     return render(
@@ -124,13 +150,17 @@ def plano_editar(request, pk):
 @login_required
 def item_criar(request, plano_pk):
     plano = get_object_or_404(
-        PlanoTrabalho,
+        planos_permitidos(
+            request.user
+        ),
         pk=plano_pk,
     )
 
     if request.method == "POST":
         form = ItemPlanoTrabalhoForm(
-            request.POST
+            request.POST,
+            user=request.user,
+            plano=plano,
         )
 
         if form.is_valid():
@@ -147,7 +177,10 @@ def item_criar(request, plano_pk):
             )
 
     else:
-        form = ItemPlanoTrabalhoForm()
+        form = ItemPlanoTrabalhoForm(
+            user=request.user,
+            plano=plano,
+        )
 
     return render(
         request,
@@ -163,8 +196,8 @@ def item_criar(request, plano_pk):
 @login_required
 def item_editar(request, pk):
     item = get_object_or_404(
-        ItemPlanoTrabalho.objects.select_related(
-            "plano"
+        itens_permitidos(
+            request.user
         ),
         pk=pk,
     )
@@ -173,6 +206,8 @@ def item_editar(request, pk):
         form = ItemPlanoTrabalhoForm(
             request.POST,
             instance=item,
+            user=request.user,
+            plano=item.plano,
         )
 
         if form.is_valid():
@@ -185,7 +220,9 @@ def item_editar(request, pk):
 
     else:
         form = ItemPlanoTrabalhoForm(
-            instance=item
+            instance=item,
+            user=request.user,
+            plano=item.plano,
         )
 
     return render(
@@ -196,5 +233,64 @@ def item_editar(request, pk):
             "plano": item.plano,
             "item": item,
             "titulo": "Editar Item do Plano",
+        },
+    )
+
+
+@login_required
+def plano_analise(request, pk):
+    plano = get_object_or_404(
+        planos_permitidos(
+            request.user
+        ),
+        pk=pk,
+    )
+
+    resultado = (
+        motor_regras
+        .analisar_plano_trabalho_completo(
+            plano
+        )
+    )
+
+    return render(
+        request,
+        "planos_trabalho/plano_analise.html",
+        {
+            "plano": plano,
+            "resultado": resultado,
+            "resumo": (
+                resultado.resumo_executivo
+            ),
+        },
+    )
+
+
+@login_required
+def item_analise(request, pk):
+    item = get_object_or_404(
+        itens_permitidos(
+            request.user
+        ),
+        pk=pk,
+    )
+
+    resultado = (
+        motor_regras
+        .analisar_item_plano_completo(
+            item
+        )
+    )
+
+    return render(
+        request,
+        "planos_trabalho/item_analise.html",
+        {
+            "item": item,
+            "plano": item.plano,
+            "resultado": resultado,
+            "resumo": (
+                resultado.resumo_executivo
+            ),
         },
     )

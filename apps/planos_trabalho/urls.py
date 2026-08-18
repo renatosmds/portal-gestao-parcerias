@@ -32,6 +32,12 @@ urlpatterns = [
     ),
 
     path(
+        "<int:pk>/analise/",
+        views.plano_analise,
+        name="plano_analise",
+    ),
+
+    path(
         "<int:plano_pk>/itens/novo/",
         views.item_criar,
         name="item_criar",
@@ -41,5 +47,11 @@ urlpatterns = [
         "itens/<int:pk>/editar/",
         views.item_editar,
         name="item_editar",
+    ),
+
+    path(
+        "itens/<int:pk>/analise/",
+        views.item_analise,
+        name="item_analise",
     ),
 ]
