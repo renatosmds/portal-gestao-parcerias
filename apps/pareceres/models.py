@@ -525,3 +525,249 @@ class HistoricoParecer(models.Model):
 
     def __str__(self):
         return f"{self.parecer} - {self.acao}"
+
+
+
+class EvidenciaParecer(models.Model):
+
+    class Tipo(models.TextChoices):
+        DOCUMENTO = "DOCUMENTO", "Documento"
+        LANCAMENTO = "LANCAMENTO", "Lan?amento"
+        DILIGENCIA = "DILIGENCIA", "Dilig?ncia"
+        REGISTRO_SISTEMA = "REGISTRO_SISTEMA", "Registro do sistema"
+        DECLARACAO = "DECLARACAO", "Declara??o"
+        OUTRA = "OUTRA", "Outra"
+
+    item = models.ForeignKey(
+        ItemParecer,
+        on_delete=models.CASCADE,
+        related_name="evidencias_estruturadas",
+    )
+
+    tipo = models.CharField(
+        max_length=30,
+        choices=Tipo.choices,
+        default=Tipo.OUTRA,
+    )
+
+    descricao = models.TextField()
+
+    documento = models.ForeignKey(
+        "documentos.Documento",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="evidencias_parecer",
+    )
+
+    lancamento = models.ForeignKey(
+        "lancamentos.Lancamento",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="evidencias_parecer",
+    )
+
+    diligencia = models.ForeignKey(
+        "diligencias.Diligencia",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="evidencias_parecer",
+    )
+
+    referencia_externa = models.CharField(
+        max_length=500,
+        blank=True,
+        default="",
+    )
+
+    dados_snapshot = models.JSONField(
+        blank=True,
+        default=dict,
+    )
+
+    criado_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="evidencias_parecer_criadas",
+    )
+
+    criado_em = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    class Meta:
+        ordering = ["id"]
+
+    def __str__(self):
+        return f"{self.item} - {self.get_tipo_display()}"
+
+    def clean(self):
+        erros = {}
+
+        parecer = self.item.parecer
+
+        if self.documento_id:
+            if (
+                self.documento.prestacao_id
+                and parecer.prestacao_id
+                and self.documento.prestacao_id
+                != parecer.prestacao_id
+            ):
+                erros["documento"] = (
+                    "O documento deve pertencer ? mesma presta??o do parecer."
+                )
+
+            if (
+                self.documento.empresa_id
+                and parecer.empresa_id
+                and self.documento.empresa_id
+                != parecer.empresa_id
+            ):
+                erros["documento"] = (
+                    "O documento deve pertencer ? mesma empresa do parecer."
+                )
+
+        if self.lancamento_id:
+            if (
+                self.lancamento.prestacao_id
+                and parecer.prestacao_id
+                and self.lancamento.prestacao_id
+                != parecer.prestacao_id
+            ):
+                erros["lancamento"] = (
+                    "O lan?amento deve pertencer ? mesma presta??o do parecer."
+                )
+
+            if (
+                self.lancamento.empresa_id
+                and parecer.empresa_id
+                and self.lancamento.empresa_id
+                != parecer.empresa_id
+            ):
+                erros["lancamento"] = (
+                    "O lan?amento deve pertencer ? mesma empresa do parecer."
+                )
+
+        if self.diligencia_id:
+            if (
+                self.diligencia.prestacao_id
+                and parecer.prestacao_id
+                and self.diligencia.prestacao_id
+                != parecer.prestacao_id
+            ):
+                erros["diligencia"] = (
+                    "A dilig?ncia deve pertencer ? mesma presta??o do parecer."
+                )
+
+            if (
+                self.diligencia.empresa_id
+                and parecer.empresa_id
+                and self.diligencia.empresa_id
+                != parecer.empresa_id
+            ):
+                erros["diligencia"] = (
+                    "A dilig?ncia deve pertencer ? mesma empresa do parecer."
+                )
+
+        if erros:
+            raise ValidationError(erros)
+
+
+class FundamentacaoParecer(models.Model):
+
+    class Esfera(models.TextChoices):
+        FEDERAL = "FEDERAL", "Federal"
+        ESTADUAL = "ESTADUAL", "Estadual"
+        MUNICIPAL = "MUNICIPAL", "Municipal"
+        INTERNA = "INTERNA", "Norma interna"
+        OUTRA = "OUTRA", "Outra"
+
+    item = models.ForeignKey(
+        ItemParecer,
+        on_delete=models.CASCADE,
+        related_name="fundamentacoes_estruturadas",
+    )
+
+    esfera = models.CharField(
+        max_length=20,
+        choices=Esfera.choices,
+        default=Esfera.OUTRA,
+    )
+
+    ente = models.CharField(
+        max_length=255,
+        blank=True,
+        default="",
+    )
+
+    norma = models.CharField(
+        max_length=255,
+    )
+
+    dispositivo = models.CharField(
+        max_length=255,
+        blank=True,
+        default="",
+    )
+
+    descricao = models.TextField(
+        blank=True,
+        default="",
+    )
+
+    inicio_vigencia = models.DateField(
+        null=True,
+        blank=True,
+    )
+
+    fim_vigencia = models.DateField(
+        null=True,
+        blank=True,
+    )
+
+    origem = models.CharField(
+        max_length=500,
+        blank=True,
+        default="",
+    )
+
+    dados_snapshot = models.JSONField(
+        blank=True,
+        default=dict,
+    )
+
+    criado_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="fundamentacoes_parecer_criadas",
+    )
+
+    criado_em = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    class Meta:
+        ordering = ["esfera", "norma", "dispositivo", "id"]
+
+    def __str__(self):
+        referencia = self.norma
+        if self.dispositivo:
+            referencia += f" - {self.dispositivo}"
+        return referencia
+
+    def clean(self):
+        erros = {}
+
+        if (
+            self.inicio_vigencia
+            and self.fim_vigencia
+            and self.fim_vigencia < self.inicio_vigencia
+        ):
+            erros["fim_vigencia"] = (
+                "O fim da vig?ncia n?o pode ser anterior ao in?cio."
+            )
+
+        if erros:
+            raise ValidationError(erros)
