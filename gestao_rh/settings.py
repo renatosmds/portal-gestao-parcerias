@@ -78,6 +78,7 @@ INSTALLED_APPS = [
     'apps.assistente_ia.apps.AssistenteIaConfig',
     'apps.regras.apps.RegrasConfig',
     'apps.planos_trabalho.apps.PlanosTrabalhoConfig',
+    'apps.pareceres.apps.PareceresConfig',
     'apps.transparencia.apps.TransparenciaConfig',
     'apps.conciliacao.apps.ConciliacaoConfig',
     'apps.metas.apps.MetasConfig',
