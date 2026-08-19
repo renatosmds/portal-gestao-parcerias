@@ -134,3 +134,101 @@ def gerar_texto_inconformidade(item):
         possui_fundamentacao=bool(fundamentacao),
         possui_risco_glosa=bool(risco),
     )
+
+
+
+@dataclass(frozen=True)
+class TextoRecomendacao:
+    texto: str
+    pendencias: tuple[str, ...]
+    possui_recomendacao: bool
+    possui_fundamentacao: bool
+    possui_evidencia: bool
+    requer_revisao_humana: bool = True
+
+    @property
+    def completo(self):
+        return (
+            self.possui_recomendacao
+            and self.possui_fundamentacao
+        )
+
+
+def gerar_texto_recomendacao(item):
+    """
+    Gera rascunho estruturado de recomendacao
+    a partir de um ItemParecer.
+
+    Regras de seguranca:
+    - nao inventa providencias;
+    - nao determina glosa;
+    - nao reprova despesa;
+    - nao altera o item;
+    - nao altera o parecer;
+    - exige revisao humana.
+    """
+
+    if not isinstance(item, ItemParecer):
+        raise ValidationError(
+            "O item informado nao e um ItemParecer valido."
+        )
+
+    recomendacao = _finalizar_frase(
+        item.recomendacao
+    )
+
+    fundamentacao = _finalizar_frase(
+        item.fundamentacao
+    )
+
+    evidencia = _finalizar_frase(
+        item.evidencia
+    )
+
+    pendencias = []
+
+    if not recomendacao:
+        pendencias.append(
+            "Recomenda??o t?cnica n?o informada."
+        )
+
+    if not fundamentacao:
+        pendencias.append(
+            "Fundamenta??o normativa n?o informada."
+        )
+
+    blocos = []
+
+    if recomendacao:
+        blocos.append(
+            f"Recomenda-se: {recomendacao}"
+        )
+    else:
+        blocos.append(
+            "Recomenda-se an?lise t?cnica complementar "
+            "antes da defini??o de provid?ncia."
+        )
+
+    if fundamentacao:
+        blocos.append(
+            f"Fundamenta??o considerada: {fundamentacao}"
+        )
+
+    if evidencia:
+        blocos.append(
+            f"Evid?ncia relacionada: {evidencia}"
+        )
+
+    blocos.append(
+        "A provid?ncia definitiva dever? ser validada "
+        "pelo analista respons?vel."
+    )
+
+    return TextoRecomendacao(
+        texto="\\n\\n".join(blocos),
+        pendencias=tuple(pendencias),
+        possui_recomendacao=bool(recomendacao),
+        possui_fundamentacao=bool(fundamentacao),
+        possui_evidencia=bool(evidencia),
+        requer_revisao_humana=True,
+    )
