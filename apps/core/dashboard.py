@@ -24,6 +24,7 @@ from apps.empresas.models import Empresa
 from apps.fornecedores.models import Fornecedores
 from apps.lancamentos.models import Lancamento
 from apps.prestacao.models import Prestacao
+from apps.parcerias.models import Parcerias
 from apps.termos.models import Termos
 from apps.metas.models import MetaExecucao
 
@@ -239,6 +240,35 @@ def montar_contexto_dashboard(request):
 
     sem_empresa = not user.is_superuser and empresa_selecionada is None
 
+    # SPRINT46_16_PARcerias
+    parcerias = Parcerias.objects.select_related(
+        "empresa",
+        "numtermo",
+    )
+
+    if "parcerias" not in modulos:
+        parcerias = parcerias.none()
+
+    elif user.is_superuser:
+        if empresa_selecionada is not None:
+            parcerias = parcerias.filter(
+                empresa=empresa_selecionada
+            )
+
+    elif user.is_staff:
+        # Area interna do orgao: acompanha as parcerias
+        # disponiveis no escopo institucional.
+        pass
+
+    elif empresa_vinculada is not None:
+        parcerias = parcerias.filter(
+            empresa=empresa_vinculada
+        )
+
+    else:
+        parcerias = parcerias.none()
+
+
     termos_opcoes = _aplicar_empresa(
         Termos.objects.select_related("empresa"),
         empresa_selecionada,
@@ -323,6 +353,9 @@ def montar_contexto_dashboard(request):
     analises_resumo_base = analises
 
     if termo_selecionado:
+        parcerias = parcerias.filter(
+            numtermo=termo_selecionado
+        )
         termos = termos.filter(pk=termo_selecionado.pk)
         prestacoes = _filtro_prestacao_por_termo(
             prestacoes,
@@ -346,6 +379,30 @@ def montar_contexto_dashboard(request):
         metas = metas.none()
 
     # Indicadores principais.
+    parcerias_total = parcerias.count()
+
+    parcerias_andamento = parcerias.filter(
+        concluido=False
+    ).count()
+
+    parcerias_concluidas = parcerias.filter(
+        concluido=True
+    ).count()
+
+    parcerias_com_ra = (
+        parcerias
+        .exclude(numRA__isnull=True)
+        .exclude(numRA="")
+        .count()
+    )
+
+    parcerias_com_re = (
+        parcerias
+        .exclude(numRE__isnull=True)
+        .exclude(numRE="")
+        .count()
+    )
+
     termos_total = termos.count()
     termos_vigentes = termos.filter(
         Q(status__icontains="vigent")
@@ -700,6 +757,11 @@ def montar_contexto_dashboard(request):
             1 if empresa_selecionada else empresas_disponiveis.count()
         ),
         "fornecedores_total": fornecedores.count(),
+        "parcerias_total": parcerias_total,
+        "parcerias_andamento": parcerias_andamento,
+        "parcerias_concluidas": parcerias_concluidas,
+        "parcerias_com_ra": parcerias_com_ra,
+        "parcerias_com_re": parcerias_com_re,
         "termos_total": termos_total,
         "termos_vigentes": termos_vigentes,
         "prestacoes_total": prestacoes_total,

@@ -205,6 +205,148 @@
         {% endif %}
     </div>
 
+
+    {% if "parcerias" in dashboard_modulos %}
+    <section class="pgp-panel"
+             id="dashboard-parcerias">
+
+        <div class="pgp-panel-header">
+            <div>
+                <span class="sgm-eyebrow">
+                    PARCERIAS
+                </span>
+                <h2>
+                    Visão geral das parcerias
+                </h2>
+            </div>
+
+            <a href="{% url 'list_parcerias' %}"
+               class="btn btn-sm btn-outline-primary">
+                Ver todas
+            </a>
+        </div>
+
+        <div class="pgp-metric-grid">
+
+            <article class="pgp-metric-card">
+                <div class="pgp-metric-top">
+                    <span class="pgp-metric-icon pgp-soft-blue">
+                        <i class="fa fa-handshake-o"></i>
+                    </span>
+                    <span class="pgp-chip">
+                        Total
+                    </span>
+                </div>
+
+                <span class="pgp-metric-label">
+                    Parcerias cadastradas
+                </span>
+
+                <strong class="pgp-metric-value">
+                    {{ parcerias_total }}
+                </strong>
+
+                <p>
+                    Total no escopo autorizado
+                </p>
+            </article>
+
+            <article class="pgp-metric-card">
+                <div class="pgp-metric-top">
+                    <span class="pgp-metric-icon pgp-soft-yellow">
+                        <i class="fa fa-clock-o"></i>
+                    </span>
+                    <span class="pgp-chip">
+                        Andamento
+                    </span>
+                </div>
+
+                <span class="pgp-metric-label">
+                    Em andamento
+                </span>
+
+                <strong class="pgp-metric-value">
+                    {{ parcerias_andamento }}
+                </strong>
+
+                <p>
+                    Parcerias ainda não concluídas
+                </p>
+            </article>
+
+            <article class="pgp-metric-card">
+                <div class="pgp-metric-top">
+                    <span class="pgp-metric-icon pgp-soft-green">
+                        <i class="fa fa-check-circle"></i>
+                    </span>
+                    <span class="pgp-chip">
+                        Concluídas
+                    </span>
+                </div>
+
+                <span class="pgp-metric-label">
+                    Parcerias concluídas
+                </span>
+
+                <strong class="pgp-metric-value">
+                    {{ parcerias_concluidas }}
+                </strong>
+
+                <p>
+                    Acompanhamentos encerrados
+                </p>
+            </article>
+
+            <article class="pgp-metric-card">
+                <div class="pgp-metric-top">
+                    <span class="pgp-metric-icon pgp-soft-purple">
+                        <i class="fa fa-file-text-o"></i>
+                    </span>
+                    <span class="pgp-chip">
+                        RA
+                    </span>
+                </div>
+
+                <span class="pgp-metric-label">
+                    Com RA registrado
+                </span>
+
+                <strong class="pgp-metric-value">
+                    {{ parcerias_com_ra }}
+                </strong>
+
+                <p>
+                    Relatório de Auditoria informado
+                </p>
+            </article>
+
+            <article class="pgp-metric-card">
+                <div class="pgp-metric-top">
+                    <span class="pgp-metric-icon pgp-soft-blue">
+                        <i class="fa fa-file-o"></i>
+                    </span>
+                    <span class="pgp-chip">
+                        RE
+                    </span>
+                </div>
+
+                <span class="pgp-metric-label">
+                    Com RE registrado
+                </span>
+
+                <strong class="pgp-metric-value">
+                    {{ parcerias_com_re }}
+                </strong>
+
+                <p>
+                    Relatório de Efetividade informado
+                </p>
+            </article>
+
+        </div>
+    </section>
+    {% endif %}
+
     <div class="pgp-section-title">
         <div>
             <span class="sgm-eyebrow">EXECUÇÃO FINANCEIRA</span>

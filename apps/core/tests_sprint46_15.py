@@ -566,3 +566,287 @@ class Sprint4615DashboardVisualTests(TestCase):
             resposta,
             'id="dashboard-sem-modulos"',
         )
+
+class Sprint4616DashboardParceriasTests(TestCase):
+
+    def setUp(self):
+        from django.contrib.auth import get_user_model
+        from apps.empresas.models import Empresa
+        from apps.parcerias.models import Parcerias
+
+        UserModel = get_user_model()
+
+        self.usuario = UserModel.objects.create_user(
+            username="usuario_parcerias_4616",
+            password="teste4616",
+            is_staff=True,
+        )
+
+        self.empresa = Empresa.objects.create(
+            nome="OSC Sprint 46.16",
+        )
+
+        self.parceria_andamento = Parcerias.objects.create(
+            nomeOSC="Parceria em andamento 46.16",
+            empresa=self.empresa,
+            concluido=False,
+            numRA="RA-4616",
+        )
+
+        self.parceria_concluida = Parcerias.objects.create(
+            nomeOSC="Parceria concluida 46.16",
+            empresa=self.empresa,
+            concluido=True,
+            numRE="RE-4616",
+        )
+
+        self.client.force_login(self.usuario)
+
+    def _conceder_parcerias(self):
+        from django.contrib.auth.models import Permission
+
+        permissao = Permission.objects.get(
+            content_type__app_label="parcerias",
+            codename="view_parcerias",
+        )
+
+        self.usuario.user_permissions.add(permissao)
+
+        for atributo in (
+            "_perm_cache",
+            "_user_perm_cache",
+            "_group_perm_cache",
+        ):
+            if hasattr(self.usuario, atributo):
+                delattr(self.usuario, atributo)
+
+    def test_sem_permissao_nao_expoe_indicadores_parcerias(self):
+        from django.urls import reverse
+
+        resposta = self.client.get(reverse("home"))
+
+        self.assertEqual(resposta.status_code, 200)
+
+        self.assertNotContains(
+            resposta,
+            'id="dashboard-parcerias"',
+        )
+
+    def test_com_permissao_expoe_painel_parcerias(self):
+        from django.urls import reverse
+
+        self._conceder_parcerias()
+
+        resposta = self.client.get(reverse("home"))
+
+        self.assertEqual(resposta.status_code, 200)
+
+        self.assertContains(
+            resposta,
+            'id="dashboard-parcerias"',
+        )
+
+    def test_contexto_parcerias_calcula_totais(self):
+        from django.urls import reverse
+
+        self._conceder_parcerias()
+
+        resposta = self.client.get(reverse("home"))
+
+        self.assertEqual(
+            resposta.context["parcerias_total"],
+            2,
+        )
+
+        self.assertEqual(
+            resposta.context["parcerias_andamento"],
+            1,
+        )
+
+        self.assertEqual(
+            resposta.context["parcerias_concluidas"],
+            1,
+        )
+
+    def test_contexto_parcerias_calcula_ra_e_re(self):
+        from django.urls import reverse
+
+        self._conceder_parcerias()
+
+        resposta = self.client.get(reverse("home"))
+
+        self.assertEqual(
+            resposta.context["parcerias_com_ra"],
+            1,
+        )
+
+        self.assertEqual(
+            resposta.context["parcerias_com_re"],
+            1,
+        )
+
+class Sprint4616ParceriasEscopoGrupoTests(TestCase):
+
+    def setUp(self):
+        from django.contrib.auth import get_user_model
+        from apps.empresas.models import Empresa
+        from apps.funcionarios.models import Funcionario
+        from apps.parcerias.models import Parcerias
+
+        UserModel = get_user_model()
+
+        self.empresa_a = Empresa.objects.create(
+            nome="OSC A Sprint 46.16",
+        )
+
+        self.empresa_b = Empresa.objects.create(
+            nome="OSC B Sprint 46.16",
+        )
+
+        self.usuario_a = UserModel.objects.create_user(
+            username="osc_a_4616",
+            password="teste4616",
+        )
+
+        self.usuario_b = UserModel.objects.create_user(
+            username="osc_b_4616",
+            password="teste4616",
+        )
+
+        Funcionario.objects.create(
+            nome="Usuario A 46.16",
+            usuario="osc_a_4616",
+            endereco="Endereco ficticio",
+            bairro="Bairro ficticio",
+            cep="00000-000",
+            cidade="Contagem",
+            estado="MG",
+            email="osc_a_4616@example.test",
+            Telefone="000000000",
+            user=self.usuario_a,
+            empresa=self.empresa_a,
+            imagem="funcionarios/teste.jpg",
+        )
+
+        Funcionario.objects.create(
+            nome="Usuario B 46.16",
+            usuario="osc_b_4616",
+            endereco="Endereco ficticio",
+            bairro="Bairro ficticio",
+            cep="00000-000",
+            cidade="Contagem",
+            estado="MG",
+            email="osc_b_4616@example.test",
+            Telefone="000000000",
+            user=self.usuario_b,
+            empresa=self.empresa_b,
+            imagem="funcionarios/teste.jpg",
+        )
+
+        Parcerias.objects.create(
+            nomeOSC="Parceria OSC A",
+            empresa=self.empresa_a,
+            concluido=False,
+            numRA="RA-A",
+        )
+
+        Parcerias.objects.create(
+            nomeOSC="Parceria OSC B",
+            empresa=self.empresa_b,
+            concluido=True,
+            numRE="RE-B",
+        )
+
+    def _permissao_parcerias(self):
+        from django.contrib.auth.models import Permission
+
+        return Permission.objects.get(
+            content_type__app_label="parcerias",
+            codename="view_parcerias",
+        )
+
+    def test_usuario_osc_ve_apenas_parcerias_da_propria_empresa(self):
+        from django.urls import reverse
+
+        self.usuario_a.user_permissions.add(
+            self._permissao_parcerias()
+        )
+
+        self.client.force_login(self.usuario_a)
+
+        resposta = self.client.get(reverse("home"))
+
+        self.assertEqual(resposta.status_code, 200)
+
+        self.assertEqual(
+            resposta.context["parcerias_total"],
+            1,
+        )
+
+        self.assertEqual(
+            resposta.context["parcerias_andamento"],
+            1,
+        )
+
+        self.assertEqual(
+            resposta.context["parcerias_concluidas"],
+            0,
+        )
+
+    def test_usuario_osc_nao_contabiliza_parceria_de_outra_empresa(self):
+        from django.urls import reverse
+
+        self.usuario_b.user_permissions.add(
+            self._permissao_parcerias()
+        )
+
+        self.client.force_login(self.usuario_b)
+
+        resposta = self.client.get(reverse("home"))
+
+        self.assertEqual(resposta.status_code, 200)
+
+        self.assertEqual(
+            resposta.context["parcerias_total"],
+            1,
+        )
+
+        self.assertEqual(
+            resposta.context["parcerias_andamento"],
+            0,
+        )
+
+        self.assertEqual(
+            resposta.context["parcerias_concluidas"],
+            1,
+        )
+
+    def test_permissao_por_grupo_libera_indicadores_parcerias(self):
+        from django.contrib.auth.models import Group
+        from django.urls import reverse
+
+        grupo = Group.objects.create(
+            name="Grupo Parcerias 46.16",
+        )
+
+        grupo.permissions.add(
+            self._permissao_parcerias()
+        )
+
+        self.usuario_a.groups.add(grupo)
+
+        self.client.force_login(self.usuario_a)
+
+        resposta = self.client.get(reverse("home"))
+
+        self.assertEqual(resposta.status_code, 200)
+
+        self.assertContains(
+            resposta,
+            'id="dashboard-parcerias"',
+        )
+
+        self.assertEqual(
+            resposta.context["parcerias_total"],
+            1,
+        )
