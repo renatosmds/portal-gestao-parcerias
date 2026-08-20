@@ -10,17 +10,63 @@
         <div>
             <h1 class="h3 mb-1">Parecer T?cnico</h1>
             <p class="text-muted mb-0">
-                {{ parecer.empresa }} ? {{ parecer.prestacao }}
+                {{ parecer.empresa }} ? {{ parecer.prestacao }}<br>
+                <strong>Vers?o:</strong>
+                {{ parecer.versao }}
+
+                {% if parecer.versao_anterior %}
+                    ? anterior:
+                    <a href="{% url 'pareceres:parecer_detalhe' parecer.versao_anterior.pk %}">
+                        v{{ parecer.versao_anterior.versao }}
+                    </a>
+                {% endif %}
+
+                {% if versao_posterior %}
+                    ? posterior:
+                    <a href="{% url 'pareceres:parecer_detalhe' versao_posterior.pk %}">
+                        v{{ versao_posterior.versao }}
+                    </a>
+                {% endif %}
             </p>
         </div>
 
-        {% if parecer.situacao == "RASCUNHO" or parecer.situacao == "EM_REVISAO" %}
-        <a class="btn btn-primary"
-           href="{% url 'pareceres:parecer_revisar' parecer.pk %}">
-            Revisar parecer
-        </a>
-        {% endif %}
+        <div class="d-flex flex-wrap gap-2">
+
+            {% if parecer.situacao == "RASCUNHO" or parecer.situacao == "EM_REVISAO" %}
+            <a class="btn btn-primary"
+               href="{% url 'pareceres:parecer_revisar' parecer.pk %}">
+                Revisar parecer
+            </a>
+            {% endif %}
+
+            {% if parecer.situacao == "EM_REVISAO" and parecer.revisado_por and not parecer.aprovado_por %}
+            <form method="post"
+                  action="{% url 'pareceres:parecer_aprovar' parecer.pk %}"
+                  onsubmit="return confirm('Confirma a aprova??o e finaliza??o deste parecer? Ap?s esta a??o o parecer n?o poder? mais ser editado.');">
+                {% csrf_token %}
+                <button type="submit"
+                        class="btn btn-success">
+                    Aprovar parecer
+                </button>
+            </form>
+            {% endif %}
+
+        </div>
     </div>
+
+    {% if parecer.situacao == "FINALIZADO" and not versao_posterior %}
+    <div class="mb-4">
+        <form method="post"
+              action="{% url 'pareceres:parecer_nova_versao' parecer.pk %}"
+              onsubmit="return confirm('Confirma a cria??o de uma nova vers?o? A vers?o atual ser? preservada e marcada como substitu?da.');">
+            {% csrf_token %}
+            <button type="submit"
+                    class="btn btn-outline-secondary">
+                Criar nova vers?o
+            </button>
+        </form>
+    </div>
+    {% endif %}
 
     <div class="alert alert-warning">
         <strong>An?lise assistida:</strong>
@@ -66,6 +112,21 @@
                         {{ parecer.revisado_por|default:"Ainda n?o revisado" }}
                     </p>
 
+                    <p>
+                        <strong>Revisado em:</strong>
+                        {{ parecer.revisado_em|date:"d/m/Y H:i:s"|default:"?" }}
+                    </p>
+
+                    <p>
+                        <strong>Aprovado por:</strong>
+                        {{ parecer.aprovado_por|default:"Ainda n?o aprovado" }}
+                    </p>
+
+                    <p>
+                        <strong>Aprovado em:</strong>
+                        {{ parecer.aprovado_em|date:"d/m/Y H:i:s"|default:"?" }}
+                    </p>
+
                     <p class="mb-0">
                         <strong>Resumo executivo:</strong><br>
                         {{ parecer.resumo_executivo|default:"N?o informado." }}
@@ -87,10 +148,13 @@
                 ? {{ item.titulo }}
             </div>
 
+            {# SPRINT46_13_ITEM_EDITAVEL #}
+            {% if parecer.situacao == "RASCUNHO" or parecer.situacao == "EM_REVISAO" %}
             <a class="btn btn-sm btn-outline-primary"
                href="{% url 'pareceres:item_revisar' item.pk %}">
                 Revisar item
             </a>
+            {% endif %}
         </div>
 
         <div class="card-body">
@@ -169,6 +233,75 @@
         Este parecer ainda n?o possui itens.
     </div>
     {% endfor %}
+
+    <hr class="my-4">
+
+    <h2 class="h4 mb-3">Trilha de auditoria</h2>
+
+    <div class="card shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-sm table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Data/hora</th>
+                        <th>A??o</th>
+                        <th>Usu?rio</th>
+                        <th>Situa??o</th>
+                        <th>Conclus?o</th>
+                        <th>Observa??o</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for evento in historico %}
+                    <tr>
+                        <td>
+                            {{ evento.criado_em|date:"d/m/Y H:i:s" }}
+                        </td>
+
+                        <td>
+                            <strong>{{ evento.acao }}</strong>
+                        </td>
+
+                        <td>
+                            {{ evento.usuario|default:"Sistema/N?o identificado" }}
+                        </td>
+
+                        <td>
+                            {% if evento.situacao_anterior or evento.nova_situacao %}
+                                {{ evento.situacao_anterior|default:"?" }}
+                                ?
+                                {{ evento.nova_situacao|default:"?" }}
+                            {% else %}
+                                ?
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if evento.conclusao_anterior or evento.nova_conclusao %}
+                                {{ evento.conclusao_anterior|default:"?" }}
+                                ?
+                                {{ evento.nova_conclusao|default:"?" }}
+                            {% else %}
+                                ?
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {{ evento.observacao|default:"?" }}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6"
+                            class="text-center text-muted py-4">
+                            Nenhum evento de auditoria registrado.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 
 </div>
 {% endblock %}

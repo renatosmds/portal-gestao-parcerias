@@ -3,6 +3,10 @@ from django.db import transaction
 from django.utils import timezone
 
 from apps.diligencias.models import Diligencia
+from apps.pareceres.auditoria import (
+    registrar_reanalise_iniciada,
+    registrar_saneamento,
+)
 from apps.pareceres.models import ItemParecer
 
 
@@ -76,6 +80,8 @@ def iniciar_reanalise_diligencia(
             "A diligencia ja esta encerrada ou cancelada."
         )
 
+    status_anterior = diligencia.status
+
     diligencia.status = Diligencia.Status.REANALISE
 
     diligencia.save(
@@ -83,6 +89,13 @@ def iniciar_reanalise_diligencia(
             "status",
             "atualizado_em",
         ]
+    )
+
+    registrar_reanalise_iniciada(
+        item=item,
+        diligencia=diligencia,
+        usuario=usuario,
+        status_anterior=status_anterior,
     )
 
     return diligencia
@@ -141,6 +154,9 @@ def concluir_reanalise_diligencia(
             "A diligencia deve estar em reanalise antes da conclusao."
         )
 
+    conclusao_anterior = item.conclusao_item
+    status_anterior = diligencia.status
+
     if decisao == DECISAO_SANADO:
         item.conclusao_item = (
             ItemParecer.ConclusaoItem.SANADO
@@ -176,6 +192,14 @@ def concluir_reanalise_diligencia(
             "encerrada_em",
             "atualizado_em",
         ]
+    )
+
+    registrar_saneamento(
+        item=item,
+        diligencia=diligencia,
+        usuario=usuario,
+        conclusao_anterior=conclusao_anterior,
+        status_anterior=status_anterior,
     )
 
     return item

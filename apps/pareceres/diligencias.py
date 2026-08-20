@@ -2,6 +2,9 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 
 from apps.diligencias.models import Diligencia
+from apps.pareceres.auditoria import (
+    registrar_diligencia_criada,
+)
 from apps.pareceres.models import ItemParecer
 
 
@@ -149,6 +152,12 @@ def criar_diligencia_do_item(
             "diligencia",
             "atualizado_em",
         ]
+    )
+
+    registrar_diligencia_criada(
+        item=item,
+        diligencia=diligencia,
+        usuario=usuario,
     )
 
     return diligencia

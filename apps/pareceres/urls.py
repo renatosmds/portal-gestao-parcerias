@@ -23,6 +23,16 @@ urlpatterns = [
         name="parecer_revisar",
     ),
     path(
+        "<int:pk>/nova-versao/",
+        views.parecer_nova_versao,
+        name="parecer_nova_versao",
+    ),
+    path(
+        "<int:pk>/aprovar/",
+        views.parecer_aprovar,
+        name="parecer_aprovar",
+    ),
+    path(
         "itens/<int:pk>/revisar/",
         views.item_revisar,
         name="item_revisar",
