@@ -1,3 +1,4 @@
+from apps.core.permissoes_modulos import modulos_liberados
 from django.conf import settings
 from .dashboard import usuario_eh_osc
 
@@ -45,3 +46,13 @@ def access_context(request):
         pass
 
     return context
+
+
+def modulos_usuario(request):
+    return {
+        "modulos_liberados": (
+            modulos_liberados(request.user)
+            if request.user.is_authenticated
+            else set()
+        )
+    }

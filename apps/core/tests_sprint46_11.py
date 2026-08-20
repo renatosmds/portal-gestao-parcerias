@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
+from django.contrib.auth.models import Permission
 
 from apps.empresas.models import Empresa
 from apps.pareceres.models import (
@@ -25,6 +26,15 @@ class Sprint4611RevisaoHumanaTests(TestCase):
         self.usuario_sem_escopo = User.objects.create_user(
             username="sem_escopo4611",
             password="teste123",
+        )
+
+        permissao_parecer = Permission.objects.get(
+            content_type__app_label="pareceres",
+            codename="view_parecertecnico",
+        )
+
+        self.usuario_sem_escopo.user_permissions.add(
+            permissao_parecer
         )
 
         self.empresa = Empresa.objects.create(

@@ -1,10 +1,12 @@
-﻿"""Serviços do dashboard integrado do Portal de Gestão de Parcerias.
+"""Serviços do dashboard integrado do Portal de Gestão de Parcerias.
 
 A Sprint 15 mantém os modelos existentes e consolida os dados em uma única
 camada de leitura. Nenhuma migração é necessária.
 """
 
 from __future__ import annotations
+
+from apps.core.permissoes_modulos import modulos_liberados
 
 from datetime import date, timedelta
 from decimal import Decimal
@@ -218,6 +220,7 @@ def _resumo_termos(termos, lancamentos, documentos, analises, prestacoes):
 
 def montar_contexto_dashboard(request):
     user = request.user
+    modulos = modulos_liberados(user)
     visao = _normalizar_visao(request)
     inicio, fim, periodo_ajustado = _ler_periodo(request)
     empresa_vinculada = empresa_do_usuario(user)
@@ -240,7 +243,7 @@ def montar_contexto_dashboard(request):
         Termos.objects.select_related("empresa"),
         empresa_selecionada,
     )
-    if sem_empresa:
+    if sem_empresa or "termos" not in modulos:
         termos_opcoes = termos_opcoes.none()
 
     termo_selecionado = None
@@ -283,6 +286,28 @@ def montar_contexto_dashboard(request):
         fornecedores = fornecedores.none()
         diligencias = diligencias.none()
 
+    # Sprint 46.15 - autorizacao de dados do dashboard.
+    if "termos" not in modulos:
+        termos = termos.none()
+
+    if "prestacoes" not in modulos:
+        prestacoes = prestacoes.none()
+
+    if "lancamentos" not in modulos:
+        lancamentos = lancamentos.none()
+
+    if "documentos" not in modulos:
+        documentos = documentos.none()
+
+    if "analises" not in modulos:
+        analises = analises.none()
+
+    if "fornecedores" not in modulos:
+        fornecedores = fornecedores.none()
+
+    if "diligencias" not in modulos:
+        diligencias = diligencias.none()
+
     # O período é aplicado antes do filtro de termo para que o quadro
     # comparativo continue respeitando os mesmos critérios da tela.
     termos = _aplicar_periodo(termos, "assinatura", inicio, fim)
@@ -316,6 +341,9 @@ def montar_contexto_dashboard(request):
     metas = MetaExecucao.objects.filter(
         prestacao__in=prestacoes
     )
+
+    if "metas" not in modulos:
+        metas = metas.none()
 
     # Indicadores principais.
     termos_total = termos.count()
@@ -595,16 +623,57 @@ def montar_contexto_dashboard(request):
             "url_name": "list_analise",
         },
     ]
-    prioridades_ativas = sum(1 for alerta in alertas if alerta["valor"] > 0)
-    atividade_mensal = _serie_mensal(
-        [
-            (lancamentos, "criado_em"),
-            (documentos, "criado_em"),
-            (analises, "criada_em"),
-        ]
+    mapa_modulo_alerta = {
+        "list_diligencias": "diligencias",
+        "metas_painel": "metas",
+        "list_documentos": "documentos",
+        "list_prestacao": "prestacoes",
+        "list_lancamentos": "lancamentos",
+        "list_analise": "analises",
+    }
+
+    for alerta in alertas:
+        alerta["modulo"] = mapa_modulo_alerta.get(
+            alerta["url_name"]
+        )
+
+    alertas = [
+        alerta
+        for alerta in alertas
+        if alerta["modulo"] in modulos
+    ]
+
+    prioridades_ativas = sum(
+        1
+        for alerta in alertas
+        if alerta["valor"] > 0
+    )
+
+    fontes_atividade = []
+
+    if "lancamentos" in modulos:
+        fontes_atividade.append(
+            (lancamentos, "criado_em")
+        )
+
+    if "documentos" in modulos:
+        fontes_atividade.append(
+            (documentos, "criado_em")
+        )
+
+    if "analises" in modulos:
+        fontes_atividade.append(
+            (analises, "criada_em")
+        )
+
+    atividade_mensal = (
+        _serie_mensal(fontes_atividade)
+        if fontes_atividade
+        else []
     )
 
     contexto = {
+        "dashboard_modulos": tuple(sorted(modulos)),
         "visao_dashboard": visao,
         "usuario_area_osc": visao == "osc",
         "area_portal": "Área da OSC" if visao == "osc" else "Área do Órgão Público",

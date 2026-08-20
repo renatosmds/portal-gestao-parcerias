@@ -1,3 +1,4 @@
+from apps.core.permissoes_modulos import exigir_modulo
 import csv
 from decimal import Decimal
 from django.contrib.auth.decorators import login_required
@@ -29,6 +30,7 @@ def _csv_response(filename, headers, rows):
     return response
 
 @login_required
+@exigir_modulo("relatorios")
 def painel_relatorios(request):
     empresa_id = _empresa_id(request)
     diligencias = Diligencia.objects.all()
@@ -61,11 +63,13 @@ def _diligencias_qs(request):
     return qs
 
 @login_required
+@exigir_modulo("relatorios")
 def relatorio_diligencias(request):
     qs = _diligencias_qs(request)
     return render(request, "relatorios/diligencias.html", {"itens": qs, "status_choices": Diligencia.Status.choices, "prioridade_choices": Diligencia.Prioridade.choices, "hoje": timezone.localdate()})
 
 @login_required
+@exigir_modulo("relatorios")
 def relatorio_diligencias_csv(request):
     rows=((d.pk,d.assunto,str(d.empresa or ""),d.get_prioridade_display(),d.prazo_resposta.strftime("%d/%m/%Y") if d.prazo_resposta else "",d.get_status_display(),str(d.responsavel or "")) for d in _diligencias_qs(request))
     return _csv_response("diligencias.csv", ["Código","Assunto","OSC","Prioridade","Prazo","Situação","Responsável"], rows)
@@ -82,12 +86,14 @@ def _glosas_qs(request):
     return qs
 
 @login_required
+@exigir_modulo("relatorios")
 def relatorio_glosas(request):
     qs=_glosas_qs(request)
     totais=qs.aggregate(documentos=Sum("valor_documento"), glosas=Sum("valor_glosa"))
     return render(request,"relatorios/glosas.html",{"itens":qs,"tipo_choices":Lancamento.TipoGlosa.choices,"total_documentos":totais["documentos"] or 0,"total_glosas":totais["glosas"] or 0})
 
 @login_required
+@exigir_modulo("relatorios")
 def relatorio_glosas_csv(request):
     rows=((l.numero_lancamento,str(l.empresa),l.data_documento.strftime("%d/%m/%Y"),l.descricao,f"{l.valor_documento:.2f}",l.get_tipo_glosa_display(),f"{l.valor_glosa:.2f}",f"{l.valor_aprovado:.2f}") for l in _glosas_qs(request))
     return _csv_response("demonstrativo_glosas.csv",["Lançamento","OSC","Data","Descrição","Valor documento","Tipo","Valor glosado","Valor reconhecido"],rows)
@@ -101,10 +107,12 @@ def _funcionarios_qs(request):
     return qs
 
 @login_required
+@exigir_modulo("relatorios")
 def relatorio_funcionarios(request):
     return render(request,"relatorios/funcionarios.html",{"itens":_funcionarios_qs(request)})
 
 @login_required
+@exigir_modulo("relatorios")
 def relatorio_funcionarios_csv(request):
     rows=((f.nome,f.cpf or "",f.get_tipo_vinculo_display(),f.cargo or "",str(f.empresa or ""),str(f.termo or ""),"Ativo" if f.ativo else "Inativo") for f in _funcionarios_qs(request))
     return _csv_response("funcionarios.csv",["Nome","CPF","Vínculo","Cargo","OSC","Termo","Situação"],rows)
@@ -119,11 +127,13 @@ def _folha_qs(request):
     return qs
 
 @login_required
+@exigir_modulo("relatorios")
 def relatorio_folha(request):
     itens=list(_folha_qs(request))
     return render(request,"relatorios/folha.html",{"itens":itens,"total_bruto":sum((i.total_proventos for i in itens),Decimal("0")),"total_descontos":sum((i.total_descontos for i in itens),Decimal("0")),"total_liquido":sum((i.valor_liquido for i in itens),Decimal("0"))})
 
 @login_required
+@exigir_modulo("relatorios")
 def relatorio_folha_csv(request):
     rows=((f.competencia.strftime("%m/%Y"),f.funcionario.nome,str(f.funcionario.empresa or ""),f"{f.total_proventos:.2f}",f"{f.total_descontos:.2f}",f"{f.valor_liquido:.2f}",f.get_status_display()) for f in _folha_qs(request))
     return _csv_response("folha_consolidada.csv",["Competência","Funcionário","OSC","Proventos","Descontos","Líquido","Situação"],rows)

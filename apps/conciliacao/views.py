@@ -1,3 +1,4 @@
+from apps.core.permissoes_modulos import exigir_modulo
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Sum
@@ -25,6 +26,7 @@ def _qs_usuario(user):
 
 
 @login_required
+@exigir_modulo("conciliacao")
 def painel(request):
     qs = _qs_usuario(request.user)
     contexto = {
@@ -38,6 +40,7 @@ def painel(request):
 
 
 @login_required
+@exigir_modulo("conciliacao")
 def nova(request):
     if request.method == "POST":
         form = ConciliacaoForm(request.POST)
@@ -53,6 +56,7 @@ def nova(request):
 
 
 @login_required
+@exigir_modulo("conciliacao")
 def detalhe(request, pk):
     obj = get_object_or_404(_qs_usuario(request.user), pk=pk)
     contexto = {
@@ -66,6 +70,7 @@ def detalhe(request, pk):
 
 
 @login_required
+@exigir_modulo("conciliacao")
 @require_POST
 def importar(request, pk):
     obj = get_object_or_404(_qs_usuario(request.user), pk=pk)
@@ -79,6 +84,7 @@ def importar(request, pk):
 
 
 @login_required
+@exigir_modulo("conciliacao")
 @require_POST
 def adicionar_movimentacao(request, pk):
     obj = get_object_or_404(_qs_usuario(request.user), pk=pk)
@@ -95,6 +101,7 @@ def adicionar_movimentacao(request, pk):
 
 
 @login_required
+@exigir_modulo("conciliacao")
 def vincular(request, mov_pk):
     mov = get_object_or_404(Movimentacao.objects.select_related("conciliacao__prestacao"), pk=mov_pk, conciliacao__in=_qs_usuario(request.user))
     if request.method == "POST":
@@ -113,6 +120,7 @@ def vincular(request, mov_pk):
 
 
 @login_required
+@exigir_modulo("conciliacao")
 @require_POST
 def excluir_vinculo(request, pk):
     vinculo = get_object_or_404(VinculoConciliacao.objects.select_related("movimentacao__conciliacao"), pk=pk, movimentacao__conciliacao__in=_qs_usuario(request.user))
@@ -123,6 +131,7 @@ def excluir_vinculo(request, pk):
 
 
 @login_required
+@exigir_modulo("conciliacao")
 @require_POST
 def ignorar(request, mov_pk):
     mov = get_object_or_404(Movimentacao.objects.select_related("conciliacao"), pk=mov_pk, conciliacao__in=_qs_usuario(request.user))
@@ -139,6 +148,7 @@ def ignorar(request, mov_pk):
 
 
 @login_required
+@exigir_modulo("conciliacao")
 @require_POST
 def atualizar_ocorrencia(request, pk):
     ocorrencia = get_object_or_404(OcorrenciaConciliacao.objects.select_related("conciliacao"), pk=pk, conciliacao__in=_qs_usuario(request.user))

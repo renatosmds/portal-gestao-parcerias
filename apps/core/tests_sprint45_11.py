@@ -1,10 +1,11 @@
-﻿from datetime import date
+from datetime import date
 from decimal import Decimal
 
 from django.contrib.auth.models import User
 from django.db import models
 from django.test import TestCase
 from django.urls import reverse
+from django.contrib.auth.models import Permission
 
 from apps.empresas.models import Empresa
 from apps.funcionarios.models import Funcionario
@@ -151,6 +152,19 @@ class PlanoTrabalhoSprint4511Tests(TestCase):
         self.user_b = User.objects.create_user(
             username="osc_b_4511",
             password="teste123",
+        )
+
+        permissao_plano = Permission.objects.get(
+            content_type__app_label="planos_trabalho",
+            codename="view_planotrabalho",
+        )
+
+        self.user_a.user_permissions.add(
+            permissao_plano
+        )
+
+        self.user_b.user_permissions.add(
+            permissao_plano
         )
 
         self.criar_funcionario(

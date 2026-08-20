@@ -75,12 +75,12 @@ class Sprint464TextoInconformidadeTests(TestCase):
         )
 
         self.assertIn(
-            "Evid?ncia considerada:",
+            "Evidência considerada:",
             resultado.texto,
         )
 
         self.assertIn(
-            "Fundamenta??o indicada:",
+            "Fundamentação indicada:",
             resultado.texto,
         )
 
@@ -99,12 +99,12 @@ class Sprint464TextoInconformidadeTests(TestCase):
         resultado = gerar_texto_inconformidade(item)
 
         self.assertNotIn(
-            "Fundamenta??o indicada:",
+            "Fundamentação indicada:",
             resultado.texto,
         )
 
         self.assertIn(
-            "Fundamenta??o normativa n?o informada.",
+            "Fundamentação normativa não informada.",
             resultado.pendencias,
         )
 
@@ -121,12 +121,12 @@ class Sprint464TextoInconformidadeTests(TestCase):
         resultado = gerar_texto_inconformidade(item)
 
         self.assertIn(
-            "Fato verificado n?o informado.",
+            "Fato verificado não informado.",
             resultado.pendencias,
         )
 
         self.assertIn(
-            "Evid?ncia n?o informada.",
+            "Evidência não informada.",
             resultado.pendencias,
         )
 

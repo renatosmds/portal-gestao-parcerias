@@ -68,12 +68,12 @@ class Sprint465TextoRecomendacaoTests(TestCase):
         )
 
         self.assertIn(
-            "Fundamenta??o considerada:",
+            "Fundamentação considerada:",
             resultado.texto,
         )
 
         self.assertIn(
-            "Evid?ncia relacionada:",
+            "Evidência relacionada:",
             resultado.texto,
         )
 
@@ -89,7 +89,7 @@ class Sprint465TextoRecomendacaoTests(TestCase):
         resultado = gerar_texto_recomendacao(item)
 
         self.assertIn(
-            "Recomenda??o t?cnica n?o informada.",
+            "Recomendação técnica não informada.",
             resultado.pendencias,
         )
 
@@ -98,7 +98,7 @@ class Sprint465TextoRecomendacaoTests(TestCase):
         )
 
         self.assertIn(
-            "an?lise t?cnica complementar",
+            "análise técnica complementar",
             resultado.texto,
         )
 
@@ -110,12 +110,12 @@ class Sprint465TextoRecomendacaoTests(TestCase):
         resultado = gerar_texto_recomendacao(item)
 
         self.assertNotIn(
-            "Fundamenta??o considerada:",
+            "Fundamentação considerada:",
             resultado.texto,
         )
 
         self.assertIn(
-            "Fundamenta??o normativa n?o informada.",
+            "Fundamentação normativa não informada.",
             resultado.pendencias,
         )
 
@@ -133,7 +133,7 @@ class Sprint465TextoRecomendacaoTests(TestCase):
         )
 
         self.assertIn(
-            "dever? ser validada pelo analista respons?vel",
+            "deverá ser validada pelo analista responsável",
             resultado.texto,
         )
 

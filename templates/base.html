@@ -79,31 +79,41 @@
             <a class="sgm-nav-item" href="{% url 'folhas_pagamento_list' %}"><i class="fa fa-file-text-o"></i><span>Contracheques</span></a>
             {% endif %}
 
+            {% if "banco_horas" in modulos_liberados %}
             <a class="sgm-nav-item" href="{% url 'list_hora_extra' %}">
                 <i class="fa fa-clock-o" aria-hidden="true"></i>
                 <span>Banco de Horas</span>
             </a>
+            {% endif %}
 
+            {% if "execucao" in modulos_liberados %}
             <a class="sgm-nav-item" href="{% url 'list_conferencia3' %}">
                 <i class="fa fa-check-square-o" aria-hidden="true"></i>
                 <span>Execução</span>
             </a>
+            {% endif %}
 
+            {% if "financeiro" in modulos_liberados %}
             <a class="sgm-nav-item" href="{% url 'list_receitas' %}">
                 <i class="fa fa-money" aria-hidden="true"></i>
                 <span>Financeiro</span>
             </a>
+            {% endif %}
 
+            {% if "diligencias" in modulos_liberados %}
             <a class="sgm-nav-item {% if request.resolver_match.url_name == 'list_diligencias' or request.resolver_match.url_name == 'detail_diligencia' or request.resolver_match.url_name == 'create_diligencia' %}active{% endif %}"
                href="{% url 'list_diligencias' %}">
                 <i class="fa fa-comments-o" aria-hidden="true"></i>
                 <span>Diligências{% if notificacoes_nao_lidas %} <strong>({{ notificacoes_nao_lidas }})</strong>{% endif %}</span>
             </a>
+            {% endif %}
 
+            {% if "relatorios" in modulos_liberados %}
             <a class="sgm-nav-item {% if request.resolver_match.url_name == 'relatorios_painel' or 'relatorio_' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'relatorios_painel' %}">
                 <i class="fa fa-bar-chart" aria-hidden="true"></i>
                 <span>Relatórios</span>
             </a>
+            {% endif %}
 
             {% if user.is_staff or user.is_superuser %}
             <a class="sgm-nav-item {% if 'importacao' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'list_importacoes' %}">
@@ -112,31 +122,41 @@
             </a>
             {% endif %}
 
+            {% if "conciliacao" in modulos_liberados %}
             <a class="sgm-nav-item {% if 'conciliacao_' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'conciliacao_painel' %}">
                 <i class="fa fa-exchange" aria-hidden="true"></i>
                 <span>Conciliação bancária</span>
             </a>
+            {% endif %}
 
+            {% if "metas" in modulos_liberados %}
             <a class="sgm-nav-item {% if 'metas_' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'metas_painel' %}">
                 <i class="fa fa-bullseye" aria-hidden="true"></i>
                 <span>Metas e indicadores</span>
             </a>
+            {% endif %}
 
+            {% if "pareceres" in modulos_liberados %}
             <a class="sgm-nav-item {% if request.resolver_match.namespace == 'pareceres' %}active{% endif %}"
                href="{% url 'pareceres:parecer_lista' %}">
                 <span>Pareceres Técnicos</span>
             </a>
+            {% endif %}
 
+            {% if "planos_trabalho" in modulos_liberados %}
             <a class="sgm-nav-item {% if request.resolver_match.namespace == 'planos_trabalho' %}active{% endif %}"
                href="{% url 'planos_trabalho:plano_lista' %}">
                 <i class="fa fa-tasks" aria-hidden="true"></i>
                 <span>Planos de Trabalho</span>
             </a>
+            {% endif %}
 
+            {% if "assistente_ia" in modulos_liberados %}
             <a class="sgm-nav-item {% if 'assistente_ia' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'assistente_ia_central' %}">
                 <i class="fa fa-magic" aria-hidden="true"></i>
                 <span>Análise Assistida</span>
             </a>
+            {% endif %}
 
             {% if user.is_staff or user.is_superuser %}
             <a class="sgm-nav-item {% if 'transparencia_' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'transparencia_painel' %}">
@@ -193,20 +213,26 @@
             </a>
             {% endif %}
 
+            {% if "treinamento" in modulos_liberados %}
             <a class="sgm-nav-item {% if request.resolver_match.url_name == 'treinamento_painel' or request.resolver_match.url_name == 'treinamento_modulo' %}active{% endif %}" href="{% url 'treinamento_painel' %}">
                 <i class="fa fa-graduation-cap" aria-hidden="true"></i>
                 <span>Central de Treinamento</span>
             </a>
+            {% endif %}
 
+            {% if "suporte" in modulos_liberados %}
             <a class="sgm-nav-item {% if 'suporte_' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'suporte_painel' %}">
                 <i class="fa fa-life-ring" aria-hidden="true"></i>
                 <span>Suporte e conhecimento</span>
             </a>
+            {% endif %}
 
+            {% if "cursos" in modulos_liberados %}
             <a class="sgm-nav-item" href="{% url 'list_curso' %}">
                 <i class="fa fa-graduation-cap" aria-hidden="true"></i>
                 <span>Cursos</span>
             </a>
+            {% endif %}
 
             {% if user.is_staff or user.is_superuser %}
             <a class="sgm-nav-item {% if request.resolver_match.url_name == 'diagnostico_portal' %}active{% endif %}" href="{% url 'diagnostico_portal' %}">

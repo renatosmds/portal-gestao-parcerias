@@ -1,3 +1,4 @@
+from apps.core.permissoes_modulos import exigir_modulo
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
@@ -88,6 +89,7 @@ def _dados_assistidos(parecer):
 
 
 @login_required
+@exigir_modulo("pareceres")
 def parecer_lista(request):
     pareceres = pareceres_permitidos(
         request.user
@@ -105,6 +107,7 @@ def parecer_lista(request):
 
 
 @login_required
+@exigir_modulo("pareceres")
 def parecer_detalhe(request, pk):
     parecer = get_object_or_404(
         pareceres_permitidos(request.user),
@@ -155,6 +158,7 @@ def parecer_detalhe(request, pk):
 
 
 @login_required
+@exigir_modulo("pareceres")
 def parecer_revisar(request, pk):
     parecer = get_object_or_404(
         pareceres_permitidos(request.user),
@@ -227,6 +231,7 @@ def parecer_revisar(request, pk):
 
 
 @login_required
+@exigir_modulo("pareceres")
 @require_POST
 def parecer_nova_versao(request, pk):
     parecer = get_object_or_404(
@@ -271,6 +276,7 @@ def parecer_nova_versao(request, pk):
 
 
 @login_required
+@exigir_modulo("pareceres")
 @require_POST
 @transaction.atomic
 def parecer_aprovar(request, pk):
@@ -323,6 +329,7 @@ def parecer_aprovar(request, pk):
 
 
 @login_required
+@exigir_modulo("pareceres")
 def item_revisar(request, pk):
     item = get_object_or_404(
         itens_parecer_permitidos(

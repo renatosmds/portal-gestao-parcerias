@@ -1,4 +1,5 @@
-﻿from django.contrib.auth.decorators import login_required
+from apps.core.permissoes_modulos import exigir_modulo
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import (
     get_object_or_404,
     redirect,
@@ -22,6 +23,7 @@ from .models import (
 
 
 @login_required
+@exigir_modulo("planos_trabalho")
 def plano_lista(request):
     planos = (
         planos_permitidos(
@@ -44,6 +46,7 @@ def plano_lista(request):
 
 
 @login_required
+@exigir_modulo("planos_trabalho")
 def plano_detalhe(request, pk):
     plano = get_object_or_404(
         planos_permitidos(
@@ -74,6 +77,7 @@ def plano_detalhe(request, pk):
 
 
 @login_required
+@exigir_modulo("planos_trabalho")
 def plano_criar(request):
     if request.method == "POST":
         form = PlanoTrabalhoForm(
@@ -106,6 +110,7 @@ def plano_criar(request):
 
 
 @login_required
+@exigir_modulo("planos_trabalho")
 def plano_editar(request, pk):
     plano = get_object_or_404(
         planos_permitidos(
@@ -148,6 +153,7 @@ def plano_editar(request, pk):
 
 
 @login_required
+@exigir_modulo("planos_trabalho")
 def item_criar(request, plano_pk):
     plano = get_object_or_404(
         planos_permitidos(
@@ -194,6 +200,7 @@ def item_criar(request, plano_pk):
 
 
 @login_required
+@exigir_modulo("planos_trabalho")
 def item_editar(request, pk):
     item = get_object_or_404(
         itens_permitidos(
@@ -238,6 +245,7 @@ def item_editar(request, pk):
 
 
 @login_required
+@exigir_modulo("planos_trabalho")
 def plano_analise(request, pk):
     plano = get_object_or_404(
         planos_permitidos(
@@ -267,6 +275,7 @@ def plano_analise(request, pk):
 
 
 @login_required
+@exigir_modulo("planos_trabalho")
 def item_analise(request, pk):
     item = get_object_or_404(
         itens_permitidos(

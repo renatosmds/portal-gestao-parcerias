@@ -10,6 +10,16 @@
 
 {% block main %}
 <section class="pgp-dashboard">
+{# SPRINT46_15_5B_CONTROLE_MODULAR #}
+    {% if not dashboard_modulos %}
+    <div class="alert alert-info pgp-dashboard-message"
+         id="dashboard-sem-modulos">
+        <i class="fa fa-info-circle"></i>
+        Nenhum modulo foi disponibilizado para este usuario.
+        Solicite ao administrador a liberacao dos modulos necessarios.
+    </div>
+    {% endif %}
+
     <header class="pgp-dashboard-hero">
         <div>
             <span class="sgm-eyebrow">{{ area_portal|upper }}</span>
@@ -66,7 +76,8 @@
         </div>
         {% endif %}
 
-        <div class="pgp-filter-field pgp-filter-term">
+        {% if "termos" in dashboard_modulos %}
+<div class="pgp-filter-field pgp-filter-term">
             <label for="id_termo">Termo</label>
             <select name="termo" id="id_termo" class="form-control">
                 <option value="">Todos os termos</option>
@@ -78,6 +89,7 @@
                 {% endfor %}
             </select>
         </div>
+{% endif %}
 
         <div class="pgp-filter-field">
             <label for="id_inicio">Data inicial</label>
@@ -119,59 +131,77 @@
     <div class="pgp-shortcuts">
         {% if visao_dashboard == 'osc' %}
         {% if perms.fornecedores.add_fornecedores or user.is_superuser %}
-        <a href="{% url 'create_fornecedor' %}" class="pgp-shortcut">
+        {% if "fornecedores" in dashboard_modulos %}
+<a href="{% url 'create_fornecedor' %}" class="pgp-shortcut">
             <span class="pgp-shortcut-icon pgp-soft-blue"><i class="fa fa-truck"></i></span>
             <span><strong>Novo fornecedor</strong><small>Cadastre antes da despesa</small></span>
             <i class="fa fa-angle-right"></i>
         </a>
+{% endif %}
         {% endif %}
         {% if perms.lancamentos.add_lancamento or user.is_superuser %}
-        <a href="{% url 'create_lancamento' %}" class="pgp-shortcut">
+        {% if "lancamentos" in dashboard_modulos %}
+<a href="{% url 'create_lancamento' %}" class="pgp-shortcut">
             <span class="pgp-shortcut-icon pgp-soft-purple"><i class="fa fa-plus-circle"></i></span>
             <span><strong>Novo lançamento</strong><small>Registre um item financeiro</small></span>
             <i class="fa fa-angle-right"></i>
         </a>
+{% endif %}
         {% endif %}
         {% if perms.documentos.add_documento or user.is_superuser %}
-        <a href="{% url 'create_documento' %}" class="pgp-shortcut">
+        {% if "documentos" in dashboard_modulos %}
+<a href="{% url 'create_documento' %}" class="pgp-shortcut">
             <span class="pgp-shortcut-icon pgp-soft-green"><i class="fa fa-cloud-upload"></i></span>
             <span><strong>Enviar documento</strong><small>Anexe comprovantes e relatórios</small></span>
             <i class="fa fa-angle-right"></i>
         </a>
+{% endif %}
         {% endif %}
         {% if perms.prestacao.add_prestacao or user.is_superuser %}
-        <a href="{% url 'create_prestacao' %}" class="pgp-shortcut">
+        {% if "prestacoes" in dashboard_modulos %}
+<a href="{% url 'create_prestacao' %}" class="pgp-shortcut">
             <span class="pgp-shortcut-icon pgp-soft-yellow"><i class="fa fa-folder-open-o"></i></span>
             <span><strong>Nova prestação</strong><small>Inicie um período de contas</small></span>
             <i class="fa fa-angle-right"></i>
         </a>
+{% endif %}
         {% endif %}
         {% else %}
-        <a href="{% url 'list_documentos' %}" class="pgp-shortcut">
+        {% if "documentos" in dashboard_modulos %}
+<a href="{% url 'list_documentos' %}" class="pgp-shortcut">
             <span class="pgp-shortcut-icon pgp-soft-blue"><i class="fa fa-files-o"></i></span>
             <span><strong>Conferir documentos</strong><small>{{ documentos_pendentes }} aguardando tratamento</small></span>
             <i class="fa fa-angle-right"></i>
         </a>
-        <a href="{% url 'list_lancamentos' %}" class="pgp-shortcut">
+{% endif %}
+        {% if "lancamentos" in dashboard_modulos %}
+<a href="{% url 'list_lancamentos' %}" class="pgp-shortcut">
             <span class="pgp-shortcut-icon pgp-soft-purple"><i class="fa fa-list-alt"></i></span>
             <span><strong>Analisar lançamentos</strong><small>{{ lancamentos_nao_analisados }} não analisados</small></span>
             <i class="fa fa-angle-right"></i>
         </a>
-        <a href="{% url 'list_analise' %}" class="pgp-shortcut">
+{% endif %}
+        {% if "analises" in dashboard_modulos %}
+<a href="{% url 'list_analise' %}" class="pgp-shortcut">
             <span class="pgp-shortcut-icon pgp-soft-green"><i class="fa fa-search"></i></span>
             <span><strong>Análises técnicas</strong><small>{{ analises_abertas }} em aberto</small></span>
             <i class="fa fa-angle-right"></i>
         </a>
-        <a href="{% url 'list_prestacao' %}" class="pgp-shortcut">
+{% endif %}
+        {% if "prestacoes" in dashboard_modulos %}
+<a href="{% url 'list_prestacao' %}" class="pgp-shortcut">
             <span class="pgp-shortcut-icon pgp-soft-yellow"><i class="fa fa-folder-open-o"></i></span>
             <span><strong>Prestações de contas</strong><small>{{ prestacoes_abertas }} em andamento</small></span>
             <i class="fa fa-angle-right"></i>
         </a>
-        <a href="{% url 'list_diligencias' %}" class="pgp-shortcut">
+{% endif %}
+        {% if "diligencias" in dashboard_modulos %}
+<a href="{% url 'list_diligencias' %}" class="pgp-shortcut">
             <span class="pgp-shortcut-icon pgp-soft-red"><i class="fa fa-comments-o"></i></span>
             <span><strong>Diligências</strong><small>{{ diligencias_pendentes }} abertas · {{ diligencias_vencidas }} vencidas</small></span>
             <i class="fa fa-angle-right"></i>
         </a>
+{% endif %}
         {% endif %}
     </div>
 
@@ -185,7 +215,8 @@
 
     <div class="pgp-metric-grid">
 
-        <article class="pgp-metric-card pgp-metric-money">
+        {% if "termos" in dashboard_modulos %}
+<article class="pgp-metric-card pgp-metric-money">
             <div class="pgp-metric-top">
             <span class="pgp-metric-icon pgp-soft-blue">
                 <i class="fa fa-handshake-o"></i>
@@ -201,8 +232,10 @@
 
             <p>Valor global dos termos selecionados</p>
         </article>
+{% endif %}
 
-        <article class="pgp-metric-card pgp-metric-money">
+        {% if "lancamentos" in dashboard_modulos %}
+<article class="pgp-metric-card pgp-metric-money">
             <div class="pgp-metric-top">
             <span class="pgp-metric-icon pgp-soft-purple">
                 <i class="fa fa-money"></i>
@@ -218,8 +251,10 @@
 
             <p>Soma dos lançamentos registrados</p>
         </article>
+{% endif %}
 
-        <article class="pgp-metric-card pgp-metric-money">
+        {% if "termos" in dashboard_modulos and "lancamentos" in dashboard_modulos %}
+<article class="pgp-metric-card pgp-metric-money">
             <div class="pgp-metric-top">
             <span class="pgp-metric-icon pgp-soft-green">
                 <i class="fa fa-balance-scale"></i>
@@ -235,8 +270,10 @@
 
             <p>Valor pactuado menos valor executado</p>
         </article>
+{% endif %}
 
-        <article class="pgp-metric-card">
+        {% if "termos" in dashboard_modulos and "lancamentos" in dashboard_modulos %}
+<article class="pgp-metric-card">
             <div class="pgp-metric-top">
             <span class="pgp-metric-icon pgp-soft-yellow">
                 <i class="fa fa-line-chart"></i>
@@ -252,6 +289,7 @@
 
             <p>Percentual do valor pactuado já executado</p>
         </article>
+{% endif %}
 
     </div>
 
@@ -265,7 +303,8 @@
     </div>
 
     <div class="pgp-metric-grid">
-        <article class="pgp-metric-card">
+        {% if visao_dashboard == "osc" and "fornecedores" in dashboard_modulos or visao_dashboard != "osc" and "empresas" in dashboard_modulos %}
+<article class="pgp-metric-card">
             <div class="pgp-metric-top">
                 <span class="pgp-metric-icon pgp-soft-blue"><i class="fa fa-building-o"></i></span>
                 <span class="pgp-chip">Cadastros</span>
@@ -275,8 +314,10 @@
             <p>{% if visao_dashboard == 'osc' %}Base de fornecedores da organização{% else %}Entidades disponíveis para
                 acompanhamento{% endif %}</p>
         </article>
+{% endif %}
 
-        <article class="pgp-metric-card">
+        {% if "termos" in dashboard_modulos %}
+<article class="pgp-metric-card">
             <div class="pgp-metric-top">
                 <span class="pgp-metric-icon pgp-soft-purple"><i class="fa fa-file-text-o"></i></span>
                 <span class="pgp-chip">Parcerias</span>
@@ -285,8 +326,10 @@
             <strong class="pgp-metric-value">{{ termos_total }}</strong>
             <p><b>{{ termos_vigentes }}</b> identificados como vigentes ou em execução</p>
         </article>
+{% endif %}
 
-        <article class="pgp-metric-card">
+        {% if "prestacoes" in dashboard_modulos %}
+<article class="pgp-metric-card">
             <div class="pgp-metric-top">
                 <span class="pgp-metric-icon pgp-soft-yellow"><i class="fa fa-folder-open-o"></i></span>
                 <span class="pgp-chip">Prestação</span>
@@ -295,8 +338,10 @@
             <strong class="pgp-metric-value">{{ prestacoes_total }}</strong>
             <p><b>{{ prestacoes_abertas }}</b> em andamento · <b>{{ prestacoes_concluidas }}</b> concluídas</p>
         </article>
+{% endif %}
 
-        <article class="pgp-metric-card">
+        {% if "documentos" in dashboard_modulos %}
+<article class="pgp-metric-card">
             <div class="pgp-metric-top">
                 <span class="pgp-metric-icon pgp-soft-green"><i class="fa fa-files-o"></i></span>
                 <span class="pgp-chip">Documentos</span>
@@ -305,8 +350,10 @@
             <strong class="pgp-metric-value">{{ documentos_total }}</strong>
             <p><b>{{ documentos_pendentes }}</b> pendentes · <b>{{ documentos_conferidos }}</b> conferidos</p>
         </article>
+{% endif %}
 
-        <article class="pgp-metric-card">
+        {% if "lancamentos" in dashboard_modulos %}
+<article class="pgp-metric-card">
             <div class="pgp-metric-top">
                 <span class="pgp-metric-icon pgp-soft-red"><i class="fa fa-list-alt"></i></span>
                 <span class="pgp-chip">Lançamentos</span>
@@ -315,8 +362,10 @@
             <strong class="pgp-metric-value">{{ lancamentos_total }}</strong>
             <p><b>{{ lancamentos_nao_analisados }}</b> aguardando análise</p>
         </article>
+{% endif %}
 
-        <article class="pgp-metric-card pgp-metric-money">
+        {% if "lancamentos" in dashboard_modulos %}
+<article class="pgp-metric-card pgp-metric-money">
             <div class="pgp-metric-top">
                 <span class="pgp-metric-icon pgp-soft-purple"><i class="fa fa-money"></i></span>
                 <span class="pgp-chip">Financeiro</span>
@@ -325,10 +374,12 @@
             <strong class="pgp-metric-value">R$ {{ valor_lancado|floatformat:2 }}</strong>
             <p><b>R$ {{ valor_glosado|floatformat:2 }}</b> em glosas</p>
         </article>
+{% endif %}
     </div>
 
     <div class="pgp-dashboard-grid pgp-dashboard-grid-main">
-                <section class="pgp-panel">
+                {% if "diligencias" in dashboard_modulos or "metas" in dashboard_modulos or "documentos" in dashboard_modulos or "prestacoes" in dashboard_modulos or "lancamentos" in dashboard_modulos or "analises" in dashboard_modulos %}
+<section class="pgp-panel">
             <div class="pgp-panel-header">
                 <div>
                     <span class="sgm-eyebrow">PRIORIDADES</span>
@@ -364,6 +415,7 @@
             </div>
             {% endif %}
         </section>
+{% endif %}
 
         <section class="pgp-panel">
             <div class="pgp-panel-header">
@@ -375,28 +427,35 @@
 
             <div class="pgp-progress-grid">
                 <div class="pgp-progress-card">
-                    <div class="pgp-progress-ring" style="--progress: {{ percentual_documentos }}">
+                    {% if "documentos" in dashboard_modulos %}
+<div class="pgp-progress-ring" style="--progress: {{ percentual_documentos }}">
                         <strong>{{ percentual_documentos }}%</strong>
                     </div>
+{% endif %}
                     <div><strong>Documentos conferidos</strong><small>{{ documentos_conferidos }} de {{ documentos_total }}</small></div>
                 </div>
                 <div class="pgp-progress-card">
-                    <div class="pgp-progress-ring" style="--progress: {{ percentual_lancamentos }}">
+                    {% if "lancamentos" in dashboard_modulos %}
+<div class="pgp-progress-ring" style="--progress: {{ percentual_lancamentos }}">
                         <strong>{{ percentual_lancamentos }}%</strong>
                     </div>
+{% endif %}
                     <div><strong>Lançamentos analisados</strong><small>{{ lancamentos_analisados }} de {{ lancamentos_total }}</small></div>
                 </div>
                 <div class="pgp-progress-card">
-                    <div class="pgp-progress-ring" style="--progress: {{ percentual_prestacoes }}">
+                    {% if "prestacoes" in dashboard_modulos %}
+<div class="pgp-progress-ring" style="--progress: {{ percentual_prestacoes }}">
                         <strong>{{ percentual_prestacoes }}%</strong>
                     </div>
+{% endif %}
                     <div><strong>Prestações concluídas</strong><small>{{ prestacoes_concluidas }} de {{ prestacoes_total }}</small></div>
                 </div>
             </div>
         </section>
     </div>
 
-    <section class="pgp-panel">
+    {% if "prestacoes" in dashboard_modulos %}
+<section class="pgp-panel">
         <div class="pgp-panel-header">
             <div>
                 <span class="sgm-eyebrow">FLUXO DA PRESTAÇÃO DE CONTAS</span>
@@ -459,6 +518,8 @@
 
         </div>
     </section>
+{% endif %}
+{% if "metas" in dashboard_modulos %}
 <section class="pgp-panel">
     <div class="pgp-panel-header">
         <div>
@@ -503,9 +564,11 @@
         </div>
     </div>
 </section>
+{% endif %}
 
     <div class="pgp-dashboard-grid pgp-dashboard-grid-charts">
-        <section class="pgp-panel">
+        {% if "lancamentos" in dashboard_modulos %}
+<section class="pgp-panel">
             <div class="pgp-panel-header">
                 <div>
                     <span class="sgm-eyebrow">LANÇAMENTOS</span>
@@ -523,8 +586,10 @@
                 {% endfor %}
             </div>
         </section>
+{% endif %}
 
-        <section class="pgp-panel">
+        {% if "documentos" in dashboard_modulos %}
+<section class="pgp-panel">
             <div class="pgp-panel-header">
                 <div>
                     <span class="sgm-eyebrow">DOCUMENTOS</span>
@@ -542,8 +607,10 @@
                 {% endfor %}
             </div>
         </section>
+{% endif %}
 
-        <section class="pgp-panel">
+        {% if "lancamentos" in dashboard_modulos or "documentos" in dashboard_modulos or "analises" in dashboard_modulos %}
+<section class="pgp-panel">
             <div class="pgp-panel-header">
                 <div>
                     <span class="sgm-eyebrow">ATIVIDADE</span>
@@ -560,9 +627,11 @@
                 {% endfor %}
             </div>
         </section>
+{% endif %}
     </div>
 
-    <section class="pgp-panel pgp-finance-panel">
+    {% if "termos" in dashboard_modulos and "lancamentos" in dashboard_modulos %}
+<section class="pgp-panel pgp-finance-panel">
         <div class="pgp-panel-header">
             <div>
                 <span class="sgm-eyebrow">SÍNTESE FINANCEIRA</span>
@@ -578,8 +647,10 @@
             <div class="pgp-finance-danger"><span>Valor glosado</span><strong>R$ {{ valor_glosado|floatformat:2 }}</strong></div>
         </div>
     </section>
+{% endif %}
 
-    <section class="pgp-panel">
+    {% if "termos" in dashboard_modulos %}
+<section class="pgp-panel">
         <div class="pgp-panel-header">
             <div>
                 <span class="sgm-eyebrow">TERMOS</span>
@@ -630,9 +701,11 @@
         </div>
         {% endif %}
     </section>
+{% endif %}
 
     <div class="pgp-dashboard-grid pgp-dashboard-grid-recent">
-        <section class="pgp-panel">
+        {% if "lancamentos" in dashboard_modulos %}
+<section class="pgp-panel">
             <div class="pgp-panel-header">
                 <div><span class="sgm-eyebrow">RECENTES</span>
                     <h2>Lançamentos</h2></div>
@@ -656,8 +729,10 @@
                 {% endfor %}
             </div>
         </section>
+{% endif %}
 
-        <section class="pgp-panel">
+        {% if "documentos" in dashboard_modulos %}
+<section class="pgp-panel">
             <div class="pgp-panel-header">
                 <div><span class="sgm-eyebrow">RECENTES</span>
                     <h2>Documentos</h2></div>
@@ -681,8 +756,10 @@
                 {% endfor %}
             </div>
         </section>
+{% endif %}
 
-        <section class="pgp-panel">
+        {% if "analises" in dashboard_modulos %}
+<section class="pgp-panel">
             <div class="pgp-panel-header">
                 <div><span class="sgm-eyebrow">RECENTES</span>
                     <h2>Análises técnicas</h2></div>
@@ -706,6 +783,7 @@
                 {% endfor %}
             </div>
         </section>
+{% endif %}
     </div>
 </section>
 {% endblock %}
