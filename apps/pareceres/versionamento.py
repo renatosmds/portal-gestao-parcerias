@@ -14,8 +14,8 @@ def _copiar_relacionados_item(item_origem, item_destino, related_name):
     """
     Copia registros estruturados pertencentes ao item.
 
-    ForeignKeys para objetos externos s?o preservadas;
-    os objetos externos n?o s?o duplicados.
+    ForeignKeys para objetos externos são preservadas;
+    os objetos externos não são duplicados.
     """
 
     manager = getattr(
@@ -124,9 +124,9 @@ def criar_nova_versao_parecer(
     usuario,
 ):
     """
-    Cria nova vers?o edit?vel a partir de parecer FINALIZADO.
+    Cria nova versão editável a partir de parecer FINALIZADO.
 
-    A vers?o anterior ? preservada e passa a SUBSTITUIDO.
+    A versão anterior é preservada e passa a SUBSTITUIDO.
     """
 
     if usuario is None or not getattr(
@@ -135,7 +135,7 @@ def criar_nova_versao_parecer(
         None,
     ):
         raise ValidationError(
-            "A cria??o de nova vers?o exige usu?rio identificado."
+            "A criação de nova versão exige usuário identificado."
         )
 
     parecer = (
@@ -153,12 +153,12 @@ def criar_nova_versao_parecer(
         != ParecerTecnico.Situacao.FINALIZADO
     ):
         raise ValidationError(
-            "Somente parecer finalizado pode originar nova vers?o."
+            "Somente parecer finalizado pode originar nova versão."
         )
 
     if parecer.versoes_posteriores.exists():
         raise ValidationError(
-            "Este parecer j? possui vers?o posterior."
+            "Este parecer já possui versão posterior."
         )
 
     proxima_versao = parecer.versao + 1
@@ -168,7 +168,7 @@ def criar_nova_versao_parecer(
         versao=proxima_versao,
     ).exists():
         raise ValidationError(
-            "J? existe a pr?xima vers?o para esta presta??o."
+            "Já existe a próxima versão para esta prestação."
         )
 
     novo = ParecerTecnico(
@@ -188,7 +188,7 @@ def criar_nova_versao_parecer(
         recomendacoes_gerais=parecer.recomendacoes_gerais,
         elaborado_por=usuario,
 
-        # Nova vers?o exige novo ciclo humano.
+        # Nova versão exige novo ciclo humano.
         revisado_por=None,
         revisado_em=None,
         aprovado_por=None,
@@ -232,7 +232,7 @@ def criar_nova_versao_parecer(
         conclusao_anterior=parecer.tipo_conclusao,
         nova_conclusao=parecer.tipo_conclusao,
         observacao=(
-            f"Parecer substitu?do pela vers?o {novo.versao} "
+            f"Parecer substituído pela versão {novo.versao} "
             f"(parecer #{novo.pk})."
         ),
     )
@@ -246,7 +246,7 @@ def criar_nova_versao_parecer(
         conclusao_anterior="",
         nova_conclusao=novo.tipo_conclusao,
         observacao=(
-            f"Nova vers?o criada a partir da vers?o "
+            f"Nova versão criada a partir da versão "
             f"{parecer.versao} (parecer #{parecer.pk})."
         ),
     )

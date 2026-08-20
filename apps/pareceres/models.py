@@ -7,21 +7,21 @@ class ParecerTecnico(models.Model):
 
     class Situacao(models.TextChoices):
         RASCUNHO = "RASCUNHO", "Rascunho"
-        EM_REVISAO = "EM_REVISAO", "Em revis?o"
+        EM_REVISAO = "EM_REVISAO", "Em revisão"
         FINALIZADO = "FINALIZADO", "Finalizado"
         CANCELADO = "CANCELADO", "Cancelado"
-        SUBSTITUIDO = "SUBSTITUIDO", "Substitu?do"
+        SUBSTITUIDO = "SUBSTITUIDO", "Substituído"
 
     class TipoConclusao(models.TextChoices):
-        EM_ANALISE = "EM_ANALISE", "Em an?lise"
+        EM_ANALISE = "EM_ANALISE", "Em análise"
         SEM_PENDENCIAS_RELEVANTES = (
             "SEM_PENDENCIAS_RELEVANTES",
-            "Sem pend?ncias relevantes",
+            "Sem pendências relevantes",
         )
         COM_RESSALVAS = "COM_RESSALVAS", "Com ressalvas"
         COM_PENDENCIAS_SANEAVEIS = (
             "COM_PENDENCIAS_SANEAVEIS",
-            "Com pend?ncias sane?veis",
+            "Com pendências saneáveis",
         )
         COM_IRREGULARIDADES = (
             "COM_IRREGULARIDADES",
@@ -29,7 +29,7 @@ class ParecerTecnico(models.Model):
         )
         AGUARDANDO_DILIGENCIA = (
             "AGUARDANDO_DILIGENCIA",
-            "Aguardando dilig?ncia",
+            "Aguardando diligência",
         )
         INCONCLUSIVO = "INCONCLUSIVO", "Inconclusivo"
 
@@ -156,7 +156,7 @@ class ParecerTecnico(models.Model):
 
     def __str__(self):
         referencia = self.numero or f"Parecer {self.pk or 'novo'}"
-        return f"{referencia} - vers?o {self.versao}"
+        return f"{referencia} - versão {self.versao}"
 
     def clean(self):
         erros = {}
@@ -169,15 +169,15 @@ class ParecerTecnico(models.Model):
         ):
             erros["empresa"] = (
                 "A empresa do parecer deve ser a mesma "
-                "empresa da presta??o de contas."
+                "empresa da prestação de contas."
             )
 
         if self.versao_anterior_id:
 
             if self.versao_anterior_id == self.pk:
                 erros["versao_anterior"] = (
-                    "Um parecer n?o pode referenciar "
-                    "a si pr?prio como vers?o anterior."
+                    "Um parecer não pode referenciar "
+                    "a si próprio como versão anterior."
                 )
 
             elif (
@@ -186,14 +186,14 @@ class ParecerTecnico(models.Model):
                 != self.prestacao_id
             ):
                 erros["versao_anterior"] = (
-                    "A vers?o anterior deve pertencer "
-                    "? mesma presta??o de contas."
+                    "A versão anterior deve pertencer "
+                    "à mesma prestação de contas."
                 )
 
             elif self.versao_anterior.versao >= self.versao:
                 erros["versao_anterior"] = (
-                    "A vers?o anterior deve possuir "
-                    "n?mero inferior ? vers?o atual."
+                    "A versão anterior deve possuir "
+                    "número inferior à versão atual."
                 )
 
         if erros:
@@ -208,32 +208,32 @@ class ItemParecer(models.Model):
         PLANO_TRABALHO = "PLANO_TRABALHO", "Plano de trabalho"
         RH = "RH", "Recursos humanos"
         LGPD = "LGPD", "LGPD"
-        VIGENCIA = "VIGENCIA", "Vig?ncia"
+        VIGENCIA = "VIGENCIA", "Vigência"
         OUTRA = "OUTRA", "Outra"
 
     class Severidade(models.TextChoices):
         INFORMATIVA = "INFORMATIVA", "Informativa"
         ALERTA = "ALERTA", "Alerta"
-        CRITICA = "CRITICA", "Cr?tica"
+        CRITICA = "CRITICA", "Crítica"
 
     class Origem(models.TextChoices):
         MANUAL = "MANUAL", "Manual"
         PGP_RULES = "PGP_RULES", "PGP Rules"
         IA_ASSISTIDA = "IA_ASSISTIDA", "IA assistida"
-        DILIGENCIA = "DILIGENCIA", "Dilig?ncia"
+        DILIGENCIA = "DILIGENCIA", "Diligência"
         OUTRA = "OUTRA", "Outra"
 
     class ConclusaoItem(models.TextChoices):
-        NAO_ANALISADO = "NAO_ANALISADO", "N?o analisado"
+        NAO_ANALISADO = "NAO_ANALISADO", "Não analisado"
         REGULAR = "REGULAR", "Regular"
         RESSALVA = "RESSALVA", "Ressalva"
         PENDENCIA_SANEAVEL = (
             "PENDENCIA_SANEAVEL",
-            "Pend?ncia sane?vel",
+            "Pendência saneável",
         )
         IRREGULARIDADE = "IRREGULARIDADE", "Irregularidade"
         SANADO = "SANADO", "Sanado"
-        NAO_SANADO = "NAO_SANADO", "N?o sanado"
+        NAO_SANADO = "NAO_SANADO", "Não sanado"
 
     parecer = models.ForeignKey(
         ParecerTecnico,
@@ -405,8 +405,8 @@ class ItemParecer(models.Model):
                 and self.lancamento.prestacao_id != prestacao_id
             ):
                 erros["lancamento"] = (
-                    "O lan?amento deve pertencer ? mesma "
-                    "presta??o do parecer."
+                    "O lançamento deve pertencer à mesma "
+                    "prestação do parecer."
                 )
 
             if (
@@ -415,7 +415,7 @@ class ItemParecer(models.Model):
                 and self.lancamento.empresa_id != empresa_id
             ):
                 erros["lancamento"] = (
-                    "O lan?amento deve pertencer ? mesma "
+                    "O lançamento deve pertencer à mesma "
                     "empresa do parecer."
                 )
 
@@ -427,8 +427,8 @@ class ItemParecer(models.Model):
                 and self.documento.prestacao_id != prestacao_id
             ):
                 erros["documento"] = (
-                    "O documento deve pertencer ? mesma "
-                    "presta??o do parecer."
+                    "O documento deve pertencer à mesma "
+                    "prestação do parecer."
                 )
 
             if (
@@ -437,7 +437,7 @@ class ItemParecer(models.Model):
                 and self.documento.empresa_id != empresa_id
             ):
                 erros["documento"] = (
-                    "O documento deve pertencer ? mesma "
+                    "O documento deve pertencer à mesma "
                     "empresa do parecer."
                 )
 
@@ -449,8 +449,8 @@ class ItemParecer(models.Model):
                 and self.diligencia.prestacao_id != prestacao_id
             ):
                 erros["diligencia"] = (
-                    "A dilig?ncia deve pertencer ? mesma "
-                    "presta??o do parecer."
+                    "A diligência deve pertencer à mesma "
+                    "prestação do parecer."
                 )
 
             if (
@@ -459,7 +459,7 @@ class ItemParecer(models.Model):
                 and self.diligencia.empresa_id != empresa_id
             ):
                 erros["diligencia"] = (
-                    "A dilig?ncia deve pertencer ? mesma "
+                    "A diligência deve pertencer à mesma "
                     "empresa do parecer."
                 )
 
@@ -532,10 +532,10 @@ class EvidenciaParecer(models.Model):
 
     class Tipo(models.TextChoices):
         DOCUMENTO = "DOCUMENTO", "Documento"
-        LANCAMENTO = "LANCAMENTO", "Lan?amento"
-        DILIGENCIA = "DILIGENCIA", "Dilig?ncia"
+        LANCAMENTO = "LANCAMENTO", "Lançamento"
+        DILIGENCIA = "DILIGENCIA", "Diligência"
         REGISTRO_SISTEMA = "REGISTRO_SISTEMA", "Registro do sistema"
-        DECLARACAO = "DECLARACAO", "Declara??o"
+        DECLARACAO = "DECLARACAO", "Declaração"
         OUTRA = "OUTRA", "Outra"
 
     item = models.ForeignKey(
@@ -616,7 +616,7 @@ class EvidenciaParecer(models.Model):
                 != parecer.prestacao_id
             ):
                 erros["documento"] = (
-                    "O documento deve pertencer ? mesma presta??o do parecer."
+                    "O documento deve pertencer à mesma prestação do parecer."
                 )
 
             if (
@@ -626,7 +626,7 @@ class EvidenciaParecer(models.Model):
                 != parecer.empresa_id
             ):
                 erros["documento"] = (
-                    "O documento deve pertencer ? mesma empresa do parecer."
+                    "O documento deve pertencer à mesma empresa do parecer."
                 )
 
         if self.lancamento_id:
@@ -637,7 +637,7 @@ class EvidenciaParecer(models.Model):
                 != parecer.prestacao_id
             ):
                 erros["lancamento"] = (
-                    "O lan?amento deve pertencer ? mesma presta??o do parecer."
+                    "O lançamento deve pertencer à mesma prestação do parecer."
                 )
 
             if (
@@ -647,7 +647,7 @@ class EvidenciaParecer(models.Model):
                 != parecer.empresa_id
             ):
                 erros["lancamento"] = (
-                    "O lan?amento deve pertencer ? mesma empresa do parecer."
+                    "O lançamento deve pertencer à mesma empresa do parecer."
                 )
 
         if self.diligencia_id:
@@ -658,7 +658,7 @@ class EvidenciaParecer(models.Model):
                 != parecer.prestacao_id
             ):
                 erros["diligencia"] = (
-                    "A dilig?ncia deve pertencer ? mesma presta??o do parecer."
+                    "A diligência deve pertencer à mesma prestação do parecer."
                 )
 
             if (
@@ -668,7 +668,7 @@ class EvidenciaParecer(models.Model):
                 != parecer.empresa_id
             ):
                 erros["diligencia"] = (
-                    "A dilig?ncia deve pertencer ? mesma empresa do parecer."
+                    "A diligência deve pertencer à mesma empresa do parecer."
                 )
 
         if erros:
@@ -766,7 +766,7 @@ class FundamentacaoParecer(models.Model):
             and self.fim_vigencia < self.inicio_vigencia
         ):
             erros["fim_vigencia"] = (
-                "O fim da vig?ncia n?o pode ser anterior ao in?cio."
+                "O fim da vigência não pode ser anterior ao início."
             )
 
         if erros:

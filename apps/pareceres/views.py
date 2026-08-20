@@ -37,7 +37,7 @@ def _exigir_parecer_editavel(parecer):
 
     if parecer.situacao not in permitidas:
         raise PermissionDenied(
-            "Este parecer n?o est? dispon?vel para revis?o."
+            "Este parecer não está disponível para revisão."
         )
 
 
@@ -50,17 +50,17 @@ def _exigir_parecer_aprovavel(parecer):
 
     if parecer.situacao != ParecerTecnico.Situacao.EM_REVISAO:
         raise PermissionDenied(
-            "Somente parecer em revis?o pode ser aprovado."
+            "Somente parecer em revisão pode ser aprovado."
         )
 
     if not parecer.revisado_por_id or not parecer.revisado_em:
         raise PermissionDenied(
-            "O parecer deve passar por revis?o humana antes da aprova??o."
+            "O parecer deve passar por revisão humana antes da aprovação."
         )
 
     if parecer.aprovado_por_id or parecer.aprovado_em:
         raise PermissionDenied(
-            "Este parecer j? foi aprovado."
+            "Este parecer já foi aprovado."
         )
 
 
@@ -197,7 +197,7 @@ def parecer_revisar(request, pk):
 
             messages.success(
                 request,
-                "Revis?o humana do parecer salva com sucesso.",
+                "Revisão humana do parecer salva com sucesso.",
             )
 
             return redirect(
@@ -258,9 +258,9 @@ def parecer_nova_versao(request, pk):
     messages.success(
         request,
         (
-            f"Vers?o {novo.versao} criada com sucesso. "
-            "A nova vers?o deve passar por nova revis?o "
-            "e aprova??o."
+            f"Versão {novo.versao} criada com sucesso. "
+            "A nova versão deve passar por nova revisão "
+            "e aprovação."
         ),
     )
 
@@ -359,7 +359,7 @@ def item_revisar(request, pk):
 
             messages.success(
                 request,
-                "Revis?o humana do item salva com sucesso.",
+                "Revisão humana do item salva com sucesso.",
             )
 
             return redirect(

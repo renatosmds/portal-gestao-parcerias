@@ -14,7 +14,7 @@ def _texto(valor):
 def _validar_usuario(usuario):
     if usuario is None or not getattr(usuario, "pk", None):
         raise ValidationError(
-            "O registro de auditoria exige usu?rio identificado."
+            "O registro de auditoria exige usuário identificado."
         )
 
 
@@ -30,15 +30,15 @@ def registrar_historico(
     observacao="",
 ):
     """
-    Registra evento imut?vel na trilha do parecer.
+    Registra evento imutável na trilha do parecer.
 
-    N?o altera o parecer, item, dilig?ncia, glosa
-    ou presta??o de contas.
+    Não altera o parecer, item, diligência, glosa
+    ou prestação de contas.
     """
 
     if not isinstance(parecer, ParecerTecnico):
         raise ValidationError(
-            "O parecer informado ? inv?lido."
+            "O parecer informado é inválido."
         )
 
     if not parecer.pk:
@@ -52,7 +52,7 @@ def registrar_historico(
 
     if not acao:
         raise ValidationError(
-            "A a??o de auditoria deve ser informada."
+            "A ação de auditoria deve ser informada."
         )
 
     historico = HistoricoParecer(
@@ -91,10 +91,10 @@ def registrar_aprovacao_parecer(
     conclusao_anterior,
 ):
     """
-    Registra a aprova??o humana e o fechamento do parecer.
+    Registra a aprovação humana e o fechamento do parecer.
 
-    A fun??o apenas registra a auditoria. A altera??o do
-    ParecerTecnico ? responsabilidade da camada de servi?o/view.
+    A função apenas registra a auditoria. A alteração do
+    ParecerTecnico é responsabilidade da camada de serviço/view.
     """
 
     return registrar_historico(
@@ -106,7 +106,7 @@ def registrar_aprovacao_parecer(
         conclusao_anterior=conclusao_anterior,
         nova_conclusao=parecer.tipo_conclusao,
         observacao=(
-            "Parecer aprovado por decis?o humana e finalizado."
+            "Parecer aprovado por decisão humana e finalizado."
         ),
     )
 
@@ -127,7 +127,7 @@ def registrar_revisao_parecer(
         conclusao_anterior=conclusao_anterior,
         nova_conclusao=parecer.tipo_conclusao,
         observacao=(
-            "Revis?o humana do parecer registrada."
+            "Revisão humana do parecer registrada."
         ),
     )
 
@@ -140,7 +140,7 @@ def registrar_revisao_item(
 ):
     if not isinstance(item, ItemParecer):
         raise ValidationError(
-            "O item informado ? inv?lido."
+            "O item informado é inválido."
         )
 
     identificador = (
@@ -157,8 +157,8 @@ def registrar_revisao_item(
         nova_conclusao=item.conclusao_item,
         observacao=(
             f"Item {identificador} revisado pelo analista. "
-            f"Manifesta??o: "
-            f"{_texto(item.manifestacao_analista) or 'n?o informada'}"
+            f"Manifestação: "
+            f"{_texto(item.manifestacao_analista) or 'não informada'}"
         ),
     )
 
@@ -180,7 +180,7 @@ def registrar_diligencia_criada(
         acao="DILIGENCIA_CRIADA",
         usuario=usuario,
         observacao=(
-            f"Dilig?ncia #{diligencia.pk} criada a partir "
+            f"Diligência #{diligencia.pk} criada a partir "
             f"do item {identificador}. "
             f"Status inicial: {diligencia.status}."
         ),
@@ -199,7 +199,7 @@ def registrar_reanalise_iniciada(
         acao="REANALISE_INICIADA",
         usuario=usuario,
         observacao=(
-            f"Dilig?ncia #{diligencia.pk}: "
+            f"Diligência #{diligencia.pk}: "
             f"{status_anterior} -> {diligencia.status}."
         ),
     )
@@ -225,9 +225,9 @@ def registrar_saneamento(
         conclusao_anterior=conclusao_anterior,
         nova_conclusao=item.conclusao_item,
         observacao=(
-            f"Dilig?ncia #{diligencia.pk}: "
+            f"Diligência #{diligencia.pk}: "
             f"{status_anterior} -> {diligencia.status}. "
-            f"Manifesta??o do analista: "
+            f"Manifestação do analista: "
             f"{_texto(item.manifestacao_analista)}"
         ),
     )

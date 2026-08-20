@@ -1,28 +1,28 @@
 {% extends "base.html" %}
 
-{% block title %}Parecer T?cnico | PGP{% endblock %}
-{% block page_name %}Parecer T?cnico{% endblock %}
+{% block title %}Parecer Técnico | PGP{% endblock %}
+{% block page_name %}Parecer Técnico{% endblock %}
 
 {% block main %}
 <div class="container-fluid py-4">
 
     <div class="d-flex flex-wrap justify-content-between align-items-start mb-4">
         <div>
-            <h1 class="h3 mb-1">Parecer T?cnico</h1>
+            <h1 class="h3 mb-1">Parecer Técnico</h1>
             <p class="text-muted mb-0">
-                {{ parecer.empresa }} ? {{ parecer.prestacao }}<br>
-                <strong>Vers?o:</strong>
+                {{ parecer.empresa }} — {{ parecer.prestacao }}<br>
+                <strong>Versão:</strong>
                 {{ parecer.versao }}
 
                 {% if parecer.versao_anterior %}
-                    ? anterior:
+                    — anterior:
                     <a href="{% url 'pareceres:parecer_detalhe' parecer.versao_anterior.pk %}">
                         v{{ parecer.versao_anterior.versao }}
                     </a>
                 {% endif %}
 
                 {% if versao_posterior %}
-                    ? posterior:
+                    — posterior:
                     <a href="{% url 'pareceres:parecer_detalhe' versao_posterior.pk %}">
                         v{{ versao_posterior.versao }}
                     </a>
@@ -42,7 +42,7 @@
             {% if parecer.situacao == "EM_REVISAO" and parecer.revisado_por and not parecer.aprovado_por %}
             <form method="post"
                   action="{% url 'pareceres:parecer_aprovar' parecer.pk %}"
-                  onsubmit="return confirm('Confirma a aprova??o e finaliza??o deste parecer? Ap?s esta a??o o parecer n?o poder? mais ser editado.');">
+                  onsubmit="return confirm('Confirma a aprovação e finalização deste parecer? Após esta ação o parecer não poderá mais ser editado.');">
                 {% csrf_token %}
                 <button type="submit"
                         class="btn btn-success">
@@ -58,30 +58,30 @@
     <div class="mb-4">
         <form method="post"
               action="{% url 'pareceres:parecer_nova_versao' parecer.pk %}"
-              onsubmit="return confirm('Confirma a cria??o de uma nova vers?o? A vers?o atual ser? preservada e marcada como substitu?da.');">
+              onsubmit="return confirm('Confirma a criação de uma nova versão? A versão atual será preservada e marcada como substituída.');">
             {% csrf_token %}
             <button type="submit"
                     class="btn btn-outline-secondary">
-                Criar nova vers?o
+                Criar nova versão
             </button>
         </form>
     </div>
     {% endif %}
 
     <div class="alert alert-warning">
-        <strong>An?lise assistida:</strong>
-        a classifica??o e a conclus?o abaixo s?o sugest?es t?cnicas.
-        N?o substituem a decis?o do analista respons?vel.
+        <strong>Análise assistida:</strong>
+        a classificação e a conclusão abaixo são sugestões técnicas.
+        Não substituem a decisão do analista responsável.
     </div>
 
     <div class="row mb-4">
         <div class="col-lg-6 mb-3">
             <div class="card h-100 shadow-sm">
                 <div class="card-body">
-                    <h2 class="h5">Sugest?o do sistema</h2>
+                    <h2 class="h5">Sugestão do sistema</h2>
 
                     <p>
-                        <strong>Classifica??o sugerida:</strong><br>
+                        <strong>Classificação sugerida:</strong><br>
                         {{ classificacao_sugerida_label }}
                     </p>
 
@@ -95,41 +95,41 @@
         <div class="col-lg-6 mb-3">
             <div class="card h-100 shadow-sm border-primary">
                 <div class="card-body">
-                    <h2 class="h5">Decis?o humana registrada</h2>
+                    <h2 class="h5">Decisão humana registrada</h2>
 
                     <p>
-                        <strong>Situa??o:</strong>
+                        <strong>Situação:</strong>
                         {{ parecer.get_situacao_display }}
                     </p>
 
                     <p>
-                        <strong>Conclus?o t?cnica:</strong>
+                        <strong>Conclusão técnica:</strong>
                         {{ parecer.get_tipo_conclusao_display }}
                     </p>
 
                     <p>
                         <strong>Revisado por:</strong>
-                        {{ parecer.revisado_por|default:"Ainda n?o revisado" }}
+                        {{ parecer.revisado_por|default:"Ainda não revisado" }}
                     </p>
 
                     <p>
                         <strong>Revisado em:</strong>
-                        {{ parecer.revisado_em|date:"d/m/Y H:i:s"|default:"?" }}
+                        {{ parecer.revisado_em|date:"d/m/Y H:i:s"|default:"—" }}
                     </p>
 
                     <p>
                         <strong>Aprovado por:</strong>
-                        {{ parecer.aprovado_por|default:"Ainda n?o aprovado" }}
+                        {{ parecer.aprovado_por|default:"Ainda não aprovado" }}
                     </p>
 
                     <p>
                         <strong>Aprovado em:</strong>
-                        {{ parecer.aprovado_em|date:"d/m/Y H:i:s"|default:"?" }}
+                        {{ parecer.aprovado_em|date:"d/m/Y H:i:s"|default:"—" }}
                     </p>
 
                     <p class="mb-0">
                         <strong>Resumo executivo:</strong><br>
-                        {{ parecer.resumo_executivo|default:"N?o informado." }}
+                        {{ parecer.resumo_executivo|default:"Não informado." }}
                     </p>
                 </div>
             </div>
@@ -145,7 +145,7 @@
                 <strong>
                     {{ item.codigo|default:item.codigo_regra|default:"Item" }}
                 </strong>
-                ? {{ item.titulo }}
+                — {{ item.titulo }}
             </div>
 
             {# SPRINT46_13_ITEM_EDITAVEL #}
@@ -161,47 +161,47 @@
             <p>
                 <strong>Categoria:</strong>
                 {{ item.get_categoria_display }}
-                ?
+                —
                 <strong>Severidade:</strong>
                 {{ item.get_severidade_display }}
             </p>
 
             <p>
-                <strong>Conclus?o do item:</strong>
+                <strong>Conclusão do item:</strong>
                 {{ item.get_conclusao_item_display }}
             </p>
 
             <p>
                 <strong>Fato verificado:</strong><br>
-                {{ item.fato_verificado|default:"N?o informado." }}
+                {{ item.fato_verificado|default:"Não informado." }}
             </p>
 
             <p>
-                <strong>Evid?ncia:</strong><br>
-                {{ item.evidencia|default:"N?o informada." }}
+                <strong>Evidência:</strong><br>
+                {{ item.evidencia|default:"Não informada." }}
             </p>
 
             <p>
-                <strong>Fundamenta??o:</strong><br>
-                {{ item.fundamentacao|default:"N?o informada." }}
+                <strong>Fundamentação:</strong><br>
+                {{ item.fundamentacao|default:"Não informada." }}
             </p>
 
             {% if item.diligencia %}
             <p>
-                <strong>Dilig?ncia:</strong>
+                <strong>Diligência:</strong>
                 #{{ item.diligencia.pk }}
-                ? {{ item.diligencia.get_status_display }}
+                — {{ item.diligencia.get_status_display }}
             </p>
             {% endif %}
 
             <p>
-                <strong>Manifesta??o do analista:</strong><br>
-                {{ item.manifestacao_analista|default:"Ainda n?o registrada." }}
+                <strong>Manifestação do analista:</strong><br>
+                {{ item.manifestacao_analista|default:"Ainda não registrada." }}
             </p>
 
             {% if item.evidencias_estruturadas.all %}
             <hr>
-            <strong>Evid?ncias estruturadas</strong>
+            <strong>Evidências estruturadas</strong>
             <ul>
                 {% for evidencia in item.evidencias_estruturadas.all %}
                 <li>
@@ -213,14 +213,14 @@
             {% endif %}
 
             {% if item.fundamentacoes_estruturadas.all %}
-            <strong>Fundamenta??es estruturadas</strong>
+            <strong>Fundamentações estruturadas</strong>
             <ul>
                 {% for fundamento in item.fundamentacoes_estruturadas.all %}
                 <li>
-                    {{ fundamento.get_esfera_display }} ?
+                    {{ fundamento.get_esfera_display }} —
                     {{ fundamento.norma }}
                     {% if fundamento.dispositivo %}
-                    ? {{ fundamento.dispositivo }}
+                    — {{ fundamento.dispositivo }}
                     {% endif %}
                 </li>
                 {% endfor %}
@@ -230,7 +230,7 @@
     </div>
     {% empty %}
     <div class="alert alert-secondary">
-        Este parecer ainda n?o possui itens.
+        Este parecer ainda não possui itens.
     </div>
     {% endfor %}
 
@@ -244,11 +244,11 @@
                 <thead>
                     <tr>
                         <th>Data/hora</th>
-                        <th>A??o</th>
-                        <th>Usu?rio</th>
-                        <th>Situa??o</th>
-                        <th>Conclus?o</th>
-                        <th>Observa??o</th>
+                        <th>Ação</th>
+                        <th>Usuário</th>
+                        <th>Situação</th>
+                        <th>Conclusão</th>
+                        <th>Observação</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -263,31 +263,31 @@
                         </td>
 
                         <td>
-                            {{ evento.usuario|default:"Sistema/N?o identificado" }}
+                            {{ evento.usuario|default:"Sistema/Não identificado" }}
                         </td>
 
                         <td>
                             {% if evento.situacao_anterior or evento.nova_situacao %}
-                                {{ evento.situacao_anterior|default:"?" }}
-                                ?
-                                {{ evento.nova_situacao|default:"?" }}
+                                {{ evento.situacao_anterior|default:"—" }}
+                                —
+                                {{ evento.nova_situacao|default:"—" }}
                             {% else %}
-                                ?
+                                —
                             {% endif %}
                         </td>
 
                         <td>
                             {% if evento.conclusao_anterior or evento.nova_conclusao %}
-                                {{ evento.conclusao_anterior|default:"?" }}
-                                ?
-                                {{ evento.nova_conclusao|default:"?" }}
+                                {{ evento.conclusao_anterior|default:"—" }}
+                                —
+                                {{ evento.nova_conclusao|default:"—" }}
                             {% else %}
-                                ?
+                                —
                             {% endif %}
                         </td>
 
                         <td>
-                            {{ evento.observacao|default:"?" }}
+                            {{ evento.observacao|default:"—" }}
                         </td>
                     </tr>
                     {% empty %}

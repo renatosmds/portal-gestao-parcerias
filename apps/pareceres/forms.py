@@ -59,12 +59,12 @@ class ParecerRevisaoForm(forms.ModelForm):
             ),
         }
         labels = {
-            "tipo_conclusao": "Conclus?o t?cnica do analista",
+            "tipo_conclusao": "Conclusão técnica do analista",
             "resumo_executivo": "Resumo executivo revisado",
-            "fundamentacao_geral": "Fundamenta??o geral",
-            "conclusao": "Conclus?o",
+            "fundamentacao_geral": "Fundamentação geral",
+            "conclusao": "Conclusão",
             "ressalvas": "Ressalvas",
-            "recomendacoes_gerais": "Recomenda??es gerais",
+            "recomendacoes_gerais": "Recomendações gerais",
         }
 
 
@@ -107,10 +107,10 @@ class ItemParecerRevisaoForm(forms.ModelForm):
         }
         labels = {
             "fato_verificado": "Fato verificado",
-            "evidencia": "Evid?ncia",
-            "fundamentacao": "Fundamenta??o",
+            "evidencia": "Evidência",
+            "fundamentacao": "Fundamentação",
             "risco_glosa": "Risco de glosa",
-            "recomendacao": "Recomenda??o",
-            "manifestacao_analista": "Manifesta??o do analista",
-            "conclusao_item": "Conclus?o humana do item",
+            "recomendacao": "Recomendação",
+            "manifestacao_analista": "Manifestação do analista",
+            "conclusao_item": "Conclusão humana do item",
         }

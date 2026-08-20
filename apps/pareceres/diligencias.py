@@ -25,13 +25,13 @@ def _descricao_diligencia(item):
 
     if item.evidencia:
         partes.append(
-            "Evid?ncia: "
+            "Evidência: "
             + _limpar(item.evidencia)
         )
 
     if item.recomendacao:
         partes.append(
-            "Provid?ncia sugerida: "
+            "Providência sugerida: "
             + _limpar(item.recomendacao)
         )
 
@@ -42,7 +42,7 @@ def _descricao_diligencia(item):
 
     if not partes:
         partes.append(
-            "Achado pendente de esclarecimento ou documenta??o complementar."
+            "Achado pendente de esclarecimento ou documentação complementar."
         )
 
     return "\n\n".join(partes)

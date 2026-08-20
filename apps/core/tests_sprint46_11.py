@@ -124,12 +124,12 @@ class Sprint4611RevisaoHumanaTests(TestCase):
 
         self.assertContains(
             resposta,
-            "Sugest?o autom?tica",
+            "Sugestão automática",
         )
 
         self.assertContains(
             resposta,
-            "Decis?o e manifesta??o do analista",
+            "Decisão e manifestação do analista",
         )
 
     def test_get_da_revisao_nao_altera_parecer(self):

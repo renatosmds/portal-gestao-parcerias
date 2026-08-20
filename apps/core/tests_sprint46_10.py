@@ -149,7 +149,7 @@ class Sprint4610ConclusaoExecutivaTests(TestCase):
         )
 
         self.assertIn(
-            "1 dilig?ncia(s)",
+            "1 diligência(s)",
             resultado.resumo_executivo,
         )
 

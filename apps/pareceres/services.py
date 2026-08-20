@@ -13,9 +13,9 @@ MAPA_SEVERIDADE = {
     "alerta": ItemParecer.Severidade.ALERTA,
     "warning": ItemParecer.Severidade.ALERTA,
     "critica": ItemParecer.Severidade.CRITICA,
-    "cr?tica": ItemParecer.Severidade.CRITICA,
+    "crítica": ItemParecer.Severidade.CRITICA,
     "critico": ItemParecer.Severidade.CRITICA,
-    "cr?tico": ItemParecer.Severidade.CRITICA,
+    "crítico": ItemParecer.Severidade.CRITICA,
     "critical": ItemParecer.Severidade.CRITICA,
 }
 
@@ -37,7 +37,7 @@ MAPA_CATEGORIA = {
     "lgpd": ItemParecer.Categoria.LGPD,
 
     "vigencia": ItemParecer.Categoria.VIGENCIA,
-    "vig?ncia": ItemParecer.Categoria.VIGENCIA,
+    "vigência": ItemParecer.Categoria.VIGENCIA,
 }
 
 

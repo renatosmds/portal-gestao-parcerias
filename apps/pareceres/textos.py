@@ -62,7 +62,7 @@ def gerar_texto_inconformidade(item):
             "O item informado nao e um ItemParecer valido."
         )
 
-    titulo = _limpar(item.titulo) or "Achado em an?lise"
+    titulo = _limpar(item.titulo) or "Achado em análise"
 
     descricao = _finalizar_frase(item.descricao)
     fato = _finalizar_frase(item.fato_verificado)
@@ -74,22 +74,22 @@ def gerar_texto_inconformidade(item):
 
     if not fato:
         pendencias.append(
-            "Fato verificado n?o informado."
+            "Fato verificado não informado."
         )
 
     if not evidencia:
         pendencias.append(
-            "Evid?ncia n?o informada."
+            "Evidência não informada."
         )
 
     if not fundamentacao:
         pendencias.append(
-            "Fundamenta??o normativa n?o informada."
+            "Fundamentação normativa não informada."
         )
 
     blocos = []
 
-    # O texto oficial come?a pelo fato quando dispon?vel.
+    # O texto oficial começa pelo fato quando disponível.
     if fato:
         blocos.append(
             f"Foi identificado o seguinte fato: {fato}"
@@ -100,22 +100,22 @@ def gerar_texto_inconformidade(item):
         )
     else:
         blocos.append(
-            "Foi registrado achado que necessita de an?lise t?cnica complementar."
+            "Foi registrado achado que necessita de análise técnica complementar."
         )
 
     if descricao and descricao != fato:
         blocos.append(
-            f"Descri??o do achado: {descricao}"
+            f"Descrição do achado: {descricao}"
         )
 
     if evidencia:
         blocos.append(
-            f"Evid?ncia considerada: {evidencia}"
+            f"Evidência considerada: {evidencia}"
         )
 
     if fundamentacao:
         blocos.append(
-            f"Fundamenta??o indicada: {fundamentacao}"
+            f"Fundamentação indicada: {fundamentacao}"
         )
 
     if risco:
@@ -189,12 +189,12 @@ def gerar_texto_recomendacao(item):
 
     if not recomendacao:
         pendencias.append(
-            "Recomenda??o t?cnica n?o informada."
+            "Recomendação técnica não informada."
         )
 
     if not fundamentacao:
         pendencias.append(
-            "Fundamenta??o normativa n?o informada."
+            "Fundamentação normativa não informada."
         )
 
     blocos = []
@@ -205,23 +205,23 @@ def gerar_texto_recomendacao(item):
         )
     else:
         blocos.append(
-            "Recomenda-se an?lise t?cnica complementar "
-            "antes da defini??o de provid?ncia."
+            "Recomenda-se análise técnica complementar "
+            "antes da definição de providência."
         )
 
     if fundamentacao:
         blocos.append(
-            f"Fundamenta??o considerada: {fundamentacao}"
+            f"Fundamentação considerada: {fundamentacao}"
         )
 
     if evidencia:
         blocos.append(
-            f"Evid?ncia relacionada: {evidencia}"
+            f"Evidência relacionada: {evidencia}"
         )
 
     blocos.append(
-        "A provid?ncia definitiva dever? ser validada "
-        "pelo analista respons?vel."
+        "A providência definitiva deverá ser validada "
+        "pelo analista responsável."
     )
 
     return TextoRecomendacao(

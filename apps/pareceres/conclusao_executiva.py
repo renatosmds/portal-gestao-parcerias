@@ -52,12 +52,12 @@ def _rotulo_item(item):
 def _texto_classificacao(classificacao):
     mapa = {
         ParecerTecnico.TipoConclusao.EM_ANALISE:
-            "O parecer permanece em an?lise t?cnica.",
+            "O parecer permanece em análise técnica.",
 
         ParecerTecnico.TipoConclusao.SEM_PENDENCIAS_RELEVANTES:
             (
-                "N?o foram identificadas pend?ncias relevantes "
-                "entre os itens j? conclu?dos."
+                "Não foram identificadas pendências relevantes "
+                "entre os itens já concluídos."
             ),
 
         ParecerTecnico.TipoConclusao.COM_RESSALVAS:
@@ -68,32 +68,32 @@ def _texto_classificacao(classificacao):
 
         ParecerTecnico.TipoConclusao.COM_PENDENCIAS_SANEAVEIS:
             (
-                "Foram identificadas pend?ncias pass?veis "
+                "Foram identificadas pendências passíveis "
                 "de saneamento."
             ),
 
         ParecerTecnico.TipoConclusao.COM_IRREGULARIDADES:
             (
                 "Foram identificados itens classificados como "
-                "irregularidade ou pend?ncias n?o sanadas."
+                "irregularidade ou pendências não sanadas."
             ),
 
         ParecerTecnico.TipoConclusao.AGUARDANDO_DILIGENCIA:
             (
-                "A an?lise possui dilig?ncias ainda pendentes "
-                "de conclus?o."
+                "A análise possui diligências ainda pendentes "
+                "de conclusão."
             ),
 
         ParecerTecnico.TipoConclusao.INCONCLUSIVO:
             (
-                "Os elementos dispon?veis ainda n?o permitem "
-                "conclus?o t?cnica consolidada."
+                "Os elementos disponíveis ainda não permitem "
+                "conclusão técnica consolidada."
             ),
     }
 
     return mapa.get(
         classificacao,
-        "O parecer requer an?lise t?cnica complementar.",
+        "O parecer requer análise técnica complementar.",
     )
 
 
@@ -101,17 +101,17 @@ def gerar_conclusao_executiva(parecer):
     """
     Gera minuta executiva consolidada do parecer.
 
-    A fun??o N?O:
+    A função NÃO:
     - altera o parecer;
     - grava tipo_conclusao;
     - finaliza o parecer;
     - registra glosa;
-    - aprova ou reprova a presta??o de contas.
+    - aprova ou reprova a prestação de contas.
     """
 
     if not isinstance(parecer, ParecerTecnico):
         raise ValidationError(
-            "O objeto informado n?o ? um ParecerTecnico v?lido."
+            "O objeto informado não é um ParecerTecnico válido."
         )
 
     if not parecer.pk:
@@ -171,7 +171,7 @@ def gerar_conclusao_executiva(parecer):
     partes = [
         (
             f"Foram analisados {classificacao.total_itens} "
-            "item(ns) no parecer t?cnico."
+            "item(ns) no parecer técnico."
         ),
         texto_classificacao,
     ]
@@ -179,23 +179,23 @@ def gerar_conclusao_executiva(parecer):
     if classificacao.diligencias_abertas:
         partes.append(
             (
-                f"H? {classificacao.diligencias_abertas} "
-                "dilig?ncia(s) ainda aberta(s) ou em rean?lise."
+                f"Há {classificacao.diligencias_abertas} "
+                "diligência(s) ainda aberta(s) ou em reanálise."
             )
         )
 
     if classificacao.nao_sanados:
         partes.append(
             (
-                f"H? {classificacao.nao_sanados} "
-                "pend?ncia(s) registrada(s) como n?o sanada(s)."
+                f"Há {classificacao.nao_sanados} "
+                "pendência(s) registrada(s) como não sanada(s)."
             )
         )
 
     if classificacao.irregularidades:
         partes.append(
             (
-                f"H? {classificacao.irregularidades} "
+                f"Há {classificacao.irregularidades} "
                 "item(ns) classificado(s) como irregularidade."
             )
         )
@@ -203,7 +203,7 @@ def gerar_conclusao_executiva(parecer):
     if classificacao.ressalvas:
         partes.append(
             (
-                f"H? {classificacao.ressalvas} "
+                f"Há {classificacao.ressalvas} "
                 "item(ns) classificado(s) com ressalva."
             )
         )
@@ -211,16 +211,16 @@ def gerar_conclusao_executiva(parecer):
     if classificacao.pendencias_saneaveis:
         partes.append(
             (
-                f"H? {classificacao.pendencias_saneaveis} "
-                "pend?ncia(s) classificada(s) como sane?vel(is)."
+                f"Há {classificacao.pendencias_saneaveis} "
+                "pendência(s) classificada(s) como saneável(is)."
             )
         )
 
     partes.append(
         (
-            "A presente conclus?o possui car?ter de minuta "
-            "t?cnica e dever? ser revisada e validada pelo "
-            "analista respons?vel antes de qualquer decis?o "
+            "A presente conclusão possui caráter de minuta "
+            "técnica e deverá ser revisada e validada pelo "
+            "analista responsável antes de qualquer decisão "
             "administrativa definitiva."
         )
     )
@@ -229,7 +229,7 @@ def gerar_conclusao_executiva(parecer):
         classificacao_sugerida=(
             classificacao.classificacao_sugerida
         ),
-        titulo="Conclus?o executiva preliminar",
+        titulo="Conclusão executiva preliminar",
         resumo_executivo=" ".join(partes),
         pendencias_relevantes=tuple(pendencias),
         aspectos_regulares=tuple(regulares),

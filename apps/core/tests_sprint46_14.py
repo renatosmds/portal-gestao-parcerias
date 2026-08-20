@@ -269,10 +269,10 @@ class Sprint4614VersionamentoParecerTests(TestCase):
 
         self.assertContains(
             resposta,
-            "Vers?o:",
+            "Versão:",
         )
 
         self.assertContains(
             resposta,
-            "Criar nova vers?o",
+            "Criar nova versão",
         )

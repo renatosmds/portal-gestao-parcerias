@@ -61,7 +61,7 @@ class Sprint46113InterfaceFinalTests(TestCase):
 
         self.assertContains(
             resposta,
-            "Pareceres T?cnicos",
+            "Pareceres Técnicos",
         )
 
     def test_form_parecer_possui_classes_bootstrap(self):
