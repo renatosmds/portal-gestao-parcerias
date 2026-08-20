@@ -78,6 +78,10 @@ router.register(r'conferencia3', Conferencia3ViewSet)
 
 urlpatterns = [
     path(
+        "pareceres/",
+        include("apps.pareceres.urls"),
+    ),
+    path(
         "planos-trabalho/",
         include("apps.planos_trabalho.urls"),
     ),

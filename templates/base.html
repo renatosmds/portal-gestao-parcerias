@@ -122,6 +122,11 @@
                 <span>Metas e indicadores</span>
             </a>
 
+            <a class="sgm-nav-item {% if request.resolver_match.namespace == 'pareceres' %}active{% endif %}"
+               href="{% url 'pareceres:parecer_lista' %}">
+                <span>Pareceres T?cnicos</span>
+            </a>
+
             <a class="sgm-nav-item {% if request.resolver_match.namespace == 'planos_trabalho' %}active{% endif %}"
                href="{% url 'planos_trabalho:plano_lista' %}">
                 <i class="fa fa-tasks" aria-hidden="true"></i>

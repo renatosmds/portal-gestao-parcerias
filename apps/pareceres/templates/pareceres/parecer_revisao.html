@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Revis?o Humana do Parecer | PGP{% endblock %}
+{% block page_name %}Revis?o Humana do Parecer{% endblock %}
+
+{% block main %}
+<div class="container-fluid py-4">
+
+    <h1 class="h3">Revis?o humana do parecer</h1>
+
+    <p class="text-muted">
+        {{ parecer.empresa }} ? {{ parecer.prestacao }}
+    </p>
+
+    <div class="alert alert-warning">
+        <strong>Sugest?o autom?tica ? n?o gravada como decis?o:</strong><br>
+        {{ classificacao_sugerida_label }}
+        <hr>
+        {{ minuta_executiva.resumo_executivo }}
+    </div>
+
+    <div class="card shadow-sm border-primary">
+        <div class="card-header">
+            <strong>Decis?o e manifesta??o do analista</strong>
+        </div>
+
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">
+                        {{ field.label }}
+                    </label>
+
+                    {{ field }}
+
+                    {% if field.errors %}
+                    <div class="text-danger small">
+                        {{ field.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+
+                <div class="alert alert-info">
+                    Salvar esta revis?o n?o finaliza o parecer,
+                    n?o aprova ou reprova a presta??o e n?o registra glosa.
+                </div>
+
+                <button class="btn btn-primary" type="submit">
+                    Salvar revis?o humana
+                </button>
+
+                <a class="btn btn-outline-secondary"
+                   href="{% url 'pareceres:parecer_detalhe' parecer.pk %}">
+                    Cancelar
+                </a>
+            </form>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
