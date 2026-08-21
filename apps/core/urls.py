@@ -10,7 +10,41 @@ from .views_sprint32 import (
     financeiro_em_desenvolvimento,
 )
 
+from .acessos_views import (
+    acessos_grupo,
+    acessos_grupo_novo,
+    acessos_painel,
+    acessos_usuario,
+    acessos_usuario_grupos,
+)
+
 urlpatterns = [
+    path(
+        "acessos/",
+        acessos_painel,
+        name="acessos_painel",
+    ),
+    path(
+        "acessos/usuarios/<int:pk>/",
+        acessos_usuario,
+        name="acessos_usuario",
+    ),
+    path(
+        "acessos/usuarios/<int:pk>/grupos/",
+        acessos_usuario_grupos,
+        name="acessos_usuario_grupos",
+    ),
+    path(
+        "acessos/grupos/novo/",
+        acessos_grupo_novo,
+        name="acessos_grupo_novo",
+    ),
+    path(
+        "acessos/grupos/<int:pk>/",
+        acessos_grupo,
+        name="acessos_grupo",
+    ),
+
 
     path(
         "execucao/em-desenvolvimento/",

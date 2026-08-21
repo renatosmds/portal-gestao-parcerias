@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+
+{% block title %}Administração de Acessos | PGP{% endblock %}
+{% block page_name %}Administração de Acessos{% endblock %}
+
+{% block main %}
+<section class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>Administração de Acessos</h1>
+            <p class="text-muted mb-0">
+                Gerencie os módulos disponibilizados para usuários e grupos.
+            </p>
+        </div>
+        <span class="badge badge-danger">
+            Somente superusuário
+        </span>
+    </div>
+
+    <div class="alert alert-info">
+        As permissões configuradas aqui utilizam o sistema nativo
+        de usuários, grupos e permissões do Django.
+        O módulo Relatórios é derivado de outras permissões
+        e não possui concessão independente.
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <strong>Usuários</strong>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                <tr>
+                    <th>Usuário</th>
+                    <th>Nome</th>
+                    <th>Grupos</th>
+                    <th>Perfil</th>
+                    <th></th>
+                </tr>
+                </thead>
+
+                <tbody>
+                {% for usuario in usuarios %}
+                <tr>
+                    <td>{{ usuario.username }}</td>
+
+                    <td>
+                        {{ usuario.get_full_name|default:"-" }}
+                    </td>
+
+                    <td>
+                        {% for grupo in usuario.groups.all %}
+                            <span class="badge badge-secondary">
+                                {{ grupo.name }}
+                            </span>
+                        {% empty %}
+                            <span class="text-muted">Sem grupo</span>
+                        {% endfor %}
+                    </td>
+
+                    <td>
+                        {% if usuario.is_superuser %}
+                            <span class="badge badge-danger">
+                                Superusuário
+                            </span>
+                        {% elif usuario.is_staff %}
+                            <span class="badge badge-warning">
+                                Staff
+                            </span>
+                        {% else %}
+                            <span class="badge badge-light">
+                                Usuário
+                            </span>
+                        {% endif %}
+                    </td>
+
+                    <td class="text-right">
+                        <a
+                            href="{% url 'acessos_usuario' usuario.pk %}"
+                            class="btn btn-sm btn-outline-primary"
+                        >
+                            Editar acessos
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <strong>Grupos / Perfis</strong>
+
+            <form
+                method="post"
+                action="{% url 'acessos_grupo_novo' %}"
+                class="form-inline"
+            >
+                {% csrf_token %}
+
+                <input
+                    type="text"
+                    name="nome"
+                    class="form-control form-control-sm mr-2"
+                    placeholder="Novo grupo/perfil"
+                    required
+                >
+
+                <button
+                    type="submit"
+                    class="btn btn-sm btn-primary"
+                >
+                    <i class="fa fa-plus"></i>
+                    Criar grupo
+                </button>
+            </form>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                <tr>
+                    <th>Grupo</th>
+                    <th>Usuários</th>
+                    <th></th>
+                </tr>
+                </thead>
+
+                <tbody>
+                {% for grupo in grupos %}
+                <tr>
+                    <td>{{ grupo.name }}</td>
+                    <td>{{ grupo.user_set.count }}</td>
+                    <td class="text-right">
+                        <a
+                            href="{% url 'acessos_grupo' grupo.pk %}"
+                            class="btn btn-sm btn-outline-primary"
+                        >
+                            Editar módulos
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3" class="text-muted">
+                        Nenhum grupo cadastrado.
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <strong>Matriz de Acessos</strong>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-sm table-hover mb-0">
+                <thead>
+                <tr>
+                    <th>Usuário</th>
+                    <th>Módulo</th>
+                    <th class="text-center">Direto</th>
+                    <th class="text-center">Grupo</th>
+                    <th class="text-center">Efetivo</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                {% for linha in matriz %}
+                    {% for acesso in linha.acessos %}
+                    <tr
+                        data-usuario="{{ linha.usuario.username }}"
+                        data-modulo="{{ acesso.modulo }}"
+                        data-direto="{% if acesso.direto %}sim{% else %}nao{% endif %}"
+                        data-grupo="{% if acesso.grupo %}sim{% else %}nao{% endif %}"
+                        data-efetivo="{% if acesso.efetivo %}sim{% else %}nao{% endif %}"
+                    >
+                        <td>
+                            {{ linha.usuario.username }}
+
+                            {% if acesso.superusuario %}
+                            <span class="badge badge-danger ml-1">
+                                Superusuário
+                            </span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {{ acesso.nome }}
+                        </td>
+
+                        <td class="text-center">
+                            {% if acesso.direto %}
+                            <span class="badge badge-primary">
+                                Sim
+                            </span>
+                            {% else %}
+                            <span class="text-muted">&mdash;</span>
+                            {% endif %}
+                        </td>
+
+                        <td class="text-center">
+                            {% if acesso.grupo %}
+                            <span class="badge badge-success">
+                                Sim
+                            </span>
+                            {% else %}
+                            <span class="text-muted">&mdash;</span>
+                            {% endif %}
+                        </td>
+
+                        <td class="text-center">
+                            {% if acesso.efetivo %}
+                            <span class="badge badge-dark">
+                                Sim
+                            </span>
+                            {% else %}
+                            <span class="text-muted">&mdash;</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td>
+                            {{ linha.usuario.username }}
+                        </td>
+                        <td colspan="4" class="text-muted">
+                            Nenhum módulo liberado
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</section>
+{% endblock %}

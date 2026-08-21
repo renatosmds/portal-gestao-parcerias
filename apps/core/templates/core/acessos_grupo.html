@@ -1,0 +1,78 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Acessos do Grupo | PGP{% endblock %}
+{% block page_name %}Acessos do Grupo{% endblock %}
+
+{% block main %}
+<section class="container-fluid">
+
+    <div class="mb-4">
+        <a href="{% url 'acessos_painel' %}">
+            ← Voltar para Administração de Acessos
+        </a>
+
+        <h1 class="mt-3">
+            Grupo: {{ grupo.name }}
+        </h1>
+
+        <p class="text-muted">
+            Todos os usuários vinculados ao grupo herdarão
+            estes módulos.
+        </p>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="row">
+            {% for modulo in modulos %}
+            <div class="col-md-6 col-xl-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+
+                        <div class="custom-control custom-checkbox">
+                            <input
+                                type="checkbox"
+                                class="custom-control-input"
+                                id="modulo_{{ modulo.chave }}"
+                                name="modulos"
+                                value="{{ modulo.chave }}"
+                                {% if modulo.chave in modulos_selecionados %}checked{% endif %}
+                            >
+
+                            <label
+                                class="custom-control-label"
+                                for="modulo_{{ modulo.chave }}"
+                            >
+                                <strong>
+                                    {{ modulo.nome }}
+                                </strong>
+                            </label>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="mt-3">
+            <button
+                type="submit"
+                class="btn btn-primary"
+            >
+                Salvar perfil
+            </button>
+
+            <a
+                href="{% url 'acessos_painel' %}"
+                class="btn btn-light"
+            >
+                Cancelar
+            </a>
+        </div>
+
+    </form>
+
+</section>
+{% endblock %}
