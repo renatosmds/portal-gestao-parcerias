@@ -463,4 +463,3 @@ def acessos_usuario_grupos(request, pk):
         "acessos_usuario",
         pk=usuario.pk,
     )
-
