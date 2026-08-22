@@ -7,6 +7,7 @@ camada de leitura. Nenhuma migração é necessária.
 from __future__ import annotations
 
 from apps.core.dashboard_permissoes import modulos_dashboard_usuario
+from apps.core.dashboard_widgets_permissoes import widgets_dashboard_usuario
 
 from datetime import date, timedelta
 from decimal import Decimal
@@ -731,6 +732,11 @@ def montar_contexto_dashboard(request):
 
     contexto = {
         "dashboard_modulos": tuple(sorted(modulos)),
+        "dashboard_widgets": tuple(
+            sorted(
+                widgets_dashboard_usuario(user)
+            )
+        ),
         "visao_dashboard": visao,
         "usuario_area_osc": visao == "osc",
         "area_portal": "Área da OSC" if visao == "osc" else "Área do Órgão Público",

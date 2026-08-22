@@ -7,9 +7,13 @@ from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 
 from apps.core.dashboard_permissoes import modulos_dashboard_usuario
+from apps.core.dashboard_widgets import WIDGETS_DASHBOARD
+from apps.core.dashboard_widgets_permissoes import widgets_dashboard_usuario
 from apps.core.models import (
     ConfiguracaoDashboardGrupo,
     ConfiguracaoDashboardUsuario,
+    ConfiguracaoDashboardWidgetGrupo,
+    ConfiguracaoDashboardWidgetUsuario,
 )
 from apps.core.permissoes_modulos import MODULOS, modulos_liberados
 
@@ -94,6 +98,50 @@ def _configuracoes_grupos_usuario(usuario):
 
 
 def _estado_grupo_efetivo(valores):
+    if not valores:
+        return "Padr?o"
+
+    if any(valores):
+        return "Mostrar"
+
+    return "Ocultar"
+
+
+def _configuracoes_widgets_usuario(usuario):
+    return {
+        item.widget: item.estado
+        for item in ConfiguracaoDashboardWidgetUsuario.objects.filter(
+            usuario=usuario
+        )
+    }
+
+
+def _configuracoes_widgets_grupos_usuario(usuario):
+    resultado = {}
+
+    configuracoes = (
+        ConfiguracaoDashboardWidgetGrupo.objects
+        .filter(
+            grupo__in=usuario.groups.all()
+        )
+        .values(
+            "widget",
+            "exibir",
+        )
+    )
+
+    for item in configuracoes:
+        resultado.setdefault(
+            item["widget"],
+            [],
+        ).append(
+            item["exibir"]
+        )
+
+    return resultado
+
+
+def _estado_widget_grupo_efetivo(valores):
     if not valores:
         return "Padr?o"
 
@@ -233,6 +281,36 @@ def dashboard_acessos_usuario(request, pk):
                 },
             )
 
+        for widget in WIDGETS_DASHBOARD:
+            valor = request.POST.get(
+                f"widget_{widget}",
+            )
+
+            # Campos ausentes nao alteram configuracoes existentes.
+            if valor is None:
+                continue
+
+            if valor == "herdar":
+                ConfiguracaoDashboardWidgetUsuario.objects.filter(
+                    usuario=usuario,
+                    widget=widget,
+                ).delete()
+                continue
+
+            if valor not in {
+                ConfiguracaoDashboardWidgetUsuario.Estado.MOSTRAR,
+                ConfiguracaoDashboardWidgetUsuario.Estado.OCULTAR,
+            }:
+                continue
+
+            ConfiguracaoDashboardWidgetUsuario.objects.update_or_create(
+                usuario=usuario,
+                widget=widget,
+                defaults={
+                    "estado": valor,
+                },
+            )
+
         messages.success(
             request,
             "Configura??o do Dashboard do usu?rio atualizada.",
@@ -281,12 +359,52 @@ def dashboard_acessos_usuario(request, pk):
             }
         )
 
+    configuracoes_widgets = (
+        _configuracoes_widgets_usuario(
+            usuario
+        )
+    )
+
+    grupos_widgets = (
+        _configuracoes_widgets_grupos_usuario(
+            usuario
+        )
+    )
+
+    widgets_efetivos = set(
+        widgets_dashboard_usuario(
+            usuario
+        )
+    )
+
+    widgets = []
+
+    for widget, nome in WIDGETS_DASHBOARD.items():
+        widgets.append(
+            {
+                "chave": widget,
+                "nome": nome,
+                "estado": configuracoes_widgets.get(
+                    widget,
+                    "herdar",
+                ),
+                "grupo": _estado_widget_grupo_efetivo(
+                    grupos_widgets.get(
+                        widget,
+                        [],
+                    )
+                ),
+                "efetivo": widget in widgets_efetivos,
+            }
+        )
+
     return render(
         request,
         "core/dashboard_acessos_usuario.html",
         {
             "usuario_alvo": usuario,
             "modulos": modulos,
+            "widgets": widgets,
         },
     )
 
@@ -330,6 +448,36 @@ def dashboard_acessos_grupo(request, pk):
                 },
             )
 
+        for widget in WIDGETS_DASHBOARD:
+            valor = request.POST.get(
+                f"widget_{widget}",
+            )
+
+            # Campos ausentes nao alteram configuracoes existentes.
+            if valor is None:
+                continue
+
+            if valor == "padrao":
+                ConfiguracaoDashboardWidgetGrupo.objects.filter(
+                    grupo=grupo,
+                    widget=widget,
+                ).delete()
+                continue
+
+            if valor not in {
+                "mostrar",
+                "ocultar",
+            }:
+                continue
+
+            ConfiguracaoDashboardWidgetGrupo.objects.update_or_create(
+                grupo=grupo,
+                widget=widget,
+                defaults={
+                    "exibir": valor == "mostrar",
+                },
+            )
+
         messages.success(
             request,
             "Configura??o do Dashboard do grupo atualizada.",
@@ -365,11 +513,38 @@ def dashboard_acessos_grupo(request, pk):
             }
         )
 
+    configuracoes_widgets = {
+        item.widget: item.exibir
+        for item in ConfiguracaoDashboardWidgetGrupo.objects.filter(
+            grupo=grupo
+        )
+    }
+
+    widgets = []
+
+    for widget, nome in WIDGETS_DASHBOARD.items():
+
+        if widget not in configuracoes_widgets:
+            estado = "padrao"
+        elif configuracoes_widgets[widget]:
+            estado = "mostrar"
+        else:
+            estado = "ocultar"
+
+        widgets.append(
+            {
+                "chave": widget,
+                "nome": nome,
+                "estado": estado,
+            }
+        )
+
     return render(
         request,
         "core/dashboard_acessos_grupo.html",
         {
             "grupo": grupo,
             "modulos": modulos,
+            "widgets": widgets,
         },
     )

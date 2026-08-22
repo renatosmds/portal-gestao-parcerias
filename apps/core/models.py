@@ -123,3 +123,114 @@ class ConfiguracaoDashboardGrupo(models.Model):
             f"{self.modulo} - "
             f"{situacao}"
         )
+class ConfiguracaoDashboardWidgetUsuario(models.Model):
+
+    class Estado(models.TextChoices):
+        HERDAR = "herdar", "Herdar"
+        MOSTRAR = "mostrar", "Mostrar"
+        OCULTAR = "ocultar", "Ocultar"
+
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="configuracoes_widgets_dashboard",
+    )
+
+    widget = models.CharField(
+        max_length=60,
+    )
+
+    estado = models.CharField(
+        max_length=10,
+        choices=Estado.choices,
+        default=Estado.HERDAR,
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["usuario", "widget"],
+                name="uniq_dashboard_widget_usuario",
+            ),
+        ]
+
+        ordering = [
+            "usuario__username",
+            "widget",
+        ]
+
+    def clean(self):
+        super().clean()
+
+        from apps.core.dashboard_widgets import WIDGETS_DASHBOARD
+
+        if self.widget not in WIDGETS_DASHBOARD:
+            raise ValidationError(
+                {
+                    "widget": (
+                        "O bloco informado nao existe "
+                        "no catalogo do Dashboard."
+                    )
+                }
+            )
+
+    def __str__(self):
+        return (
+            f"{self.usuario} - "
+            f"{self.widget} - "
+            f"{self.get_estado_display()}"
+        )
+
+
+class ConfiguracaoDashboardWidgetGrupo(models.Model):
+
+    grupo = models.ForeignKey(
+        Group,
+        on_delete=models.CASCADE,
+        related_name="configuracoes_widgets_dashboard",
+    )
+
+    widget = models.CharField(
+        max_length=60,
+    )
+
+    exibir = models.BooleanField(
+        default=True,
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["grupo", "widget"],
+                name="uniq_dashboard_widget_grupo",
+            ),
+        ]
+
+        ordering = [
+            "grupo__name",
+            "widget",
+        ]
+
+    def clean(self):
+        super().clean()
+
+        from apps.core.dashboard_widgets import WIDGETS_DASHBOARD
+
+        if self.widget not in WIDGETS_DASHBOARD:
+            raise ValidationError(
+                {
+                    "widget": (
+                        "O bloco informado nao existe "
+                        "no catalogo do Dashboard."
+                    )
+                }
+            )
+
+    def __str__(self):
+        situacao = "Exibir" if self.exibir else "Ocultar"
+
+        return (
+            f"{self.grupo} - "
+            f"{self.widget} - "
+            f"{situacao}"
+        )

@@ -347,7 +347,8 @@
     </section>
     {% endif %}
 
-    <div class="pgp-section-title">
+    {% if "execucao_financeira" in dashboard_widgets %}
+<div class="pgp-section-title">
         <div>
             <span class="sgm-eyebrow">EXECUÇÃO FINANCEIRA</span>
             <h2>Visão executiva do escopo</h2>
@@ -436,7 +437,10 @@
     </div>
 
 
-    <div class="pgp-section-title">
+    {% endif %}
+
+{% if "situacao_parcerias" in dashboard_widgets %}
+<div class="pgp-section-title">
         <div>
             <span class="sgm-eyebrow">INDICADORES CONSOLIDADOS</span>
             <h2>Situação das parcerias</h2>
@@ -519,7 +523,9 @@
 {% endif %}
     </div>
 
-    <div class="pgp-dashboard-grid pgp-dashboard-grid-main">
+    {% endif %}
+
+<div class="pgp-dashboard-grid pgp-dashboard-grid-main">
                 {% if "diligencias" in dashboard_modulos or "metas" in dashboard_modulos or "documentos" in dashboard_modulos or "prestacoes" in dashboard_modulos or "lancamentos" in dashboard_modulos or "analises" in dashboard_modulos %}
 <section class="pgp-panel">
             <div class="pgp-panel-header">
@@ -559,7 +565,8 @@
         </section>
 {% endif %}
 
-        <section class="pgp-panel">
+        {% if "progresso_trabalho" in dashboard_widgets %}
+<section class="pgp-panel">
             <div class="pgp-panel-header">
                 <div>
                     <span class="sgm-eyebrow">CONFORMIDADE</span>
@@ -593,7 +600,9 @@
                     <div><strong>Prestações concluídas</strong><small>{{ prestacoes_concluidas }} de {{ prestacoes_total }}</small></div>
                 </div>
             </div>
-        </section>
+        </section>{% endif %}
+
+
     </div>
 
     {% if "prestacoes" in dashboard_modulos %}

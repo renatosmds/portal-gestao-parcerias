@@ -66,6 +66,56 @@
             </table>
         </div>
 
+        <hr class="my-4">
+
+        <h4>Blocos do Dashboard</h4>
+
+        <p class="text-muted">
+            A configura??o abaixo ser? herdada pelos usu?rios
+            do grupo, salvo quando houver configura??o individual.
+        </p>
+
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>Bloco</th>
+                        <th>Configura??o do grupo</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                {% for item in widgets %}
+                    <tr>
+                        <td>{{ item.nome }}</td>
+
+                        <td>
+                            <select
+                                name="widget_{{ item.chave }}"
+                                class="form-control form-control-sm"
+                            >
+                                <option value="padrao"
+                                    {% if item.estado == "padrao" %}selected{% endif %}>
+                                    Padr?o
+                                </option>
+
+                                <option value="mostrar"
+                                    {% if item.estado == "mostrar" %}selected{% endif %}>
+                                    Mostrar
+                                </option>
+
+                                <option value="ocultar"
+                                    {% if item.estado == "ocultar" %}selected{% endif %}>
+                                    Ocultar
+                                </option>
+                            </select>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
         <button type="submit"
                 class="btn btn-primary">
             Salvar configura??o

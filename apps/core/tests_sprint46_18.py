@@ -787,3 +787,313 @@ class Sprint4618MatrizVisualDashboardTests(TestCase):
             "documentos",
             resultado,
         )
+
+class Sprint46185WidgetsDashboardTests(TestCase):
+
+    def setUp(self):
+        self.usuario = User.objects.create_user(
+            username="usuario_widgets_46185",
+            password="teste123",
+        )
+
+        self.grupo = Group.objects.create(
+            name="Grupo Widgets 46.18.5",
+        )
+
+    def test_sem_configuracao_todos_widgets_permanecem_visiveis(self):
+        from apps.core.dashboard_widgets_permissoes import (
+            widgets_dashboard_usuario,
+        )
+
+        resultado = widgets_dashboard_usuario(
+            self.usuario
+        )
+
+        self.assertIn(
+            "execucao_financeira",
+            resultado,
+        )
+
+        self.assertIn(
+            "situacao_parcerias",
+            resultado,
+        )
+
+        self.assertIn(
+            "progresso_trabalho",
+            resultado,
+        )
+
+    def test_usuario_pode_ocultar_execucao_financeira(self):
+        from apps.core.models import (
+            ConfiguracaoDashboardWidgetUsuario,
+        )
+        from apps.core.dashboard_widgets_permissoes import (
+            widgets_dashboard_usuario,
+        )
+
+        ConfiguracaoDashboardWidgetUsuario.objects.create(
+            usuario=self.usuario,
+            widget="execucao_financeira",
+            estado=ConfiguracaoDashboardWidgetUsuario.Estado.OCULTAR,
+        )
+
+        resultado = widgets_dashboard_usuario(
+            self.usuario
+        )
+
+        self.assertNotIn(
+            "execucao_financeira",
+            resultado,
+        )
+
+    def test_usuario_pode_ocultar_situacao_parcerias(self):
+        from apps.core.models import (
+            ConfiguracaoDashboardWidgetUsuario,
+        )
+        from apps.core.dashboard_widgets_permissoes import (
+            widgets_dashboard_usuario,
+        )
+
+        ConfiguracaoDashboardWidgetUsuario.objects.create(
+            usuario=self.usuario,
+            widget="situacao_parcerias",
+            estado=ConfiguracaoDashboardWidgetUsuario.Estado.OCULTAR,
+        )
+
+        resultado = widgets_dashboard_usuario(
+            self.usuario
+        )
+
+        self.assertNotIn(
+            "situacao_parcerias",
+            resultado,
+        )
+
+    def test_usuario_pode_ocultar_progresso_trabalho(self):
+        from apps.core.models import (
+            ConfiguracaoDashboardWidgetUsuario,
+        )
+        from apps.core.dashboard_widgets_permissoes import (
+            widgets_dashboard_usuario,
+        )
+
+        ConfiguracaoDashboardWidgetUsuario.objects.create(
+            usuario=self.usuario,
+            widget="progresso_trabalho",
+            estado=ConfiguracaoDashboardWidgetUsuario.Estado.OCULTAR,
+        )
+
+        resultado = widgets_dashboard_usuario(
+            self.usuario
+        )
+
+        self.assertNotIn(
+            "progresso_trabalho",
+            resultado,
+        )
+
+    def test_grupo_pode_ocultar_widget(self):
+        from apps.core.models import (
+            ConfiguracaoDashboardWidgetGrupo,
+        )
+        from apps.core.dashboard_widgets_permissoes import (
+            widgets_dashboard_usuario,
+        )
+
+        self.usuario.groups.add(
+            self.grupo
+        )
+
+        ConfiguracaoDashboardWidgetGrupo.objects.create(
+            grupo=self.grupo,
+            widget="progresso_trabalho",
+            exibir=False,
+        )
+
+        resultado = widgets_dashboard_usuario(
+            self.usuario
+        )
+
+        self.assertNotIn(
+            "progresso_trabalho",
+            resultado,
+        )
+
+    def test_grupo_pode_mostrar_widget(self):
+        from apps.core.models import (
+            ConfiguracaoDashboardWidgetGrupo,
+        )
+        from apps.core.dashboard_widgets_permissoes import (
+            widgets_dashboard_usuario,
+        )
+
+        self.usuario.groups.add(
+            self.grupo
+        )
+
+        ConfiguracaoDashboardWidgetGrupo.objects.create(
+            grupo=self.grupo,
+            widget="execucao_financeira",
+            exibir=True,
+        )
+
+        resultado = widgets_dashboard_usuario(
+            self.usuario
+        )
+
+        self.assertIn(
+            "execucao_financeira",
+            resultado,
+        )
+
+    def test_individual_ocultar_prevalece_sobre_grupo_mostrar(self):
+        from apps.core.models import (
+            ConfiguracaoDashboardWidgetGrupo,
+            ConfiguracaoDashboardWidgetUsuario,
+        )
+        from apps.core.dashboard_widgets_permissoes import (
+            widgets_dashboard_usuario,
+        )
+
+        self.usuario.groups.add(
+            self.grupo
+        )
+
+        ConfiguracaoDashboardWidgetGrupo.objects.create(
+            grupo=self.grupo,
+            widget="progresso_trabalho",
+            exibir=True,
+        )
+
+        ConfiguracaoDashboardWidgetUsuario.objects.create(
+            usuario=self.usuario,
+            widget="progresso_trabalho",
+            estado=ConfiguracaoDashboardWidgetUsuario.Estado.OCULTAR,
+        )
+
+        resultado = widgets_dashboard_usuario(
+            self.usuario
+        )
+
+        self.assertNotIn(
+            "progresso_trabalho",
+            resultado,
+        )
+
+    def test_um_grupo_mostrar_prevalece_sobre_outro_ocultar(self):
+        from apps.core.models import (
+            ConfiguracaoDashboardWidgetGrupo,
+        )
+        from apps.core.dashboard_widgets_permissoes import (
+            widgets_dashboard_usuario,
+        )
+
+        outro_grupo = Group.objects.create(
+            name="Outro Grupo Widgets 46.18.5",
+        )
+
+        self.usuario.groups.add(
+            self.grupo,
+            outro_grupo,
+        )
+
+        ConfiguracaoDashboardWidgetGrupo.objects.create(
+            grupo=self.grupo,
+            widget="situacao_parcerias",
+            exibir=False,
+        )
+
+        ConfiguracaoDashboardWidgetGrupo.objects.create(
+            grupo=outro_grupo,
+            widget="situacao_parcerias",
+            exibir=True,
+        )
+
+        resultado = widgets_dashboard_usuario(
+            self.usuario
+        )
+
+        self.assertIn(
+            "situacao_parcerias",
+            resultado,
+        )
+
+class Sprint46185WidgetsDashboardIntegracaoTests(TestCase):
+
+    def setUp(self):
+        from apps.core.models import (
+            ConfiguracaoDashboardWidgetUsuario,
+        )
+
+        self.ConfiguracaoWidget = (
+            ConfiguracaoDashboardWidgetUsuario
+        )
+
+        self.usuario = User.objects.create_superuser(
+            username="admin_widgets_integracao_46185",
+            email="widgets46185@example.com",
+            password="teste123",
+        )
+
+        self.client.force_login(
+            self.usuario
+        )
+
+    def _ocultar(self, widget):
+        self.ConfiguracaoWidget.objects.create(
+            usuario=self.usuario,
+            widget=widget,
+            estado=self.ConfiguracaoWidget.Estado.OCULTAR,
+        )
+
+    def test_ocultar_execucao_financeira_remove_bloco_do_html(self):
+        self._ocultar("execucao_financeira")
+
+        resposta = self.client.get(
+            reverse("home")
+        )
+
+        self.assertEqual(
+            resposta.status_code,
+            200,
+        )
+
+        self.assertNotContains(
+            resposta,
+            "Visão executiva do escopo",
+        )
+
+    def test_ocultar_situacao_parcerias_remove_bloco_do_html(self):
+        self._ocultar("situacao_parcerias")
+
+        resposta = self.client.get(
+            reverse("home")
+        )
+
+        self.assertEqual(
+            resposta.status_code,
+            200,
+        )
+
+        self.assertNotContains(
+            resposta,
+            "Situação das parcerias",
+        )
+
+    def test_ocultar_progresso_trabalho_remove_bloco_do_html(self):
+        self._ocultar("progresso_trabalho")
+
+        resposta = self.client.get(
+            reverse("home")
+        )
+
+        self.assertEqual(
+            resposta.status_code,
+            200,
+        )
+
+        self.assertNotContains(
+            resposta,
+            "Progresso do trabalho",
+        )

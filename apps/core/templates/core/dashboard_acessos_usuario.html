@@ -87,6 +87,74 @@
             </table>
         </div>
 
+        <hr class="my-4">
+
+        <h4>Blocos do Dashboard</h4>
+
+        <p class="text-muted">
+            Estes controles afetam apenas a exibi??o dos blocos
+            visuais do Dashboard e n?o alteram permiss?es de acesso.
+        </p>
+
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>Bloco</th>
+                        <th>Grupo</th>
+                        <th>Configura??o individual</th>
+                        <th>Efetivo</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                {% for item in widgets %}
+                    <tr>
+                        <td>{{ item.nome }}</td>
+
+                        <td>
+                            {{ item.grupo }}
+                        </td>
+
+                        <td>
+                            <select
+                                name="widget_{{ item.chave }}"
+                                class="form-control form-control-sm"
+                            >
+                                <option value="herdar"
+                                    {% if item.estado == "herdar" %}selected{% endif %}>
+                                    Herdar
+                                </option>
+
+                                <option value="mostrar"
+                                    {% if item.estado == "mostrar" %}selected{% endif %}>
+                                    Mostrar
+                                </option>
+
+                                <option value="ocultar"
+                                    {% if item.estado == "ocultar" %}selected{% endif %}>
+                                    Ocultar
+                                </option>
+                            </select>
+                        </td>
+
+                        <td>
+                            {% if item.efetivo %}
+                                <span class="badge badge-success">
+                                    Mostrar
+                                </span>
+                            {% else %}
+                                <span class="badge badge-secondary">
+                                    Ocultar
+                                </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
         <button type="submit"
                 class="btn btn-primary">
             Salvar configura??o
