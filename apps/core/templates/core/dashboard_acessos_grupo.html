@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block main %}
+<div class="container py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>Dashboard do grupo</h2>
+            <p class="mb-0">
+                <strong>{{ grupo.name }}</strong>
+            </p>
+        </div>
+
+        <a href="{% url 'dashboard_acessos_painel' %}"
+           class="btn btn-outline-secondary">
+            Voltar
+        </a>
+    </div>
+
+    <div class="alert alert-info">
+        A configura??o do grupo ser? herdada pelos usu?rios,
+        salvo quando houver configura??o individual.
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>M?dulo</th>
+                        <th>Configura??o do grupo</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                {% for item in modulos %}
+                    <tr>
+                        <td>{{ item.nome }}</td>
+
+                        <td>
+                            <select
+                                name="dashboard_{{ item.chave }}"
+                                class="form-control form-control-sm"
+                            >
+                                <option value="padrao"
+                                    {% if item.estado == "padrao" %}selected{% endif %}>
+                                    Padr?o
+                                </option>
+
+                                <option value="mostrar"
+                                    {% if item.estado == "mostrar" %}selected{% endif %}>
+                                    Mostrar
+                                </option>
+
+                                <option value="ocultar"
+                                    {% if item.estado == "ocultar" %}selected{% endif %}>
+                                    Ocultar
+                                </option>
+                            </select>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <button type="submit"
+                class="btn btn-primary">
+            Salvar configura??o
+        </button>
+    </form>
+
+</div>
+{% endblock %}

@@ -6,7 +6,7 @@ camada de leitura. Nenhuma migração é necessária.
 
 from __future__ import annotations
 
-from apps.core.permissoes_modulos import modulos_liberados
+from apps.core.dashboard_permissoes import modulos_dashboard_usuario
 
 from datetime import date, timedelta
 from decimal import Decimal
@@ -221,7 +221,7 @@ def _resumo_termos(termos, lancamentos, documentos, analises, prestacoes):
 
 def montar_contexto_dashboard(request):
     user = request.user
-    modulos = modulos_liberados(user)
+    modulos = modulos_dashboard_usuario(user)
     visao = _normalizar_visao(request)
     inicio, fim, periodo_ajustado = _ler_periodo(request)
     empresa_vinculada = empresa_do_usuario(user)

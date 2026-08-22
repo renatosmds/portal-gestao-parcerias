@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block main %}
+<div class="container py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>Dashboard do usu?rio</h2>
+            <p class="mb-0">
+                <strong>{{ usuario_alvo.username }}</strong>
+            </p>
+        </div>
+
+        <a href="{% url 'dashboard_acessos_painel' %}"
+           class="btn btn-outline-secondary">
+            Voltar
+        </a>
+    </div>
+
+    <div class="alert alert-info">
+        Ocultar ou mostrar aqui n?o altera as permiss?es
+        de acesso do usu?rio.
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>M?dulo</th>
+                        <th>Acesso</th>
+                        <th>Grupo</th>
+                        <th>Configura??o individual</th>
+                        <th>Efetivo</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                {% for item in modulos %}
+                    <tr>
+                        <td>{{ item.nome }}</td>
+
+                        <td>
+                            {% if item.acesso %}
+                                <span class="badge badge-success">Sim</span>
+                            {% else %}
+                                <span class="badge badge-secondary">N?o</span>
+                            {% endif %}
+                        </td>
+
+                        <td>{{ item.grupo }}</td>
+
+                        <td>
+                            <select
+                                name="dashboard_{{ item.chave }}"
+                                class="form-control form-control-sm"
+                            >
+                                <option value="herdar"
+                                    {% if item.estado == "herdar" %}selected{% endif %}>
+                                    Herdar
+                                </option>
+
+                                <option value="mostrar"
+                                    {% if item.estado == "mostrar" %}selected{% endif %}>
+                                    Mostrar
+                                </option>
+
+                                <option value="ocultar"
+                                    {% if item.estado == "ocultar" %}selected{% endif %}>
+                                    Ocultar
+                                </option>
+                            </select>
+                        </td>
+
+                        <td>
+                            {% if item.efetivo %}
+                                <span class="badge badge-success">Sim</span>
+                            {% else %}
+                                <span class="badge badge-secondary">N?o</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <button type="submit"
+                class="btn btn-primary">
+            Salvar configura??o
+        </button>
+    </form>
+
+</div>
+{% endblock %}

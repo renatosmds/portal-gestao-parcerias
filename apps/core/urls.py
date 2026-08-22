@@ -18,6 +18,12 @@ from .acessos_views import (
     acessos_usuario_grupos,
 )
 
+from .dashboard_acessos_views import (
+    dashboard_acessos_grupo,
+    dashboard_acessos_painel,
+    dashboard_acessos_usuario,
+)
+
 urlpatterns = [
     path(
         "acessos/",
@@ -43,6 +49,23 @@ urlpatterns = [
         "acessos/grupos/<int:pk>/",
         acessos_grupo,
         name="acessos_grupo",
+    ),
+
+
+    path(
+        "acessos/dashboard/",
+        dashboard_acessos_painel,
+        name="dashboard_acessos_painel",
+    ),
+    path(
+        "acessos/dashboard/usuarios/<int:pk>/",
+        dashboard_acessos_usuario,
+        name="dashboard_acessos_usuario",
+    ),
+    path(
+        "acessos/dashboard/grupos/<int:pk>/",
+        dashboard_acessos_grupo,
+        name="dashboard_acessos_grupo",
     ),
 
 
