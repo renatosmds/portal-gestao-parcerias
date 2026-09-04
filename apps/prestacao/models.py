@@ -189,6 +189,80 @@ class Prestacao(models.Model):
         )
 
 
+class CompetenciaPrestacao(models.Model):
+    class Status(models.TextChoices):
+        ABERTA = "aberta", "Aberta"
+        EM_ANALISE = "em_analise", "Em análise"
+        CONCLUIDA = "concluida", "Concluída"
+
+    prestacao = models.ForeignKey(
+        Prestacao,
+        on_delete=models.PROTECT,
+        related_name="competencias",
+        verbose_name="Prestação de contas",
+    )
+
+    ano = models.PositiveSmallIntegerField(
+        verbose_name="Ano",
+    )
+
+    mes = models.PositiveSmallIntegerField(
+        verbose_name="Mês",
+    )
+
+    data_inicial = models.DateField(
+        verbose_name="Data inicial",
+    )
+
+    data_final = models.DateField(
+        verbose_name="Data final",
+    )
+
+    saldo_inicial = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=0,
+        verbose_name="Saldo inicial",
+    )
+
+    saldo_final = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=0,
+        verbose_name="Saldo final",
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.ABERTA,
+        verbose_name="Status",
+    )
+
+    observacoes = models.TextField(
+        blank=True,
+        verbose_name="Observações",
+    )
+
+    class Meta:
+        ordering = ["ano", "mes"]
+        verbose_name = "Competência da prestação"
+        verbose_name_plural = "Competências da prestação"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["prestacao", "ano", "mes"],
+                name="competencia_unica_por_prestacao",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(mes__gte=1, mes__lte=12),
+                name="competencia_mes_valido",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.mes:02d}/{self.ano} - {self.prestacao}"
+
+
 class HistoricoPrestacao(models.Model):
     prestacao = models.ForeignKey(Prestacao, on_delete=models.CASCADE, related_name="historico_workflow")
     situacao_anterior = models.CharField(max_length=24, blank=True)

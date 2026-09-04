@@ -75,6 +75,15 @@ class Lancamento(models.Model):
         related_query_name="lancamento",
         verbose_name="Prestação de contas",
     )
+    competencia = models.ForeignKey(
+        "prestacao.CompetenciaPrestacao",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="lancamentos",
+        related_query_name="lancamento",
+        verbose_name="Competência",
+    )
     fornecedor = models.ForeignKey(
         "fornecedores.Fornecedores",
         on_delete=models.PROTECT,
