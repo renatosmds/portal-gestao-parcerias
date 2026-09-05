@@ -49,4 +49,167 @@
         </div>
     </form>
 </section>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const termo = document.getElementById("id_termo");
+    const prestacao = document.getElementById("id_prestacao");
+    const competencia = document.getElementById("id_competencia");
+
+    if (!termo || !prestacao || !competencia) {
+        return;
+    }
+
+    const endpointPrestacoes =
+        "{% url 'prestacoes_por_termo' %}";
+
+    const endpointCompetencias =
+        "{% url 'competencias_por_prestacao' %}";
+
+    function limparSelect(select) {
+        select.innerHTML = "";
+
+        const opcao = document.createElement("option");
+        opcao.value = "";
+        opcao.textContent = "---------";
+
+        select.appendChild(opcao);
+    }
+
+    function limparCompetencias() {
+        limparSelect(competencia);
+        competencia.disabled = true;
+    }
+
+    async function carregarCompetencias() {
+        const prestacaoId = prestacao.value;
+
+        limparCompetencias();
+
+        if (!prestacaoId) {
+            return;
+        }
+
+        try {
+            const url = new URL(
+                endpointCompetencias,
+                window.location.origin
+            );
+
+            url.searchParams.set(
+                "prestacao",
+                prestacaoId
+            );
+
+            const resposta = await fetch(
+                url.toString(),
+                {
+                    headers: {
+                        "X-Requested-With": "XMLHttpRequest"
+                    }
+                }
+            );
+
+            if (!resposta.ok) {
+                throw new Error(
+                    "Falha ao consultar competencias."
+                );
+            }
+
+            const dados = await resposta.json();
+
+            dados.competencias.forEach(function (item) {
+                const opcao = document.createElement("option");
+
+                opcao.value = item.id;
+                opcao.textContent = item.texto;
+
+                competencia.appendChild(opcao);
+            });
+
+            competencia.disabled = false;
+
+        } catch (erro) {
+            console.error(erro);
+            limparCompetencias();
+        }
+    }
+
+    async function carregarPrestacoes() {
+        const termoId = termo.value;
+
+        limparSelect(prestacao);
+        prestacao.disabled = true;
+        limparCompetencias();
+
+        if (!termoId) {
+            return;
+        }
+
+        try {
+            const url = new URL(
+                endpointPrestacoes,
+                window.location.origin
+            );
+
+            url.searchParams.set(
+                "termo",
+                termoId
+            );
+
+            const resposta = await fetch(
+                url.toString(),
+                {
+                    headers: {
+                        "X-Requested-With": "XMLHttpRequest"
+                    }
+                }
+            );
+
+            if (!resposta.ok) {
+                throw new Error(
+                    "Falha ao consultar prestacoes."
+                );
+            }
+
+            const dados = await resposta.json();
+
+            dados.prestacoes.forEach(function (item) {
+                const opcao = document.createElement("option");
+
+                opcao.value = item.id;
+                opcao.textContent = item.texto;
+
+                prestacao.appendChild(opcao);
+            });
+
+            prestacao.disabled = false;
+
+        } catch (erro) {
+            console.error(erro);
+            limparSelect(prestacao);
+            prestacao.disabled = true;
+            limparCompetencias();
+        }
+    }
+
+    termo.addEventListener(
+        "change",
+        carregarPrestacoes
+    );
+
+    prestacao.addEventListener(
+        "change",
+        carregarCompetencias
+    );
+
+    if (!termo.value) {
+        limparSelect(prestacao);
+        prestacao.disabled = true;
+        limparCompetencias();
+    } else if (!prestacao.value) {
+        limparCompetencias();
+    }
+});
+</script>
 {% endblock %}

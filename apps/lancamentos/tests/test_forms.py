@@ -7,14 +7,22 @@ from apps.empresas.models import Empresa
 from apps.lancamentos.forms import LancamentoForm
 from apps.lancamentos.models import Lancamento
 from apps.prestacao.models import CompetenciaPrestacao, Prestacao
+from apps.termos.models import Termos
 
 
 class LancamentoFormTests(TestCase):
     def setUp(self):
         self.empresa = Empresa.objects.create(nome="Empresa Formulário")
 
+        self.termo = Termos.objects.create(
+            empresa=self.empresa,
+            termo="Termo de Colabora??o",
+            numtermo="TESTE-001/2026",
+        )
+
         self.prestacao = Prestacao.objects.create(
             empresa=self.empresa,
+            termo=self.termo,
             tipo="cnpj",
             numtermo="TESTE-001/2026",
         )
@@ -64,6 +72,7 @@ class LancamentoFormTests(TestCase):
         dados = self.dados_validos()
         dados.update(
             {
+                "termo": self.termo.pk,
                 "prestacao": self.prestacao.pk,
                 "competencia": competencia_incorreta.pk,
                 "numero_lancamento": "TESTE-COMP-INVALIDA",
@@ -92,11 +101,63 @@ class LancamentoFormTests(TestCase):
         dados = self.dados_validos()
         dados.update(
             {
+                "termo": self.termo.pk,
                 "prestacao": self.prestacao.pk,
                 "competencia": competencia_correta.pk,
                 "numero_lancamento": "TESTE-COMP-VALIDA",
                 "data_documento": "2026-01-15",
                 "descricao": "Teste de competencia valida",
+            }
+        )
+
+        form = LancamentoForm(
+            data=dados,
+            empresa=self.empresa,
+        )
+
+        self.assertTrue(
+            form.is_valid(),
+            form.errors.as_json(),
+        )
+
+    def test_prestacao_de_outro_termo_e_rejeitada(self):
+        outro_termo = Termos.objects.create(
+            empresa=self.empresa,
+            termo="Termo de Colabora??o",
+            numtermo="OUTRO-001/2026",
+        )
+
+        outra_prestacao = Prestacao.objects.create(
+            empresa=self.empresa,
+            termo=outro_termo,
+            tipo="cnpj",
+            numtermo="OUTRO-001/2026",
+        )
+
+        dados = self.dados_validos()
+        dados.update(
+            {
+                "termo": self.termo.pk,
+                "prestacao": outra_prestacao.pk,
+                "numero_lancamento": "TESTE-TERMO-INVALIDO",
+            }
+        )
+
+        form = LancamentoForm(
+            data=dados,
+            empresa=self.empresa,
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertIn("prestacao", form.errors)
+
+    def test_prestacao_do_mesmo_termo_e_aceita(self):
+        dados = self.dados_validos()
+        dados.update(
+            {
+                "termo": self.termo.pk,
+                "prestacao": self.prestacao.pk,
+                "numero_lancamento": "TESTE-TERMO-VALIDO",
             }
         )
 

@@ -6,14 +6,127 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth.decorators import login_required, permission_required
 from django.utils import timezone
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
+from django.http import JsonResponse
 
 from apps.empresas.models import Empresa
-from apps.prestacao.models import CompetenciaPrestacao
+from apps.prestacao.models import CompetenciaPrestacao, Prestacao
 from apps.core.acesso import empresa_do_usuario, usuario_pode_ver_todas_empresas
 
 from .forms import GlosaLancamentoForm, LancamentoForm
 from .mixins import LancamentoEscopoMixin, LancamentoPermissaoMixin
 from .models import HistoricoGlosa, Lancamento
+
+
+
+def prestacoes_por_termo(request):
+    if not request.user.is_authenticated:
+        return JsonResponse(
+            {"detail": "Autenticacao necessaria."},
+            status=401,
+        )
+
+    if not (
+        request.user.has_perm("lancamentos.add_lancamento")
+        or request.user.has_perm("lancamentos.change_lancamento")
+    ):
+        return JsonResponse(
+            {"detail": "Sem permissao."},
+            status=403,
+        )
+
+    termo_id = (
+        request.GET.get("termo") or ""
+    ).strip()
+
+    if not termo_id.isdigit():
+        return JsonResponse({"prestacoes": []})
+
+    prestacoes = (
+        Prestacao.objects
+        .filter(termo_id=termo_id)
+        .select_related("empresa", "termo")
+        .order_by("numtermo", "credor")
+    )
+
+    if not usuario_pode_ver_todas_empresas(request.user):
+        try:
+            empresa = empresa_do_usuario(request.user)
+        except Exception:
+            empresa = None
+
+        if empresa:
+            prestacoes = prestacoes.filter(
+                empresa=empresa
+            )
+        else:
+            prestacoes = prestacoes.none()
+
+    dados = [
+        {
+            "id": prestacao.pk,
+            "texto": str(prestacao),
+        }
+        for prestacao in prestacoes
+    ]
+
+    return JsonResponse({"prestacoes": dados})
+
+
+def competencias_por_prestacao(request):
+    if not request.user.is_authenticated:
+        return JsonResponse(
+            {"detail": "Autenticacao necessaria."},
+            status=401,
+        )
+
+    if not (
+        request.user.has_perm("lancamentos.add_lancamento")
+        or request.user.has_perm("lancamentos.change_lancamento")
+    ):
+        return JsonResponse(
+            {"detail": "Sem permissao."},
+            status=403,
+        )
+
+    prestacao_id = (
+        request.GET.get("prestacao") or ""
+    ).strip()
+
+    if not prestacao_id.isdigit():
+        return JsonResponse({"competencias": []})
+
+    competencias = (
+        CompetenciaPrestacao.objects
+        .filter(prestacao_id=prestacao_id)
+        .select_related(
+            "prestacao",
+            "prestacao__empresa",
+        )
+        .order_by("-ano", "-mes")
+    )
+
+    if not usuario_pode_ver_todas_empresas(request.user):
+        try:
+            empresa = empresa_do_usuario(request.user)
+        except Exception:
+            empresa = None
+
+        if empresa:
+            competencias = competencias.filter(
+                prestacao__empresa=empresa
+            )
+        else:
+            competencias = competencias.none()
+
+    dados = [
+        {
+            "id": competencia.pk,
+            "texto": str(competencia),
+        }
+        for competencia in competencias
+    ]
+
+    return JsonResponse({"competencias": dados})
 
 
 class LancamentoList(

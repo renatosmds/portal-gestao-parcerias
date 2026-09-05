@@ -177,6 +177,16 @@ class Prestacao(models.Model):
         verbose_name="Empresa",
     )
 
+    termo = models.ForeignKey(
+        "termos.Termos",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="prestacoes_do_termo",
+        related_query_name="prestacao_do_termo",
+        verbose_name="Termo",
+    )
+
     def get_absolute_url(self):
         return reverse("detail_prestacao", kwargs={"pk": self.pk})
 

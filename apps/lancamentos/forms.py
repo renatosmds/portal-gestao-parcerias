@@ -84,9 +84,17 @@ class LancamentoForm(forms.ModelForm):
             fornecedores = fornecedores.filter(empresa=empresa)
             analises = analises.filter(empresa=empresa)
 
+        termo_id = None
         prestacao_id = None
 
         if self.is_bound:
+            valor_termo = self.data.get(
+                self.add_prefix("termo")
+            )
+
+            if str(valor_termo or "").isdigit():
+                termo_id = int(valor_termo)
+
             valor_prestacao = self.data.get(
                 self.add_prefix("prestacao")
             )
@@ -95,7 +103,13 @@ class LancamentoForm(forms.ModelForm):
                 prestacao_id = int(valor_prestacao)
 
         elif self.instance and self.instance.pk:
+            termo_id = self.instance.termo_id
             prestacao_id = self.instance.prestacao_id
+
+        if termo_id:
+            prestacoes = prestacoes.filter(
+                termo_id=termo_id
+            )
 
         if prestacao_id:
             competencias = competencias.filter(
@@ -116,6 +130,7 @@ class LancamentoForm(forms.ModelForm):
         situacao = cleaned.get("situacao")
         justificativa = (cleaned.get("justificativa") or "").strip()
         recomendacao = (cleaned.get("recomendacao") or "").strip()
+        termo = cleaned.get("termo")
         prestacao = cleaned.get("prestacao")
         competencia = cleaned.get("competencia")
 
@@ -128,6 +143,28 @@ class LancamentoForm(forms.ModelForm):
         if numero and queryset.filter(numero_lancamento__iexact=numero).exists():
             raise forms.ValidationError(
                 "Já existe um lançamento com esse número nesta empresa."
+            )
+
+        if prestacao and not termo:
+            self.add_error(
+                "termo",
+                (
+                    "Selecione o termo correspondente "
+                    "? presta??o de contas informada."
+                ),
+            )
+
+        elif (
+            termo
+            and prestacao
+            and prestacao.termo_id != termo.pk
+        ):
+            self.add_error(
+                "prestacao",
+                (
+                    "A presta??o de contas selecionada "
+                    "n?o pertence ao termo informado."
+                ),
             )
 
         if competencia and not prestacao:
