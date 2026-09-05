@@ -57,6 +57,7 @@
                     <dl>
                         <div><dt>Documento</dt><dd>{{ item.get_tipo_documento_display }} {{ item.numero_documento|default:"" }}</dd></div>
                         <div><dt>Fornecedor</dt><dd>{{ item.fornecedor|default:"Não informado" }}</dd></div>
+                        <div><dt>Competência</dt><dd>{{ item.competencia|default:"Não informada" }}</dd></div>
                         <div><dt>Data</dt><dd>{{ item.data_documento|date:"d/m/Y" }}</dd></div>
                         <div><dt>Valor</dt><dd>R$ {{ item.valor_documento|floatformat:2|intcomma }}</dd></div>
                         <div><dt>Glosa</dt><dd>R$ {{ item.valor_glosa|floatformat:2|intcomma }}</dd></div>

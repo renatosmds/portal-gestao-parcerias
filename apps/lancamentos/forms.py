@@ -4,7 +4,7 @@ from django import forms
 
 from apps.analise.models import Analise
 from apps.fornecedores.models import Fornecedores
-from apps.prestacao.models import Prestacao
+from apps.prestacao.models import CompetenciaPrestacao, Prestacao
 from apps.termos.models import Termos
 
 from .models import Lancamento
@@ -16,6 +16,7 @@ class LancamentoForm(forms.ModelForm):
         fields = [
             "termo",
             "prestacao",
+            "competencia",
             "fornecedor",
             "analise",
             "numero_lancamento",
@@ -66,6 +67,9 @@ class LancamentoForm(forms.ModelForm):
 
         termos = Termos.objects.order_by("termo", "numtermo")
         prestacoes = Prestacao.objects.order_by("numtermo", "credor")
+        competencias = CompetenciaPrestacao.objects.select_related(
+            "prestacao"
+        ).order_by("-ano", "-mes")
         fornecedores = Fornecedores.objects.order_by(
             "credor",
             "razao",
@@ -76,11 +80,13 @@ class LancamentoForm(forms.ModelForm):
         if empresa:
             termos = termos.filter(empresa=empresa)
             prestacoes = prestacoes.filter(empresa=empresa)
+            competencias = competencias.filter(prestacao__empresa=empresa)
             fornecedores = fornecedores.filter(empresa=empresa)
             analises = analises.filter(empresa=empresa)
 
         self.fields["termo"].queryset = termos
         self.fields["prestacao"].queryset = prestacoes
+        self.fields["competencia"].queryset = competencias
         self.fields["fornecedor"].queryset = fornecedores
         self.fields["analise"].queryset = analises
 
