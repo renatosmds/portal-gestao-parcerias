@@ -35,7 +35,7 @@
         </select>
 
         <select name="competencia" class="form-control">
-            <option value="">Todas as compet?ncias</option>
+            <option value="">Todas as competências</option>
             {% for competencia in competencias_disponiveis %}
                 <option value="{{ competencia.pk }}"
                     {% if competencia_filtro == competencia.pk|stringformat:"s" %}selected{% endif %}>
@@ -62,10 +62,10 @@
         <section class="sgm-panel" style="margin-bottom: 1.5rem;">
             <div class="entries-header">
                 <div>
-                    <span class="sgm-eyebrow">COMPET?NCIA SELECIONADA</span>
+                    <span class="sgm-eyebrow">COMPETÊNCIA SELECIONADA</span>
                     <h2>{{ competencia_selecionada }}</h2>
                     <p>
-                        Per?odo:
+                        Período:
                         {{ competencia_selecionada.data_inicial|date:"d/m/Y" }}
                         a
                         {{ competencia_selecionada.data_final|date:"d/m/Y" }}
@@ -95,7 +95,7 @@
                 </article>
 
                 <article>
-                    <small>Lan?amentos</small>
+                    <small>Lançamentos</small>
                     <strong>{{ competencia_qtd_lancamentos }}</strong>
                 </article>
 
@@ -138,7 +138,7 @@
                 </article>
 
                 <article>
-                    <small>N?o analisados</small>
+                    <small>Não analisados</small>
                     <strong>{{ competencia_nao_analisados }}</strong>
                 </article>
 
