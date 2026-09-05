@@ -1,5 +1,5 @@
 from django.contrib import messages
-from django.db.models import DecimalField, Q, Sum, Value
+from django.db.models import Count, DecimalField, Q, Sum, Value
 from django.db.models.functions import Coalesce
 from django.urls import reverse_lazy
 from django.shortcuts import get_object_or_404, redirect, render
@@ -8,6 +8,7 @@ from django.utils import timezone
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
 from apps.empresas.models import Empresa
+from apps.prestacao.models import CompetenciaPrestacao
 from apps.core.acesso import empresa_do_usuario, usuario_pode_ver_todas_empresas
 
 from .forms import GlosaLancamentoForm, LancamentoForm
@@ -31,6 +32,9 @@ class LancamentoList(
         busca = (self.request.GET.get("q") or "").strip()
         situacao = (self.request.GET.get("situacao") or "").strip()
         empresa_id = (self.request.GET.get("empresa") or "").strip()
+        competencia_id = (
+            self.request.GET.get("competencia") or ""
+        ).strip()
 
         if busca:
             queryset = queryset.filter(
@@ -51,6 +55,11 @@ class LancamentoList(
 
         if empresa_id and usuario_pode_ver_todas_empresas(self.request.user):
             queryset = queryset.filter(empresa_id=empresa_id)
+
+        if competencia_id.isdigit():
+            queryset = queryset.filter(
+                competencia_id=competencia_id
+            )
 
         return queryset
 
@@ -78,12 +87,110 @@ class LancamentoList(
         context["empresa_filtro"] = (
             self.request.GET.get("empresa") or ""
         ).strip()
+        context["competencia_filtro"] = (
+            self.request.GET.get("competencia") or ""
+        ).strip()
         context["situacoes"] = Lancamento.Situacao.choices
         context["empresas_disponiveis"] = (
             Empresa.objects.order_by("nome")
             if usuario_pode_ver_todas_empresas(self.request.user)
             else Empresa.objects.none()
         )
+
+        competencias = CompetenciaPrestacao.objects.select_related(
+            "prestacao",
+            "prestacao__empresa",
+        ).order_by("-ano", "-mes", "prestacao__numtermo")
+
+        empresa_filtro = context["empresa_filtro"]
+
+        if empresa_filtro.isdigit() and usuario_pode_ver_todas_empresas(
+            self.request.user
+        ):
+            competencias = competencias.filter(
+                prestacao__empresa_id=empresa_filtro
+            )
+        elif not usuario_pode_ver_todas_empresas(self.request.user):
+            try:
+                empresa = empresa_do_usuario(self.request.user)
+            except Exception:
+                empresa = None
+
+            if empresa:
+                competencias = competencias.filter(
+                    prestacao__empresa=empresa
+                )
+            else:
+                competencias = competencias.none()
+
+        context["competencias_disponiveis"] = competencias
+
+        competencia_selecionada = None
+        competencia_id = context["competencia_filtro"]
+
+        if competencia_id.isdigit():
+            competencia_selecionada = (
+                competencias.filter(pk=competencia_id).first()
+            )
+
+        context["competencia_selecionada"] = competencia_selecionada
+
+        if competencia_selecionada:
+            resumo = (
+                Lancamento.objects.filter(
+                    competencia=competencia_selecionada
+                )
+                .aggregate(
+                    qtd=Count("id"),
+                    regulares=Count(
+                        "id",
+                        filter=Q(
+                            situacao=Lancamento.Situacao.REGULAR
+                        ),
+                    ),
+                    ressalvas=Count(
+                        "id",
+                        filter=Q(
+                            situacao=Lancamento.Situacao.RESSALVA
+                        ),
+                    ),
+                    glosados=Count(
+                        "id",
+                        filter=Q(
+                            situacao=Lancamento.Situacao.GLOSADO
+                        ),
+                    ),
+                    nao_analisados=Count(
+                        "id",
+                        filter=Q(
+                            situacao=Lancamento.Situacao.NAO_ANALISADO
+                        ),
+                    ),
+                    total_documentos=Sum("valor_documento"),
+                    total_glosas=Sum("valor_glosa"),
+                )
+            )
+
+            total_documentos = resumo["total_documentos"] or 0
+            total_glosas = resumo["total_glosas"] or 0
+            total_aprovado = total_documentos - total_glosas
+
+            context["competencia_qtd_lancamentos"] = resumo["qtd"]
+            context["competencia_regulares"] = resumo["regulares"]
+            context["competencia_ressalvas"] = resumo["ressalvas"]
+            context["competencia_glosados"] = resumo["glosados"]
+            context["competencia_nao_analisados"] = resumo["nao_analisados"]
+            context["competencia_total_documentos"] = total_documentos
+            context["competencia_total_glosas"] = total_glosas
+            context["competencia_total_aprovado"] = total_aprovado
+
+            if total_documentos:
+                context["competencia_percentual_aprovado"] = (
+                    total_aprovado * 100 / total_documentos
+                )
+            else:
+                context["competencia_percentual_aprovado"] = 0
+
         return context
 
 

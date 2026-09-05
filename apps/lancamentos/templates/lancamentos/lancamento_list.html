@@ -33,6 +33,17 @@
                 <option value="{{ valor }}" {% if situacao_filtro == valor %}selected{% endif %}>{{ rotulo }}</option>
             {% endfor %}
         </select>
+
+        <select name="competencia" class="form-control">
+            <option value="">Todas as compet?ncias</option>
+            {% for competencia in competencias_disponiveis %}
+                <option value="{{ competencia.pk }}"
+                    {% if competencia_filtro == competencia.pk|stringformat:"s" %}selected{% endif %}>
+                    {{ competencia }}
+                </option>
+            {% endfor %}
+        </select>
+
         {% if user.is_superuser %}
             <select name="empresa" class="form-control">
                 <option value="">Todas as empresas</option>
@@ -42,10 +53,104 @@
             </select>
         {% endif %}
         <button class="btn btn-outline-primary">Pesquisar</button>
-        {% if busca or situacao_filtro or empresa_filtro %}
+        {% if busca or situacao_filtro or empresa_filtro or competencia_filtro %}
             <a href="{% url 'list_lancamentos' %}" class="btn btn-outline-secondary">Limpar</a>
         {% endif %}
     </form>
+
+    {% if competencia_selecionada %}
+        <section class="sgm-panel" style="margin-bottom: 1.5rem;">
+            <div class="entries-header">
+                <div>
+                    <span class="sgm-eyebrow">COMPET?NCIA SELECIONADA</span>
+                    <h2>{{ competencia_selecionada }}</h2>
+                    <p>
+                        Per?odo:
+                        {{ competencia_selecionada.data_inicial|date:"d/m/Y" }}
+                        a
+                        {{ competencia_selecionada.data_final|date:"d/m/Y" }}
+                    </p>
+                </div>
+
+                <div>
+                    <strong>
+                        {{ competencia_selecionada.get_status_display }}
+                    </strong>
+                </div>
+            </div>
+
+            <div class="entries-summary">
+                <article>
+                    <small>Saldo inicial</small>
+                    <strong>
+                        R$ {{ competencia_selecionada.saldo_inicial|floatformat:2|intcomma }}
+                    </strong>
+                </article>
+
+                <article>
+                    <small>Saldo final</small>
+                    <strong>
+                        R$ {{ competencia_selecionada.saldo_final|floatformat:2|intcomma }}
+                    </strong>
+                </article>
+
+                <article>
+                    <small>Lan?amentos</small>
+                    <strong>{{ competencia_qtd_lancamentos }}</strong>
+                </article>
+
+                <article>
+                    <small>Documentos</small>
+                    <strong>
+                        R$ {{ competencia_total_documentos|floatformat:2|intcomma }}
+                    </strong>
+                </article>
+
+                <article>
+                    <small>Glosas</small>
+                    <strong>
+                        R$ {{ competencia_total_glosas|floatformat:2|intcomma }}
+                    </strong>
+                </article>
+
+                <article>
+                    <small>Valor aprovado</small>
+                    <strong>
+                        R$ {{ competencia_total_aprovado|floatformat:2|intcomma }}
+                    </strong>
+                </article>
+            </div>
+
+            <div class="entries-summary">
+                <article>
+                    <small>Regulares</small>
+                    <strong>{{ competencia_regulares }}</strong>
+                </article>
+
+                <article>
+                    <small>Com ressalva</small>
+                    <strong>{{ competencia_ressalvas }}</strong>
+                </article>
+
+                <article>
+                    <small>Glosados</small>
+                    <strong>{{ competencia_glosados }}</strong>
+                </article>
+
+                <article>
+                    <small>N?o analisados</small>
+                    <strong>{{ competencia_nao_analisados }}</strong>
+                </article>
+
+                <article>
+                    <small>% aprovado</small>
+                    <strong>
+                        {{ competencia_percentual_aprovado|floatformat:1 }}%
+                    </strong>
+                </article>
+            </div>
+        </section>
+    {% endif %}
 
     {% if lancamentos %}
         <div class="entries-grid">
