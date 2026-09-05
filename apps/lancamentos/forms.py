@@ -84,6 +84,24 @@ class LancamentoForm(forms.ModelForm):
             fornecedores = fornecedores.filter(empresa=empresa)
             analises = analises.filter(empresa=empresa)
 
+        prestacao_id = None
+
+        if self.is_bound:
+            valor_prestacao = self.data.get(
+                self.add_prefix("prestacao")
+            )
+
+            if str(valor_prestacao or "").isdigit():
+                prestacao_id = int(valor_prestacao)
+
+        elif self.instance and self.instance.pk:
+            prestacao_id = self.instance.prestacao_id
+
+        if prestacao_id:
+            competencias = competencias.filter(
+                prestacao_id=prestacao_id
+            )
+
         self.fields["termo"].queryset = termos
         self.fields["prestacao"].queryset = prestacoes
         self.fields["competencia"].queryset = competencias
@@ -98,6 +116,8 @@ class LancamentoForm(forms.ModelForm):
         situacao = cleaned.get("situacao")
         justificativa = (cleaned.get("justificativa") or "").strip()
         recomendacao = (cleaned.get("recomendacao") or "").strip()
+        prestacao = cleaned.get("prestacao")
+        competencia = cleaned.get("competencia")
 
         queryset = Lancamento.objects.all()
         if self.empresa:
@@ -108,6 +128,28 @@ class LancamentoForm(forms.ModelForm):
         if numero and queryset.filter(numero_lancamento__iexact=numero).exists():
             raise forms.ValidationError(
                 "Já existe um lançamento com esse número nesta empresa."
+            )
+
+        if competencia and not prestacao:
+            self.add_error(
+                "prestacao",
+                (
+                    "Selecione a prestação de contas correspondente "
+                    "à competência informada."
+                ),
+            )
+
+        elif (
+            competencia
+            and prestacao
+            and competencia.prestacao_id != prestacao.pk
+        ):
+            self.add_error(
+                "competencia",
+                (
+                    "A competência selecionada não pertence "
+                    "à prestação de contas informada."
+                ),
             )
 
         if valor_glosa > valor_documento:

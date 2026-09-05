@@ -6,11 +6,18 @@ from django.test import TestCase
 from apps.empresas.models import Empresa
 from apps.lancamentos.forms import LancamentoForm
 from apps.lancamentos.models import Lancamento
+from apps.prestacao.models import CompetenciaPrestacao, Prestacao
 
 
 class LancamentoFormTests(TestCase):
     def setUp(self):
         self.empresa = Empresa.objects.create(nome="Empresa Formulário")
+
+        self.prestacao = Prestacao.objects.create(
+            empresa=self.empresa,
+            tipo="cnpj",
+            numtermo="TESTE-001/2026",
+        )
 
     def dados_validos(self):
         return {
@@ -38,3 +45,68 @@ class LancamentoFormTests(TestCase):
         self.assertFalse(form.is_valid())
         self.assertIn("justificativa", form.errors)
         self.assertIn("recomendacao", form.errors)
+
+    def test_competencia_de_outra_prestacao_e_rejeitada(self):
+        outra_prestacao = Prestacao.objects.create(
+            empresa=self.empresa,
+            tipo="cnpj",
+            numtermo="OUTRA-001/2026",
+        )
+
+        competencia_incorreta = CompetenciaPrestacao.objects.create(
+            prestacao=outra_prestacao,
+            ano=2026,
+            mes=2,
+            data_inicial=date(2026, 2, 1),
+            data_final=date(2026, 2, 28),
+        )
+
+        dados = self.dados_validos()
+        dados.update(
+            {
+                "prestacao": self.prestacao.pk,
+                "competencia": competencia_incorreta.pk,
+                "numero_lancamento": "TESTE-COMP-INVALIDA",
+                "data_documento": "2026-01-15",
+                "descricao": "Teste de competencia invalida",
+            }
+        )
+
+        form = LancamentoForm(
+            data=dados,
+            empresa=self.empresa,
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertIn("competencia", form.errors)
+
+    def test_competencia_da_mesma_prestacao_e_aceita(self):
+        competencia_correta = CompetenciaPrestacao.objects.create(
+            prestacao=self.prestacao,
+            ano=2026,
+            mes=1,
+            data_inicial=date(2026, 1, 1),
+            data_final=date(2026, 1, 31),
+        )
+
+        dados = self.dados_validos()
+        dados.update(
+            {
+                "prestacao": self.prestacao.pk,
+                "competencia": competencia_correta.pk,
+                "numero_lancamento": "TESTE-COMP-VALIDA",
+                "data_documento": "2026-01-15",
+                "descricao": "Teste de competencia valida",
+            }
+        )
+
+        form = LancamentoForm(
+            data=dados,
+            empresa=self.empresa,
+        )
+
+        self.assertTrue(
+            form.is_valid(),
+            form.errors.as_json(),
+        )
+
