@@ -1,5 +1,5 @@
 from django.contrib import messages
-from django.db.models import Q
+from django.db.models import Count, Q
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
@@ -59,6 +59,33 @@ class TermosDetail(TermoPermissaoMixin, TermoEscopoMixin, DetailView):
     template_name = "termos/termo_detail.html"
     context_object_name = "termo_obj"
     permission_required = "termos.view_termos"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        prestacoes = (
+            self.object.prestacoes_do_termo
+            .annotate(
+                total_competencias=Count(
+                    "competencias",
+                    distinct=True,
+                )
+            )
+            .order_by(
+                "concluida",
+                "numtermo",
+                "pk",
+            )
+        )
+
+        context["prestacoes_termo"] = prestacoes
+        context["total_prestacoes_termo"] = prestacoes.count()
+        context["total_competencias_termo"] = sum(
+            item.total_competencias
+            for item in prestacoes
+        )
+
+        return context
 
 
 class TermosCreate(TermoPermissaoMixin, CreateView):

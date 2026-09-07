@@ -47,5 +47,61 @@
             </div>
         </aside>
     </div>
+
+    <!-- PRESTACOES DO TERMO - SPRINT 46.19D -->
+    <section class="sgm-panel term-panel mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <span class="sgm-eyebrow">HIERARQUIA</span>
+                <h2 class="mb-1">Prestações de contas</h2>
+                <small>
+                    {{ total_prestacoes_termo }} prestação(ões)
+                    · {{ total_competencias_termo }} competência(s)
+                </small>
+            </div>
+        </div>
+
+        {% if prestacoes_termo %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Prestação</th>
+                            <th>Situação</th>
+                            <th>Competências</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for item in prestacoes_termo %}
+                        <tr>
+                            <td>
+                                <strong>{{ item }}</strong>
+                            </td>
+                            <td>
+                                {{ item.get_situacao_workflow_display }}
+                            </td>
+                            <td>
+                                {{ item.total_competencias }}
+                            </td>
+                            <td class="text-right">
+                                <a
+                                    href="{% url 'detail_prestacao' item.pk %}"
+                                    class="btn btn-sm btn-outline-primary"
+                                >
+                                    Abrir
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="mb-0">
+                Nenhuma prestação de contas vinculada a este termo.
+            </p>
+        {% endif %}
+    </section>
 </section>
 {% endblock %}

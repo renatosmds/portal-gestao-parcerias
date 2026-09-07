@@ -1,5 +1,5 @@
 from django.contrib import messages
-from django.db.models import Q
+from django.db.models import Count, Q, Sum
 from django.urls import reverse_lazy
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth.decorators import login_required, permission_required
@@ -75,9 +75,47 @@ class PrestacaoDetail(PrestacaoPermissaoMixin, PrestacaoEscopoMixin, DetailView)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["historico"] = self.object.historico_workflow.select_related("usuario")[:20]
-        context["total_lancamentos"] = self.object.lancamentos.count()
-        context["total_glosado"] = sum((x.valor_glosa for x in self.object.lancamentos.all()), 0)
+
+        context["historico"] = (
+            self.object.historico_workflow
+            .select_related("usuario")[:20]
+        )
+
+        context["total_lancamentos"] = (
+            self.object.lancamentos.count()
+        )
+
+        context["total_glosado"] = sum(
+            (
+                x.valor_glosa
+                for x in self.object.lancamentos.all()
+            ),
+            0,
+        )
+
+        competencias = (
+            self.object.competencias
+            .annotate(
+                total_lancamentos=Count(
+                    "lancamento",
+                    distinct=True,
+                ),
+                total_documentos=Sum(
+                    "lancamento__valor_documento"
+                ),
+                total_glosas=Sum(
+                    "lancamento__valor_glosa"
+                ),
+            )
+            .order_by(
+                "ano",
+                "mes",
+            )
+        )
+
+        context["competencias_prestacao"] = competencias
+        context["total_competencias"] = competencias.count()
+
         return context
 
 

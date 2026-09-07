@@ -38,6 +38,86 @@
             </dl>
         </aside>
     </div>
+    <!-- COMPETENCIAS DA PRESTACAO - SPRINT 46.19D -->
+    <section class="sgm-panel account-panel mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <span class="sgm-eyebrow">EXECUÇÃO MENSAL</span>
+                <h2 class="mb-1">Competências</h2>
+                <small>
+                    {{ total_competencias }} competência(s)
+                    · {{ total_lancamentos }} lançamento(s)
+                </small>
+            </div>
+        </div>
+
+        {% if competencias_prestacao %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Competência</th>
+                            <th>Período</th>
+                            <th>Status</th>
+                            <th>Lançamentos</th>
+                            <th>Documentos</th>
+                            <th>Glosas</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for competencia in competencias_prestacao %}
+                        <tr>
+                            <td>
+                                <strong>
+                                    {{ competencia.mes|stringformat:"02d" }}/{{ competencia.ano|stringformat:"d" }}
+                                </strong>
+                            </td>
+
+                            <td>
+                                {{ competencia.data_inicial|date:"d/m/Y" }}
+                                a
+                                {{ competencia.data_final|date:"d/m/Y" }}
+                            </td>
+
+                            <td>
+                                {{ competencia.get_status_display }}
+                            </td>
+
+                            <td>
+                                {{ competencia.total_lancamentos }}
+                            </td>
+
+                            <td>
+                                R$
+                                {{ competencia.total_documentos|default_if_none:"0"|floatformat:2 }}
+                            </td>
+
+                            <td>
+                                R$
+                                {{ competencia.total_glosas|default_if_none:"0"|floatformat:2 }}
+                            </td>
+
+                            <td class="text-right">
+                                <a
+                                    href="{% url 'list_lancamentos' %}?competencia={{ competencia.pk }}"
+                                    class="btn btn-sm btn-outline-primary"
+                                >
+                                    Lançamentos
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="mb-0">
+                Nenhuma competência cadastrada para esta prestação.
+            </p>
+        {% endif %}
+    </section>
+
     <section class="sgm-panel sgm-workflow-panel mt-4">
         <h2>Histórico do fluxo</h2>
         <ul class="sgm-workflow-history">
