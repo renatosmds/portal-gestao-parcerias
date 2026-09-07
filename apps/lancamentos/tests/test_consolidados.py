@@ -308,3 +308,50 @@ class ConsolidadosHierarquiaTests(TestCase):
             response.context["total_nao_analisados_termo"],
             1,
         )
+
+    def test_lista_filtra_por_prestacao_e_situacao(self):
+        response = self.client.get(
+            reverse("list_lancamentos"),
+            {
+                "prestacao": self.prestacao_1.pk,
+                "situacao": Lancamento.Situacao.GLOSADO,
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.context["total_lancamentos"],
+            1,
+        )
+        self.assertEqual(
+            response.context["prestacao_filtro"],
+            str(self.prestacao_1.pk),
+        )
+        self.assertEqual(
+            response.context["situacao_filtro"],
+            Lancamento.Situacao.GLOSADO,
+        )
+
+    def test_lista_filtra_por_termo_e_situacao(self):
+        response = self.client.get(
+            reverse("list_lancamentos"),
+            {
+                "termo": self.termo.pk,
+                "situacao": Lancamento.Situacao.REGULAR,
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.context["total_lancamentos"],
+            2,
+        )
+        self.assertEqual(
+            response.context["termo_filtro"],
+            str(self.termo.pk),
+        )
+        self.assertEqual(
+            response.context["situacao_filtro"],
+            Lancamento.Situacao.REGULAR,
+        )
+

@@ -148,6 +148,12 @@ class LancamentoList(
         competencia_id = (
             self.request.GET.get("competencia") or ""
         ).strip()
+        prestacao_id = (
+            self.request.GET.get("prestacao") or ""
+        ).strip()
+        termo_id = (
+            self.request.GET.get("termo") or ""
+        ).strip()
 
         if busca:
             queryset = queryset.filter(
@@ -172,6 +178,16 @@ class LancamentoList(
         if competencia_id.isdigit():
             queryset = queryset.filter(
                 competencia_id=competencia_id
+            )
+
+        if prestacao_id.isdigit():
+            queryset = queryset.filter(
+                prestacao_id=prestacao_id
+            )
+
+        if termo_id.isdigit():
+            queryset = queryset.filter(
+                termo_id=termo_id
             )
 
         return queryset
@@ -202,6 +218,12 @@ class LancamentoList(
         ).strip()
         context["competencia_filtro"] = (
             self.request.GET.get("competencia") or ""
+        ).strip()
+        context["prestacao_filtro"] = (
+            self.request.GET.get("prestacao") or ""
+        ).strip()
+        context["termo_filtro"] = (
+            self.request.GET.get("termo") or ""
         ).strip()
         context["situacoes"] = Lancamento.Situacao.choices
         context["empresas_disponiveis"] = (
