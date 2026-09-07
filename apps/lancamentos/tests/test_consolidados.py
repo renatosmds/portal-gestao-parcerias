@@ -355,3 +355,55 @@ class ConsolidadosHierarquiaTests(TestCase):
             Lancamento.Situacao.REGULAR,
         )
 
+    def test_drilldown_prestacao_identifica_contexto(self):
+        response = self.client.get(
+            reverse("list_lancamentos"),
+            {
+                "prestacao": self.prestacao_1.pk,
+                "situacao": Lancamento.Situacao.GLOSADO,
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.context["prestacao_selecionada"],
+            self.prestacao_1,
+        )
+        self.assertIsNone(
+            response.context["termo_selecionado"]
+        )
+        self.assertContains(
+            response,
+            'name="prestacao"',
+        )
+        self.assertContains(
+            response,
+            f'value="{self.prestacao_1.pk}"',
+        )
+
+    def test_drilldown_termo_identifica_contexto(self):
+        response = self.client.get(
+            reverse("list_lancamentos"),
+            {
+                "termo": self.termo.pk,
+                "situacao": Lancamento.Situacao.REGULAR,
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.context["termo_selecionado"],
+            self.termo,
+        )
+        self.assertIsNone(
+            response.context["prestacao_selecionada"]
+        )
+        self.assertContains(
+            response,
+            'name="termo"',
+        )
+        self.assertContains(
+            response,
+            f'value="{self.termo.pk}"',
+        )
+

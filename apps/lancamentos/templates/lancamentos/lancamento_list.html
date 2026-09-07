@@ -24,7 +24,45 @@
         <article><small>Glosas</small><strong>R$ {{ total_glosas|floatformat:2|intcomma }}</strong></article>
     </div>
 
+    {% if prestacao_selecionada or termo_selecionado %}
+        <section class="sgm-panel" style="margin-bottom: 1.5rem;">
+            <span class="sgm-eyebrow">DRILL-DOWN ATIVO</span>
+
+            {% if prestacao_selecionada %}
+                <h2 class="mb-1">
+                    Presta??o {{ prestacao_selecionada.numtermo }}
+                </h2>
+                <p class="mb-0">
+                    Exibindo somente lan?amentos desta presta??o.
+                </p>
+            {% elif termo_selecionado %}
+                <h2 class="mb-1">
+                    Termo {{ termo_selecionado.numtermo }}
+                </h2>
+                <p class="mb-0">
+                    Exibindo somente lan?amentos deste termo.
+                </p>
+            {% endif %}
+        </section>
+    {% endif %}
+
     <form method="get" class="entries-toolbar">
+        {% if prestacao_filtro %}
+            <input
+                type="hidden"
+                name="prestacao"
+                value="{{ prestacao_filtro }}"
+            >
+        {% endif %}
+
+        {% if termo_filtro %}
+            <input
+                type="hidden"
+                name="termo"
+                value="{{ termo_filtro }}"
+            >
+        {% endif %}
+
         <input type="search" name="q" class="form-control" value="{{ busca }}"
                placeholder="Lançamento, nota, fornecedor, termo...">
         <select name="situacao" class="form-control">
@@ -53,7 +91,7 @@
             </select>
         {% endif %}
         <button class="btn btn-outline-primary">Pesquisar</button>
-        {% if busca or situacao_filtro or empresa_filtro or competencia_filtro %}
+        {% if busca or situacao_filtro or empresa_filtro or competencia_filtro or prestacao_filtro or termo_filtro %}
             <a href="{% url 'list_lancamentos' %}" class="btn btn-outline-secondary">Limpar</a>
         {% endif %}
     </form>

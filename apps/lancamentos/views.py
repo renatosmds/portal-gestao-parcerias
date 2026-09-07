@@ -10,6 +10,7 @@ from django.http import JsonResponse
 
 from apps.empresas.models import Empresa
 from apps.prestacao.models import CompetenciaPrestacao, Prestacao
+from apps.termos.models import Termos
 from apps.core.acesso import empresa_do_usuario, usuario_pode_ver_todas_empresas
 
 from .forms import GlosaLancamentoForm, LancamentoForm
@@ -226,6 +227,65 @@ class LancamentoList(
             self.request.GET.get("termo") or ""
         ).strip()
         context["situacoes"] = Lancamento.Situacao.choices
+
+        prestacao_selecionada = None
+        termo_selecionado = None
+
+        prestacao_id = context["prestacao_filtro"]
+        termo_id = context["termo_filtro"]
+
+        if usuario_pode_ver_todas_empresas(self.request.user):
+            if prestacao_id.isdigit():
+                prestacao_selecionada = (
+                    Prestacao.objects
+                    .select_related("empresa", "termo")
+                    .filter(pk=prestacao_id)
+                    .first()
+                )
+
+            if termo_id.isdigit():
+                termo_selecionado = (
+                    Termos.objects
+                    .select_related("empresa")
+                    .filter(pk=termo_id)
+                    .first()
+                )
+        else:
+            try:
+                empresa_usuario = empresa_do_usuario(
+                    self.request.user
+                )
+            except Exception:
+                empresa_usuario = None
+
+            if empresa_usuario:
+                if prestacao_id.isdigit():
+                    prestacao_selecionada = (
+                        Prestacao.objects
+                        .select_related("empresa", "termo")
+                        .filter(
+                            pk=prestacao_id,
+                            empresa=empresa_usuario,
+                        )
+                        .first()
+                    )
+
+                if termo_id.isdigit():
+                    termo_selecionado = (
+                        Termos.objects
+                        .select_related("empresa")
+                        .filter(
+                            pk=termo_id,
+                            empresa=empresa_usuario,
+                        )
+                        .first()
+                    )
+
+        context["prestacao_selecionada"] = (
+            prestacao_selecionada
+        )
+        context["termo_selecionado"] = termo_selecionado
+
         context["empresas_disponiveis"] = (
             Empresa.objects.order_by("nome")
             if usuario_pode_ver_todas_empresas(self.request.user)
