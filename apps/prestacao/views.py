@@ -81,17 +81,44 @@ class PrestacaoDetail(PrestacaoPermissaoMixin, PrestacaoEscopoMixin, DetailView)
             .select_related("usuario")[:20]
         )
 
-        context["total_lancamentos"] = (
-            self.object.lancamentos.count()
+        lancamentos = self.object.lancamentos.all()
+
+        resumo = lancamentos.aggregate(
+            total_documentos=Sum("valor_documento"),
+            total_glosas=Sum("valor_glosa"),
         )
 
-        context["total_glosado"] = sum(
-            (
-                x.valor_glosa
-                for x in self.object.lancamentos.all()
-            ),
+        total_documentos = resumo["total_documentos"] or 0
+        total_glosas = resumo["total_glosas"] or 0
+        total_aprovado = max(
+            total_documentos - total_glosas,
             0,
         )
+
+        context["total_lancamentos"] = lancamentos.count()
+        context["total_documentos"] = total_documentos
+        context["total_glosado"] = total_glosas
+        context["total_aprovado"] = total_aprovado
+
+        context["total_regulares"] = lancamentos.filter(
+            situacao="regular"
+        ).count()
+
+        context["total_ressalvas"] = lancamentos.filter(
+            situacao="ressalva"
+        ).count()
+
+        context["total_glosados"] = lancamentos.filter(
+            situacao="glosado"
+        ).count()
+
+        context["total_reprovados"] = lancamentos.filter(
+            situacao="reprovado"
+        ).count()
+
+        context["total_nao_analisados"] = lancamentos.filter(
+            situacao="nao_analisado"
+        ).count()
 
         competencias = (
             self.object.competencias

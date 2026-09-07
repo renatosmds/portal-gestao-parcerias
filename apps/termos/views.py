@@ -1,5 +1,5 @@
 from django.contrib import messages
-from django.db.models import Count, Q
+from django.db.models import Count, Q, Sum
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
@@ -84,6 +84,49 @@ class TermosDetail(TermoPermissaoMixin, TermoEscopoMixin, DetailView):
             item.total_competencias
             for item in prestacoes
         )
+
+        from apps.lancamentos.models import Lancamento
+
+        lancamentos = Lancamento.objects.filter(
+            prestacao__termo=self.object
+        )
+
+        resumo = lancamentos.aggregate(
+            total_documentos=Sum("valor_documento"),
+            total_glosas=Sum("valor_glosa"),
+        )
+
+        total_documentos = resumo["total_documentos"] or 0
+        total_glosas = resumo["total_glosas"] or 0
+        total_aprovado = max(
+            total_documentos - total_glosas,
+            0,
+        )
+
+        context["total_lancamentos_termo"] = lancamentos.count()
+        context["total_documentos_termo"] = total_documentos
+        context["total_glosas_termo"] = total_glosas
+        context["total_aprovado_termo"] = total_aprovado
+
+        context["total_regulares_termo"] = lancamentos.filter(
+            situacao="regular"
+        ).count()
+
+        context["total_ressalvas_termo"] = lancamentos.filter(
+            situacao="ressalva"
+        ).count()
+
+        context["total_glosados_termo"] = lancamentos.filter(
+            situacao="glosado"
+        ).count()
+
+        context["total_reprovados_termo"] = lancamentos.filter(
+            situacao="reprovado"
+        ).count()
+
+        context["total_nao_analisados_termo"] = lancamentos.filter(
+            situacao="nao_analisado"
+        ).count()
 
         return context
 

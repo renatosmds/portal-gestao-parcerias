@@ -38,6 +38,74 @@
             </dl>
         </aside>
     </div>
+    <!-- RESUMO CONSOLIDADO - SPRINT 46.19E -->
+    <section class="sgm-panel account-panel mt-4">
+        <div class="mb-3">
+            <span class="sgm-eyebrow">CONSOLIDADO</span>
+            <h2 class="mb-1">Resumo financeiro da prestação</h2>
+        </div>
+
+        <div class="row">
+            <div class="col-md-3 mb-3">
+                <strong>Lançamentos</strong>
+                <div>{{ total_lancamentos }}</div>
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <strong>Documentos</strong>
+                <div>
+                    R$
+                    {{ total_documentos|floatformat:2 }}
+                </div>
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <strong>Glosas</strong>
+                <div>
+                    R$
+                    {{ total_glosado|floatformat:2 }}
+                </div>
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <strong>Valor aprovado</strong>
+                <div>
+                    R$
+                    {{ total_aprovado|floatformat:2 }}
+                </div>
+            </div>
+        </div>
+
+        <hr>
+
+        <div class="row">
+            <div class="col-md mb-2">
+                <strong>Regulares</strong>
+                <div>{{ total_regulares }}</div>
+            </div>
+
+            <div class="col-md mb-2">
+                <strong>Com ressalva</strong>
+                <div>{{ total_ressalvas }}</div>
+            </div>
+
+            <div class="col-md mb-2">
+                <strong>Glosados</strong>
+                <div>{{ total_glosados }}</div>
+            </div>
+
+            <div class="col-md mb-2">
+                <strong>Reprovados</strong>
+                <div>{{ total_reprovados }}</div>
+            </div>
+
+            <div class="col-md mb-2">
+                <strong>Não analisados</strong>
+                <div>{{ total_nao_analisados }}</div>
+            </div>
+        </div>
+    </section>
+
     <!-- COMPETENCIAS DA PRESTACAO - SPRINT 46.19D -->
     <section class="sgm-panel account-panel mt-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
