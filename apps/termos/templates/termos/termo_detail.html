@@ -68,7 +68,11 @@
 
             <div class="col-md-2 mb-3">
                 <strong>Lançamentos</strong>
-                <div>{{ total_lancamentos_termo }}</div>
+                <div>
+                    <a href="{% url 'list_lancamentos' %}?termo={{ object.pk }}">
+                        {{ total_lancamentos_termo }}
+                    </a>
+                </div>
             </div>
 
             <div class="col-md-2 mb-3">
@@ -121,27 +125,47 @@
         <div class="row">
             <div class="col-md mb-2">
                 <strong>Regulares</strong>
-                <div>{{ total_regulares_termo }}</div>
+                <div>
+                    <a href="{% url 'list_lancamentos' %}?termo={{ object.pk }}&situacao=regular">
+                        {{ total_regulares_termo }}
+                    </a>
+                </div>
             </div>
 
             <div class="col-md mb-2">
                 <strong>Com ressalva</strong>
-                <div>{{ total_ressalvas_termo }}</div>
+                <div>
+                    <a href="{% url 'list_lancamentos' %}?termo={{ object.pk }}&situacao=ressalva">
+                        {{ total_ressalvas_termo }}
+                    </a>
+                </div>
             </div>
 
             <div class="col-md mb-2">
                 <strong>Glosados</strong>
-                <div>{{ total_glosados_termo }}</div>
+                <div>
+                    <a href="{% url 'list_lancamentos' %}?termo={{ object.pk }}&situacao=glosado">
+                        {{ total_glosados_termo }}
+                    </a>
+                </div>
             </div>
 
             <div class="col-md mb-2">
                 <strong>Reprovados</strong>
-                <div>{{ total_reprovados_termo }}</div>
+                <div>
+                    <a href="{% url 'list_lancamentos' %}?termo={{ object.pk }}&situacao=reprovado">
+                        {{ total_reprovados_termo }}
+                    </a>
+                </div>
             </div>
 
             <div class="col-md mb-2">
                 <strong>Não analisados</strong>
-                <div>{{ total_nao_analisados_termo }}</div>
+                <div>
+                    <a href="{% url 'list_lancamentos' %}?termo={{ object.pk }}&situacao=nao_analisado">
+                        {{ total_nao_analisados_termo }}
+                    </a>
+                </div>
             </div>
         </div>
     </section>

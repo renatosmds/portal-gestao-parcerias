@@ -26,23 +26,45 @@
 
     {% if prestacao_selecionada or termo_selecionado %}
         <section class="sgm-panel" style="margin-bottom: 1.5rem;">
-            <span class="sgm-eyebrow">DRILL-DOWN ATIVO</span>
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="sgm-eyebrow">DRILL-DOWN ATIVO</span>
 
-            {% if prestacao_selecionada %}
-                <h2 class="mb-1">
-                    Presta??o {{ prestacao_selecionada.numtermo }}
-                </h2>
-                <p class="mb-0">
-                    Exibindo somente lan?amentos desta presta??o.
-                </p>
-            {% elif termo_selecionado %}
-                <h2 class="mb-1">
-                    Termo {{ termo_selecionado.numtermo }}
-                </h2>
-                <p class="mb-0">
-                    Exibindo somente lan?amentos deste termo.
-                </p>
-            {% endif %}
+                    {% if prestacao_selecionada %}
+                        <h2 class="mb-1">
+                            Prestação {{ prestacao_selecionada.numtermo }}
+                        </h2>
+                        <p class="mb-0">
+                            Exibindo somente lançamentos desta prestação.
+                        </p>
+                    {% elif termo_selecionado %}
+                        <h2 class="mb-1">
+                            Termo {{ termo_selecionado.numtermo }}
+                        </h2>
+                        <p class="mb-0">
+                            Exibindo somente lançamentos deste termo.
+                        </p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    {% if prestacao_selecionada %}
+                        <a
+                            href="{% url 'detail_prestacao' prestacao_selecionada.pk %}"
+                            class="btn btn-outline-secondary"
+                        >
+                            Voltar para a prestação
+                        </a>
+                    {% elif termo_selecionado %}
+                        <a
+                            href="{% url 'detail_termo' termo_selecionado.pk %}"
+                            class="btn btn-outline-secondary"
+                        >
+                            Voltar para o termo
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
         </section>
     {% endif %}
 
