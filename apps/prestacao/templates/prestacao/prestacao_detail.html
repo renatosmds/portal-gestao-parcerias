@@ -76,6 +76,29 @@
             </div>
         </div>
 
+        <div class="row mt-2">
+            <div class="col-md-4 mb-3">
+                <strong>% aprovado</strong>
+                <div>
+                    {{ percentual_aprovado|floatformat:2 }}%
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <strong>% glosado</strong>
+                <div>
+                    {{ percentual_glosa|floatformat:2 }}%
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <strong>% analisado</strong>
+                <div>
+                    {{ percentual_analisado|floatformat:2 }}%
+                </div>
+            </div>
+        </div>
+
         <hr>
 
         <div class="row">

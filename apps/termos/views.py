@@ -128,6 +128,29 @@ class TermosDetail(TermoPermissaoMixin, TermoEscopoMixin, DetailView):
             situacao="nao_analisado"
         ).count()
 
+        if total_documentos:
+            context["percentual_glosa_termo"] = (
+                total_glosas * 100 / total_documentos
+            )
+            context["percentual_aprovado_termo"] = (
+                total_aprovado * 100 / total_documentos
+            )
+        else:
+            context["percentual_glosa_termo"] = 0
+            context["percentual_aprovado_termo"] = 0
+
+        if context["total_lancamentos_termo"]:
+            context["percentual_analisado_termo"] = (
+                (
+                    context["total_lancamentos_termo"]
+                    - context["total_nao_analisados_termo"]
+                )
+                * 100
+                / context["total_lancamentos_termo"]
+            )
+        else:
+            context["percentual_analisado_termo"] = 0
+
         return context
 
 

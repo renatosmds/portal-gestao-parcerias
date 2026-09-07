@@ -120,6 +120,29 @@ class PrestacaoDetail(PrestacaoPermissaoMixin, PrestacaoEscopoMixin, DetailView)
             situacao="nao_analisado"
         ).count()
 
+        if total_documentos:
+            context["percentual_glosa"] = (
+                total_glosas * 100 / total_documentos
+            )
+            context["percentual_aprovado"] = (
+                total_aprovado * 100 / total_documentos
+            )
+        else:
+            context["percentual_glosa"] = 0
+            context["percentual_aprovado"] = 0
+
+        if context["total_lancamentos"]:
+            context["percentual_analisado"] = (
+                (
+                    context["total_lancamentos"]
+                    - context["total_nao_analisados"]
+                )
+                * 100
+                / context["total_lancamentos"]
+            )
+        else:
+            context["percentual_analisado"] = 0
+
         competencias = (
             self.object.competencias
             .annotate(

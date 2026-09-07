@@ -210,6 +210,22 @@ class ConsolidadosHierarquiaTests(TestCase):
             1,
         )
 
+        self.assertAlmostEqual(
+            float(response.context["percentual_aprovado"]),
+            83.3333333333,
+            places=6,
+        )
+        self.assertAlmostEqual(
+            float(response.context["percentual_glosa"]),
+            16.6666666667,
+            places=6,
+        )
+        self.assertAlmostEqual(
+            float(response.context["percentual_analisado"]),
+            80.0,
+            places=6,
+        )
+
     def test_consolidado_do_termo_soma_duas_prestacoes(self):
         response = self.client.get(
             reverse(
@@ -244,6 +260,22 @@ class ConsolidadosHierarquiaTests(TestCase):
         self.assertEqual(
             response.context["total_aprovado_termo"],
             Decimal("3250.00"),
+        )
+
+        self.assertAlmostEqual(
+            float(response.context["percentual_aprovado_termo"]),
+            87.8378378378,
+            places=6,
+        )
+        self.assertAlmostEqual(
+            float(response.context["percentual_glosa_termo"]),
+            12.1621621622,
+            places=6,
+        )
+        self.assertAlmostEqual(
+            float(response.context["percentual_analisado_termo"]),
+            85.7142857143,
+            places=6,
         )
 
     def test_consolidado_do_termo_conta_situacoes(self):
