@@ -407,3 +407,61 @@ class ConsolidadosHierarquiaTests(TestCase):
             f'value="{self.termo.pk}"',
         )
 
+    def test_detalhe_preserva_retorno_do_drilldown(self):
+        lancamento = Lancamento.objects.get(
+            numero_lancamento="C003"
+        )
+
+        parametros = {
+            "prestacao": self.prestacao_1.pk,
+            "situacao": Lancamento.Situacao.GLOSADO,
+        }
+
+        response_lista = self.client.get(
+            reverse("list_lancamentos"),
+            parametros,
+        )
+
+        self.assertEqual(
+            response_lista.status_code,
+            200,
+        )
+
+        detalhe_url = (
+            reverse(
+                "detail_lancamento",
+                kwargs={"pk": lancamento.pk},
+            )
+            + f"?prestacao={self.prestacao_1.pk}"
+            + "&situacao=glosado"
+        )
+
+        self.assertContains(
+            response_lista,
+            detalhe_url.replace("&", "&amp;"),
+        )
+
+        response_detalhe = self.client.get(
+            reverse(
+                "detail_lancamento",
+                kwargs={"pk": lancamento.pk},
+            ),
+            parametros,
+        )
+
+        self.assertEqual(
+            response_detalhe.status_code,
+            200,
+        )
+
+        retorno = (
+            reverse("list_lancamentos")
+            + f"?prestacao={self.prestacao_1.pk}"
+            + "&situacao=glosado"
+        )
+
+        self.assertContains(
+            response_detalhe,
+            retorno.replace("&", "&amp;"),
+        )
+

@@ -396,12 +396,19 @@ class LancamentoDetail(
 ):
     model = Lancamento
     template_name = "lancamentos/lancamento_detail.html"
+
     context_object_name = "lancamento"
     permission_required = "lancamentos.view_lancamento"
 
     def get_context_data(self, **kwargs):
-        context=super().get_context_data(**kwargs)
-        context["historico_glosas"] = self.object.historico_glosas.select_related("usuario")[:20]
+        context = super().get_context_data(**kwargs)
+        context["historico_glosas"] = (
+            self.object.historico_glosas
+            .select_related("usuario")[:20]
+        )
+        context["retorno_query"] = (
+            self.request.GET.urlencode()
+        )
         return context
 
 

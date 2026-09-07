@@ -229,7 +229,7 @@
                     </dl>
                     <footer>
                         <b class="entry-status status-{{ item.situacao }}">{{ item.get_situacao_display }}</b>
-                        <a href="{% url 'detail_lancamento' item.pk %}">Abrir</a>
+                        <a href="{% url 'detail_lancamento' item.pk %}{% if request.GET %}?{{ request.GET.urlencode }}{% endif %}">Abrir</a>
                     </footer>
                 </article>
             {% endfor %}

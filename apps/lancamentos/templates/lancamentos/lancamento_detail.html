@@ -5,7 +5,12 @@
 {% block staticcss %}<link rel="stylesheet" href="{% static 'css/lancamentos-v3.css' %}">{% endblock %}
 {% block main %}
 <section class="entries-page">
-    <a href="{% url 'list_lancamentos' %}" class="entries-back">← Voltar</a>
+    <a
+        href="{% url 'list_lancamentos' %}{% if retorno_query %}?{{ retorno_query }}{% endif %}"
+        class="entries-back"
+    >
+        ? Voltar
+    </a>
     <header class="entries-header">
         <div>
             <span class="sgm-eyebrow">LANÇAMENTO</span>
