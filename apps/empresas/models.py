@@ -141,50 +141,37 @@ class Empresa(models.Model):
     # CARD EXECUÇÃO
     # ------------------------------------------------------------------
 
-    @property
-    def totalOrdens(self):
-        Conferencia3 = apps.get_model(
-            "conferencia3",
-            "Conferencia3",
+    def _somar_lancamentos(self, campo):
+        """
+        Soma um campo apenas dos lancamentos pertencentes
+        a esta empresa.
+        """
+        resultado = self.lancamentos.aggregate(
+            total=Sum(campo, default=0)
         )
 
-        return Conferencia3.objects.count()
+        return resultado.get("total") or 0
+
+    @property
+    def totalOrdens(self):
+        return self.lancamentos.count()
 
     @property
     def ordensValor(self):
-        Conferencia3 = apps.get_model(
-            "conferencia3",
-            "Conferencia3",
-        )
-
-        return self._somar_campo(
-            Conferencia3,
-            "valor",
+        return self._somar_lancamentos(
+            "valor_documento"
         )
 
     @property
     def ordensConferir(self):
-        Conferencia3 = apps.get_model(
-            "conferencia3",
-            "Conferencia3",
-        )
-
-        return Conferencia3.objects.filter(
-            conferido=False,
-            notificado=False,
-            aprovado=False,
+        return self.lancamentos.filter(
+            situacao="nao_analisado"
         ).count()
 
     @property
     def valorTotalExecucao(self):
-        Conferencia3 = apps.get_model(
-            "conferencia3",
-            "Conferencia3",
-        )
-
-        return self._somar_campo(
-            Conferencia3,
-            "valorTotalExecucao",
+        return self._somar_lancamentos(
+            "valor_documento"
         )
 
     # ------------------------------------------------------------------
@@ -335,15 +322,7 @@ class Empresa(models.Model):
 
     @property
     def despesaTotal(self):
-        Conferencia3 = apps.get_model(
-            "conferencia3",
-            "Conferencia3",
-        )
-
-        saldo_despesas = self._somar_campo(
-            Conferencia3,
-            "valor",
-        )
+        saldo_despesas = self.ordensValor
 
         return (
             self.saldoDebitoAutorizado
@@ -362,15 +341,7 @@ class Empresa(models.Model):
 
     @property
     def saldoFinanceiro(self):
-        Conferencia3 = apps.get_model(
-            "conferencia3",
-            "Conferencia3",
-        )
-
-        saldo_despesas = self._somar_campo(
-            Conferencia3,
-            "valor",
-        )
+        saldo_despesas = self.ordensValor
 
         total_entradas = (
             self.saldoRepasse
