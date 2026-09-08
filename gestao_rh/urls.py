@@ -1,7 +1,6 @@
 ﻿
 from apps.analise.api.viewsets import AnaliseViewSet
 from apps.clientes.api.viewsets import ClientesViewSet
-from apps.conferencia3.api.viewsets import Conferencia3ViewSet
 from apps.core import views
 # from apps.curso.api.views import CursoViewSet
 from apps.funcionarios.api.views import FuncionarioViewSet
@@ -73,7 +72,6 @@ router.register(
     basename='analise',
 )
 router.register(r'parcerias', ParceriasViewSet)
-router.register(r'conferencia3', Conferencia3ViewSet)
 #router.register(r'bpm', Conferencia3ViewSet)
 
 urlpatterns = [
@@ -112,7 +110,6 @@ urlpatterns = [
                   path('grappelli/', include('grappelli.urls')),  # grappelli URLS
                   # path('admin/', admin.site.urls),  # admin site
 
-                  path('conferencia3/', include('apps.conferencia3.urls')),
                   #path('bpm/', include('apps.bpm.urls')),
                   path('termos/', include('apps.termos.urls')),
                   path('prestacao/', include('apps.prestacao.urls')),

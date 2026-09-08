@@ -11,7 +11,6 @@ MODULOS = {
     "folha_ponto": ("funcionarios.view_folhaponto",),
     "folha_pagamento": ("funcionarios.view_folhapagamento",),
     "banco_horas": ("registro_hora_extra.view_registrohoraextra",),
-    "execucao": ("conferencia3.view_conferencia3",),
     "financeiro": ("receitas.view_receitas",),
     "diligencias": ("diligencias.view_diligencia",),
     "importacoes": ("importacoes.view_importacao",),
