@@ -18,7 +18,7 @@ class FuncionarioAdmin(admin.ModelAdmin):
         ('DADOS DO RELATÓRIO DE AUDITORIA', {
             'classes': ('collapse',),
             'fields': (('endereco', 'bairro', 'cep'), ('cidade', 'estado'),  'user', 'curso', 'departamentos',
-                       'empresa', 'conferencia3'
+                       'empresa'
                        )}),
     )
 

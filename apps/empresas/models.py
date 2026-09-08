@@ -54,14 +54,6 @@ class Empresa(models.Model):
         verbose_name="Prestação legada",
     )
 
-    conferencia3 = models.ForeignKey(
-        "conferencia3.Conferencia3",
-        on_delete=models.PROTECT,
-        null=True,
-        blank=True,
-        related_name="empresas_legadas",
-        verbose_name="Conferência legada",
-    )
 
     parcerias = models.ForeignKey(
         "parcerias.Parcerias",
