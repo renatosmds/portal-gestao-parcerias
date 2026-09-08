@@ -42,7 +42,6 @@ from .views import hello
 # from produtos import urls as produtos_urls
 # from conferencia import urls as conferencia_urls
 # from conferencia2 import urls as conferencia2_urls
-# from parcerias import urls as conferencia3_urls
 # from prestacaoContas import urls as prestacaoContas_urls
 # from produto import urls as produto_urls
 
@@ -72,7 +71,6 @@ router.register(
     basename='analise',
 )
 router.register(r'parcerias', ParceriasViewSet)
-#router.register(r'bpm', Conferencia3ViewSet)
 
 urlpatterns = [
     path(
@@ -144,7 +142,6 @@ urlpatterns = [
                   # path('produtos/', include(produtos_urls)),
                   # path('conferencia/', include(conferencia_urls)),
                   # path('conferencia2/', include(conferencia2_urls)),
-                  # path('parcerias/', include(conferencia3_urls)),
                   # path('gestor/', include(gestor_urls)),
                   # path('cma/', include(cma_urls)),
                   # path('folha/', include(folha_urls)),

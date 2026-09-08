@@ -3,7 +3,6 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from apps.funcionarios.models import Funcionario
 #from apps.parcerias.models import Parcerias  # ok
-from apps.conferencia3.models import Conferencia3  # ok
 from apps.receitas.models import Receitas
 from apps.termos.models import Termos
 from apps.parcerias.models import Parcerias
@@ -145,36 +144,6 @@ def filtra_prestacao(request):
     return HttpResponse(qs_json, content_type='application/json')
 
 
-def filtra_conferencia3(request):
-    confer = request.GET['outro_param']
-    conferencia3 = Departamento.objects.get(id=confer)
-
-    qs_json = serializers.serialize('json', conferencia3.funcionario_set.all())
-    return HttpResponse(qs_json, content_type='application/json')
-
-
-def conferencia3_list(request):
-    data = {'usuario': request.user}
-    funcionario = request.user.funcionario
-    data['result'] = funcionario.empresa.total_funcionarios
-    data['total_funcionarios'] = funcionario.empresa.total_funcionarios
-    data['result1'] = funcionario.empresa.total_funcionarios_ferias
-    data['total_funcionarios_ferias'] = funcionario.empresa.total_funcionarios_ferias
-    data['result2'] = funcionario.empresa.total_funcionarios_doc_pendente
-    data['total_funcionarios_doc_pendente'] = funcionario.empresa.total_funcionarios_doc_pendente
-    data['result3'] = funcionario.empresa.total_funcionarios_doc_ok
-    data['total_funcionarios_doc_ok'] = funcionario.empresa.total_funcionarios_doc_ok
-    data['total_funcionarios_rg'] = 10
-    data['result4'] = RegistroHoraExtra.objects.filter(
-        funcionario__empresa=funcionario.empresa, utilizada=True).aggregate(Sum('horas'))['horas__sum'] or 0
-    data['total_hora_extra_utilizadas'] = RegistroHoraExtra.objects.filter(
-        funcionario__empresa=funcionario.empresa, utilizada=True).aggregate(Sum('horas'))['horas__sum'] or 0
-    data['result5'] = RegistroHoraExtra.objects.filter(
-        funcionario__empresa=funcionario.empresa, utilizada=False).aggregate(Sum('horas'))['horas__sum'] or 0
-    data['total_hora_extra_pendente'] = RegistroHoraExtra.objects.filter(
-        funcionario__empresa=funcionario.empresa, utilizada=False).aggregate(Sum('horas'))['horas__sum'] or 0
-
-    return render(request, 'core/clientes_list.html', data)
 
 
 def filtra_parcerias(request):
