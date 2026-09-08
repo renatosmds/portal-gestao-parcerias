@@ -44,6 +44,9 @@
                 {% if termo_obj.filePlanoTrabalho %}<a href="{{ termo_obj.filePlanoTrabalho.url }}" target="_blank">Plano de Trabalho</a>{% endif %}
                 {% if termo_obj.fileOficio %}<a href="{{ termo_obj.fileOficio.url }}" target="_blank">Ofício</a>{% endif %}
                 {% if termo_obj.fileEmpenho %}<a href="{{ termo_obj.fileEmpenho.url }}" target="_blank">Empenho</a>{% endif %}
+                {% if not termo_obj.fileTermo and not termo_obj.filePlanoTrabalho and not termo_obj.fileOficio and not termo_obj.fileEmpenho %}
+                    <span>Nenhum documento anexado.</span>
+                {% endif %}
             </div>
         </aside>
     </div>
