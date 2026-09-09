@@ -1,5 +1,5 @@
 from django.contrib import messages
-from django.http import JsonResponse
+from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse_lazy
 from django.views.generic import (
     CreateView,
@@ -306,10 +306,10 @@ class MovimentacaoFinanceiraCreate(
 
         messages.success(
             self.request,
-            "Movimenta??o financeira cadastrada com sucesso.",
+            "Movimentação financeira cadastrada com sucesso.",
         )
 
-        return super().form_valid(form)
+        return HttpResponseRedirect(self.get_success_url())
 
 
 class MovimentacaoFinanceiraUpdate(
@@ -348,10 +348,10 @@ class MovimentacaoFinanceiraUpdate(
 
         messages.success(
             self.request,
-            "Movimenta??o financeira atualizada com sucesso.",
+            "Movimentação financeira atualizada com sucesso.",
         )
 
-        return super().form_valid(form)
+        return HttpResponseRedirect(self.get_success_url())
 
 
 class MovimentacaoFinanceiraDelete(

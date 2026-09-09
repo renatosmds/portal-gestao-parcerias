@@ -3,6 +3,7 @@ from decimal import Decimal
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
+from django.db.models.signals import post_save
 from django.test import RequestFactory, TestCase
 from django.urls import reverse
 
@@ -172,6 +173,149 @@ class FinanceiroAcessoTests(TestCase):
         view.setup(request)
 
         return view.get_queryset()
+
+    def test_create_salva_movimentacao_uma_unica_vez(self):
+        self.client.force_login(
+            self.usuario_gestor
+        )
+
+        eventos = []
+
+        def registrar_save(
+            sender,
+            instance,
+            created,
+            **kwargs,
+        ):
+            if (
+                instance.descricao
+                == "Teste create save unico"
+            ):
+                eventos.append(
+                    created
+                )
+
+        post_save.connect(
+            registrar_save,
+            sender=MovimentacaoFinanceira,
+            dispatch_uid="financeiro_create_save_unico",
+        )
+
+        try:
+            resposta = self.client.post(
+                reverse(
+                    "create_movimentacao_financeira"
+                ),
+                {
+                    "empresa": self.empresa_a.pk,
+                    "termo": self.termo_a.pk,
+                    "prestacao": self.prestacao_a.pk,
+                    "competencia": self.competencia_a.pk,
+                    "data": "2026-09-08",
+                    "tipo": (
+                        MovimentacaoFinanceira.Tipo.REPASSE
+                    ),
+                    "valor": "321.00",
+                    "descricao": (
+                        "Teste create save unico"
+                    ),
+                    "documento": "",
+                    "observacao": "",
+                },
+            )
+        finally:
+            post_save.disconnect(
+                registrar_save,
+                sender=MovimentacaoFinanceira,
+                dispatch_uid="financeiro_create_save_unico",
+            )
+
+        self.assertEqual(
+            resposta.status_code,
+            302,
+        )
+
+        self.assertEqual(
+            eventos,
+            [True],
+        )
+
+        self.assertEqual(
+            MovimentacaoFinanceira.objects.filter(
+                descricao="Teste create save unico"
+            ).count(),
+            1,
+        )
+
+    def test_update_salva_movimentacao_uma_unica_vez(self):
+        self.client.force_login(
+            self.usuario_gestor
+        )
+
+        eventos = []
+
+        def registrar_save(
+            sender,
+            instance,
+            created,
+            **kwargs,
+        ):
+            if instance.pk == self.movimento_a.pk:
+                eventos.append(
+                    created
+                )
+
+        post_save.connect(
+            registrar_save,
+            sender=MovimentacaoFinanceira,
+            dispatch_uid="financeiro_update_save_unico",
+        )
+
+        try:
+            resposta = self.client.post(
+                reverse(
+                    "update_movimentacao_financeira",
+                    args=[self.movimento_a.pk],
+                ),
+                {
+                    "termo": self.termo_a.pk,
+                    "prestacao": self.prestacao_a.pk,
+                    "competencia": self.competencia_a.pk,
+                    "data": "2026-09-08",
+                    "tipo": (
+                        MovimentacaoFinanceira.Tipo.REPASSE
+                    ),
+                    "valor": "150.00",
+                    "descricao": (
+                        "Movimento OSC A atualizado"
+                    ),
+                    "documento": "",
+                    "observacao": "",
+                },
+            )
+        finally:
+            post_save.disconnect(
+                registrar_save,
+                sender=MovimentacaoFinanceira,
+                dispatch_uid="financeiro_update_save_unico",
+            )
+
+        self.assertEqual(
+            resposta.status_code,
+            302,
+        )
+
+        self.assertEqual(
+            eventos,
+            [False],
+        )
+
+        self.movimento_a.refresh_from_db()
+
+        self.assertEqual(
+            self.movimento_a.valor,
+            Decimal("150.00"),
+        )
 
     def test_osc_lista_apenas_propria_empresa(self):
         queryset = self.queryset_lista(

@@ -138,7 +138,15 @@ class MovimentacaoFinanceira(models.Model):
             )
 
         if self.prestacao_id:
-            if self.prestacao.termo_id != self.termo_id:
+            if (
+                self.empresa_id
+                and self.prestacao.empresa_id != self.empresa_id
+            ):
+                erros["prestacao"] = (
+                    "A prestacao informada nao pertence "
+                    "a empresa selecionada."
+                )
+            elif self.prestacao.termo_id != self.termo_id:
                 erros["prestacao"] = (
                     "A prestacao informada nao pertence "
                     "ao termo selecionado."

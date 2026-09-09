@@ -386,6 +386,149 @@ class MovimentacaoFinanceiraEstruturaTests(TestCase):
             Decimal("750.00"),
         )
 
+    def test_prestacao_de_outra_empresa_e_rejeitada(self):
+        prestacao_inconsistente = Prestacao.objects.create(
+            empresa=self.empresa_b,
+            termo=self.termo_a,
+            tipo="MENSAL",
+            numtermo="FIN-INCONSISTENTE/2026",
+        )
+
+        movimento = self.criar_movimentacao(
+            empresa=self.empresa_a,
+            termo=self.termo_a,
+            prestacao=prestacao_inconsistente,
+            competencia=None,
+        )
+
+        with self.assertRaises(ValidationError) as contexto:
+            movimento.full_clean()
+
+        self.assertIn(
+            "prestacao",
+            contexto.exception.message_dict,
+        )
+
+        self.assertIn(
+            "empresa selecionada",
+            contexto.exception.message_dict["prestacao"][0],
+        )
+
+    def test_receita_total_nao_inclui_resgate_automatico(self):
+        for tipo, valor in [
+            (
+                MovimentacaoFinanceira.Tipo.REPASSE,
+                "1000.00",
+            ),
+            (
+                MovimentacaoFinanceira.Tipo.RESGATE_AUTOMATICO,
+                "250.00",
+            ),
+        ]:
+            movimento = self.criar_movimentacao(
+                tipo=tipo,
+                valor=Decimal(valor),
+            )
+            movimento.full_clean()
+            movimento.save()
+
+        self.assertEqual(
+            self.empresa_a.receitaTotal,
+            Decimal("1000.00"),
+        )
+
+    def test_despesa_total(self):
+        for tipo, valor in [
+            (
+                MovimentacaoFinanceira.Tipo.DEBITO_AUTORIZADO,
+                "30.00",
+            ),
+            (
+                MovimentacaoFinanceira.Tipo.DESPESA_BANCARIA,
+                "5.00",
+            ),
+            (
+                MovimentacaoFinanceira.Tipo.IMPOSTO_RENDA,
+                "15.00",
+            ),
+            (
+                MovimentacaoFinanceira.Tipo.IOF,
+                "2.00",
+            ),
+        ]:
+            movimento = self.criar_movimentacao(
+                tipo=tipo,
+                valor=Decimal(valor),
+            )
+            movimento.full_clean()
+            movimento.save()
+
+        self.assertEqual(
+            self.empresa_a.despesaTotal,
+            Decimal("52.00"),
+        )
+
+    def test_saldo_financeiro(self):
+        dados = [
+            (
+                MovimentacaoFinanceira.Tipo.REPASSE,
+                "1000.00",
+            ),
+            (
+                MovimentacaoFinanceira.Tipo.DEPOSITO_OSC,
+                "100.00",
+            ),
+            (
+                MovimentacaoFinanceira.Tipo.RENDIMENTO,
+                "50.00",
+            ),
+            (
+                MovimentacaoFinanceira.Tipo.CREDITO_AUTORIZADO,
+                "25.00",
+            ),
+            (
+                MovimentacaoFinanceira.Tipo.RESGATE_AUTOMATICO,
+                "200.00",
+            ),
+            (
+                MovimentacaoFinanceira.Tipo.ESTORNO,
+                "10.00",
+            ),
+            (
+                MovimentacaoFinanceira.Tipo.APLICACAO,
+                "500.00",
+            ),
+            (
+                MovimentacaoFinanceira.Tipo.DEBITO_AUTORIZADO,
+                "30.00",
+            ),
+            (
+                MovimentacaoFinanceira.Tipo.DESPESA_BANCARIA,
+                "5.00",
+            ),
+            (
+                MovimentacaoFinanceira.Tipo.IMPOSTO_RENDA,
+                "15.00",
+            ),
+            (
+                MovimentacaoFinanceira.Tipo.IOF,
+                "2.00",
+            ),
+        ]
+
+        for tipo, valor in dados:
+            movimento = self.criar_movimentacao(
+                tipo=tipo,
+                valor=Decimal(valor),
+            )
+            movimento.full_clean()
+            movimento.save()
+
+        self.assertEqual(
+            self.empresa_a.saldoFinanceiro,
+            Decimal("833.00"),
+        )
+
     def test_saldos_nao_misturam_empresas(self):
         movimento_a = self.criar_movimentacao(
             tipo=MovimentacaoFinanceira.Tipo.REPASSE,
