@@ -1,8 +1,8 @@
 from django.urls import path
 from .views import home, celery, filtra_funcionarios, departamentos_ajax, filtra_termos, filtra_prestacao,\
-    filtra_conferencia3, filtra_parcerias, filtra_receitas, execucao, cadastros_gerais, funcionograma, convocacao, form_convocacao,\
+    filtra_parcerias, filtra_receitas, execucao, cadastros_gerais, funcionograma, convocacao, form_convocacao,\
     form_requerimento, form_habilitacao, form_aprovacao, relatorio_gestor, relatorio_comissao,  monitoramento,\
-    auditoria, analise_auditoria, acompanhamento_auditorias, tomada_contas, analise, conferencia3_list, menu, diagnostico_portal
+    auditoria, analise_auditoria, acompanhamento_auditorias, tomada_contas, analise, menu, diagnostico_portal
 
 
 from .views_sprint32 import (
@@ -82,7 +82,6 @@ urlpatterns = [
 
     path('', home, name='home'),
     path('execucao/', execucao, name='execucao'),
-    path('conferencia3_list/', conferencia3_list, name='conferencia3_list'),
     path('funcionograma/', funcionograma, name='funcionograma'),
     path('cadastros_gerais/', cadastros_gerais, name='cadastros_gerais'),
     path('convocacao/', convocacao, name='convocacao'),
@@ -102,7 +101,6 @@ urlpatterns = [
     path('filtra-funcionarios/', filtra_funcionarios, name='filtra_funcionarios'),
     path('filtra-prestacao/', filtra_prestacao, name='filtra_prestacao'),
     path('filtra-termos/', filtra_termos, name='filtra_termos'),
-    path('filtra_conferencia3/', filtra_conferencia3, name='filtra_conferencia3'),
     path('filtra-parcerias/', filtra_parcerias, name='filtra_parcerias'),
     path('filtra-receitas/', filtra_receitas, name='filtra_receitas'),
     path(

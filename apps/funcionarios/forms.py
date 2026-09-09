@@ -39,7 +39,6 @@ class FuncionarioForm(forms.ModelForm):
             "totalVerbaRescisoria",
             "totalRescisao",
             "curso",
-            "conferencia3",
         ]
 
 

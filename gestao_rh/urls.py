@@ -1,7 +1,6 @@
 ﻿
 from apps.analise.api.viewsets import AnaliseViewSet
 from apps.clientes.api.viewsets import ClientesViewSet
-from apps.conferencia3.api.viewsets import Conferencia3ViewSet
 from apps.core import views
 # from apps.curso.api.views import CursoViewSet
 from apps.funcionarios.api.views import FuncionarioViewSet
@@ -43,7 +42,6 @@ from .views import hello
 # from produtos import urls as produtos_urls
 # from conferencia import urls as conferencia_urls
 # from conferencia2 import urls as conferencia2_urls
-# from parcerias import urls as conferencia3_urls
 # from prestacaoContas import urls as prestacaoContas_urls
 # from produto import urls as produto_urls
 
@@ -73,8 +71,6 @@ router.register(
     basename='analise',
 )
 router.register(r'parcerias', ParceriasViewSet)
-router.register(r'conferencia3', Conferencia3ViewSet)
-#router.register(r'bpm', Conferencia3ViewSet)
 
 urlpatterns = [
     path(
@@ -112,11 +108,11 @@ urlpatterns = [
                   path('grappelli/', include('grappelli.urls')),  # grappelli URLS
                   # path('admin/', admin.site.urls),  # admin site
 
-                  path('conferencia3/', include('apps.conferencia3.urls')),
                   #path('bpm/', include('apps.bpm.urls')),
                   path('termos/', include('apps.termos.urls')),
                   path('prestacao/', include('apps.prestacao.urls')),
                   path('receitas/', include('apps.receitas.urls')),
+                  path('financeiro/', include('apps.financeiro.urls')),
                   path('relatorios/', include('apps.relatorios.urls')),
                   path('analise/', include('apps.analise.urls')),
                   path('assistente-ia/', include('apps.assistente_ia.urls')),
@@ -147,7 +143,6 @@ urlpatterns = [
                   # path('produtos/', include(produtos_urls)),
                   # path('conferencia/', include(conferencia_urls)),
                   # path('conferencia2/', include(conferencia2_urls)),
-                  # path('parcerias/', include(conferencia3_urls)),
                   # path('gestor/', include(gestor_urls)),
                   # path('cma/', include(cma_urls)),
                   # path('folha/', include(folha_urls)),

@@ -70,7 +70,7 @@
                     <div class="employee-form-grid">
                         {% for field in form %}
                             <div class="employee-form-field
-                                {% if field.name == 'endereco' or field.name == 'email' or field.name == 'conferencia3' %}employee-form-field--wide{% endif %}">
+                                {% if field.name == 'endereco' or field.name == 'email' %}employee-form-field--wide{% endif %}">
                                 <label for="{{ field.id_for_label }}">
                                     {{ field.label }}
                                     {% if field.field.required %}

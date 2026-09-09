@@ -54,14 +54,6 @@ class Empresa(models.Model):
         verbose_name="Prestação legada",
     )
 
-    conferencia3 = models.ForeignKey(
-        "conferencia3.Conferencia3",
-        on_delete=models.PROTECT,
-        null=True,
-        blank=True,
-        related_name="empresas_legadas",
-        verbose_name="Conferência legada",
-    )
 
     parcerias = models.ForeignKey(
         "parcerias.Parcerias",
@@ -141,50 +133,59 @@ class Empresa(models.Model):
     # CARD EXECUÇÃO
     # ------------------------------------------------------------------
 
-    @property
-    def totalOrdens(self):
-        Conferencia3 = apps.get_model(
-            "conferencia3",
-            "Conferencia3",
+    def _somar_lancamentos(self, campo):
+        """
+        Soma um campo apenas dos lancamentos pertencentes
+        a esta empresa.
+        """
+        resultado = self.lancamentos.aggregate(
+            total=Sum(campo, default=0)
         )
 
-        return Conferencia3.objects.count()
+        return resultado.get("total") or 0
+
+    def _somar_movimentacoes_financeiras(self, tipo):
+        MovimentacaoFinanceira = apps.get_model(
+            "financeiro",
+            "MovimentacaoFinanceira",
+        )
+
+        resultado = (
+            MovimentacaoFinanceira.objects
+            .filter(
+                empresa=self,
+                tipo=tipo,
+            )
+            .aggregate(
+                total=Sum(
+                    "valor",
+                    default=0,
+                )
+            )
+        )
+
+        return resultado.get("total") or 0
+
+    @property
+    def totalOrdens(self):
+        return self.lancamentos.count()
 
     @property
     def ordensValor(self):
-        Conferencia3 = apps.get_model(
-            "conferencia3",
-            "Conferencia3",
-        )
-
-        return self._somar_campo(
-            Conferencia3,
-            "valor",
+        return self._somar_lancamentos(
+            "valor_documento"
         )
 
     @property
     def ordensConferir(self):
-        Conferencia3 = apps.get_model(
-            "conferencia3",
-            "Conferencia3",
-        )
-
-        return Conferencia3.objects.filter(
-            conferido=False,
-            notificado=False,
-            aprovado=False,
+        return self.lancamentos.filter(
+            situacao="nao_analisado"
         ).count()
 
     @property
     def valorTotalExecucao(self):
-        Conferencia3 = apps.get_model(
-            "conferencia3",
-            "Conferencia3",
-        )
-
-        return self._somar_campo(
-            Conferencia3,
-            "valorTotalExecucao",
+        return self._somar_lancamentos(
+            "valor_documento"
         )
 
     # ------------------------------------------------------------------
@@ -193,74 +194,38 @@ class Empresa(models.Model):
 
     @property
     def saldoRepasse(self):
-        Receitas = apps.get_model(
-            "receitas",
-            "Receitas",
-        )
-
-        return self._somar_campo(
-            Receitas,
-            "repasse",
+        return self._somar_movimentacoes_financeiras(
+            "repasse"
         )
 
     @property
     def saldoDepositoOsc(self):
-        Receitas = apps.get_model(
-            "receitas",
-            "Receitas",
-        )
-
-        return self._somar_campo(
-            Receitas,
-            "depositoOsc",
+        return self._somar_movimentacoes_financeiras(
+            "deposito_osc"
         )
 
     @property
     def saldoRendimento(self):
-        Receitas = apps.get_model(
-            "receitas",
-            "Receitas",
-        )
-
-        return self._somar_campo(
-            Receitas,
-            "rendimento",
+        return self._somar_movimentacoes_financeiras(
+            "rendimento"
         )
 
     @property
     def saldoCreditoAutorizado(self):
-        Receitas = apps.get_model(
-            "receitas",
-            "Receitas",
-        )
-
-        return self._somar_campo(
-            Receitas,
-            "creditoAutorizado",
+        return self._somar_movimentacoes_financeiras(
+            "credito_autorizado"
         )
 
     @property
     def saldoResgateAutomatico(self):
-        Receitas = apps.get_model(
-            "receitas",
-            "Receitas",
-        )
-
-        return self._somar_campo(
-            Receitas,
-            "resgateAutomatico",
+        return self._somar_movimentacoes_financeiras(
+            "resgate_automatico"
         )
 
     @property
     def saldoEstorno(self):
-        Receitas = apps.get_model(
-            "receitas",
-            "Receitas",
-        )
-
-        return self._somar_campo(
-            Receitas,
-            "estorno",
+        return self._somar_movimentacoes_financeiras(
+            "estorno"
         )
 
     @property
@@ -275,75 +240,37 @@ class Empresa(models.Model):
 
     @property
     def saldoAplicacao(self):
-        Receitas = apps.get_model(
-            "receitas",
-            "Receitas",
-        )
-
-        return self._somar_campo(
-            Receitas,
-            "aplicacao",
+        return self._somar_movimentacoes_financeiras(
+            "aplicacao"
         )
 
     @property
     def saldoDebitoAutorizado(self):
-        Receitas = apps.get_model(
-            "receitas",
-            "Receitas",
-        )
-
-        return self._somar_campo(
-            Receitas,
-            "debitoAutorizado",
+        return self._somar_movimentacoes_financeiras(
+            "debito_autorizado"
         )
 
     @property
     def saldoDespesaBancaria(self):
-        Receitas = apps.get_model(
-            "receitas",
-            "Receitas",
-        )
-
-        return self._somar_campo(
-            Receitas,
-            "despesaBancaria",
+        return self._somar_movimentacoes_financeiras(
+            "despesa_bancaria"
         )
 
     @property
     def saldoImpostoRenda(self):
-        Receitas = apps.get_model(
-            "receitas",
-            "Receitas",
-        )
-
-        return self._somar_campo(
-            Receitas,
-            "impostoRenda",
+        return self._somar_movimentacoes_financeiras(
+            "imposto_renda"
         )
 
     @property
     def saldoIof(self):
-        Receitas = apps.get_model(
-            "receitas",
-            "Receitas",
-        )
-
-        return self._somar_campo(
-            Receitas,
-            "iof",
+        return self._somar_movimentacoes_financeiras(
+            "iof"
         )
 
     @property
     def despesaTotal(self):
-        Conferencia3 = apps.get_model(
-            "conferencia3",
-            "Conferencia3",
-        )
-
-        saldo_despesas = self._somar_campo(
-            Conferencia3,
-            "valor",
-        )
+        saldo_despesas = self.ordensValor
 
         return (
             self.saldoDebitoAutorizado
@@ -362,15 +289,7 @@ class Empresa(models.Model):
 
     @property
     def saldoFinanceiro(self):
-        Conferencia3 = apps.get_model(
-            "conferencia3",
-            "Conferencia3",
-        )
-
-        saldo_despesas = self._somar_campo(
-            Conferencia3,
-            "valor",
-        )
+        saldo_despesas = self.ordensValor
 
         total_entradas = (
             self.saldoRepasse

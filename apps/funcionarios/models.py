@@ -4,7 +4,6 @@ from django.urls import reverse
 from apps.departamentos.models import Departamento
 from apps.empresas.models import Empresa
 from apps.curso.models import Curso
-from apps.conferencia3.models import Conferencia3
 from django.db.models import Sum
 from decimal import Decimal, ROUND_HALF_UP
 
@@ -133,7 +132,6 @@ class Funcionario(models.Model):
 
     user = models.OneToOneField(User, on_delete=models.PROTECT)
     curso = models.ManyToManyField(Curso, verbose_name='Cursos Realizados')
-    conferencia3 = models.ManyToManyField(Conferencia3, verbose_name='Cursos Realizados')
     # curso = models.ForeignKey(
     #     Curso, on_delete=models.PROTECT, null=True, blank=True)  # ok
     departamentos = models.ManyToManyField(Departamento)

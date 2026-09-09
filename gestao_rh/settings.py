@@ -1,4 +1,4 @@
-﻿import sys
+import sys
 import os
 from importlib.util import find_spec
 # import pandas as pd
@@ -102,6 +102,7 @@ INSTALLED_APPS = [
     'apps.parcerias',
     'apps.prestacao',
     'apps.receitas',
+    'apps.financeiro',
     'apps.relatorios.apps.RelatoriosConfig',
     'apps.registro_hora_extra',  # gestão_rh
     'apps.termos',
