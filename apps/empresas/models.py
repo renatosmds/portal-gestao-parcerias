@@ -144,6 +144,28 @@ class Empresa(models.Model):
 
         return resultado.get("total") or 0
 
+    def _somar_movimentacoes_financeiras(self, tipo):
+        MovimentacaoFinanceira = apps.get_model(
+            "financeiro",
+            "MovimentacaoFinanceira",
+        )
+
+        resultado = (
+            MovimentacaoFinanceira.objects
+            .filter(
+                empresa=self,
+                tipo=tipo,
+            )
+            .aggregate(
+                total=Sum(
+                    "valor",
+                    default=0,
+                )
+            )
+        )
+
+        return resultado.get("total") or 0
+
     @property
     def totalOrdens(self):
         return self.lancamentos.count()
@@ -172,74 +194,38 @@ class Empresa(models.Model):
 
     @property
     def saldoRepasse(self):
-        Receitas = apps.get_model(
-            "receitas",
-            "Receitas",
-        )
-
-        return self._somar_campo(
-            Receitas,
-            "repasse",
+        return self._somar_movimentacoes_financeiras(
+            "repasse"
         )
 
     @property
     def saldoDepositoOsc(self):
-        Receitas = apps.get_model(
-            "receitas",
-            "Receitas",
-        )
-
-        return self._somar_campo(
-            Receitas,
-            "depositoOsc",
+        return self._somar_movimentacoes_financeiras(
+            "deposito_osc"
         )
 
     @property
     def saldoRendimento(self):
-        Receitas = apps.get_model(
-            "receitas",
-            "Receitas",
-        )
-
-        return self._somar_campo(
-            Receitas,
-            "rendimento",
+        return self._somar_movimentacoes_financeiras(
+            "rendimento"
         )
 
     @property
     def saldoCreditoAutorizado(self):
-        Receitas = apps.get_model(
-            "receitas",
-            "Receitas",
-        )
-
-        return self._somar_campo(
-            Receitas,
-            "creditoAutorizado",
+        return self._somar_movimentacoes_financeiras(
+            "credito_autorizado"
         )
 
     @property
     def saldoResgateAutomatico(self):
-        Receitas = apps.get_model(
-            "receitas",
-            "Receitas",
-        )
-
-        return self._somar_campo(
-            Receitas,
-            "resgateAutomatico",
+        return self._somar_movimentacoes_financeiras(
+            "resgate_automatico"
         )
 
     @property
     def saldoEstorno(self):
-        Receitas = apps.get_model(
-            "receitas",
-            "Receitas",
-        )
-
-        return self._somar_campo(
-            Receitas,
-            "estorno",
+        return self._somar_movimentacoes_financeiras(
+            "estorno"
         )
 
     @property
@@ -254,62 +240,32 @@ class Empresa(models.Model):
 
     @property
     def saldoAplicacao(self):
-        Receitas = apps.get_model(
-            "receitas",
-            "Receitas",
-        )
-
-        return self._somar_campo(
-            Receitas,
-            "aplicacao",
+        return self._somar_movimentacoes_financeiras(
+            "aplicacao"
         )
 
     @property
     def saldoDebitoAutorizado(self):
-        Receitas = apps.get_model(
-            "receitas",
-            "Receitas",
-        )
-
-        return self._somar_campo(
-            Receitas,
-            "debitoAutorizado",
+        return self._somar_movimentacoes_financeiras(
+            "debito_autorizado"
         )
 
     @property
     def saldoDespesaBancaria(self):
-        Receitas = apps.get_model(
-            "receitas",
-            "Receitas",
-        )
-
-        return self._somar_campo(
-            Receitas,
-            "despesaBancaria",
+        return self._somar_movimentacoes_financeiras(
+            "despesa_bancaria"
         )
 
     @property
     def saldoImpostoRenda(self):
-        Receitas = apps.get_model(
-            "receitas",
-            "Receitas",
-        )
-
-        return self._somar_campo(
-            Receitas,
-            "impostoRenda",
+        return self._somar_movimentacoes_financeiras(
+            "imposto_renda"
         )
 
     @property
     def saldoIof(self):
-        Receitas = apps.get_model(
-            "receitas",
-            "Receitas",
-        )
-
-        return self._somar_campo(
-            Receitas,
-            "iof",
+        return self._somar_movimentacoes_financeiras(
+            "iof"
         )
 
     @property
