@@ -112,6 +112,7 @@ urlpatterns = [
                   path('termos/', include('apps.termos.urls')),
                   path('prestacao/', include('apps.prestacao.urls')),
                   path('receitas/', include('apps.receitas.urls')),
+                  path('financeiro/', include('apps.financeiro.urls')),
                   path('relatorios/', include('apps.relatorios.urls')),
                   path('analise/', include('apps.analise.urls')),
                   path('assistente-ia/', include('apps.assistente_ia.urls')),

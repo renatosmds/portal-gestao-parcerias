@@ -1,0 +1,300 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+{% if object %}Editar{% else %}Nova{% endif %}
+movimentação financeira
+{% endblock %}
+
+{% block page_name %}Financeiro{% endblock %}
+
+{% block staticcss %}
+<link rel="stylesheet" href="{% static 'css/lancamentos-v3.css' %}">
+{% endblock %}
+
+{% block main %}
+<section class="entries-page">
+
+    <a
+        href="{% url 'list_movimentacoes_financeiras' %}"
+        class="entries-back"
+    >
+        ← Voltar
+    </a>
+
+    <header class="entries-header">
+        <div>
+            <span class="sgm-eyebrow">
+                FINANCEIRO
+            </span>
+
+            <h1>
+                {% if object %}
+                    Editar movimentação
+                {% else %}
+                    Nova movimentação
+                {% endif %}
+            </h1>
+
+            <p>
+                Registre a movimentação bancária
+                vinculada ao termo e à prestação de contas.
+            </p>
+        </div>
+    </header>
+
+    <form
+        method="post"
+        enctype="multipart/form-data"
+        novalidate
+    >
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        {% if empresas_disponiveis and not object %}
+            <div class="sgm-panel entry-panel">
+                <label for="id_empresa_externa">
+                    Empresa
+                </label>
+
+                <select
+                    name="empresa"
+                    id="id_empresa_externa"
+                    class="form-control"
+                    required
+                >
+                    <option value="">
+                        Selecione
+                    </option>
+
+                    {% for empresa in empresas_disponiveis %}
+                        <option
+                            value="{{ empresa.pk }}"
+                            {% if empresa_destino.pk == empresa.pk %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ empresa.nome }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+        {% endif %}
+
+        {% if empresa_destino %}
+            <div class="sgm-panel entry-panel">
+                <strong>Empresa:</strong>
+                {{ empresa_destino.nome }}
+            </div>
+        {% endif %}
+
+        <div class="sgm-panel entry-panel entry-form-grid">
+
+            {% for field in form %}
+                <div
+                    {% if field.name == "descricao" or field.name == "observacao" %}
+                        class="entry-field-wide"
+                    {% endif %}
+                >
+                    <label for="{{ field.id_for_label }}">
+                        {{ field.label }}
+                    </label>
+
+                    {{ field }}
+
+                    {% for error in field.errors %}
+                        <small class="text-danger d-block">
+                            {{ error }}
+                        </small>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+
+        </div>
+
+        <div class="entry-actions">
+            <button class="btn btn-primary">
+                Salvar
+            </button>
+
+            <a
+                href="{% url 'list_movimentacoes_financeiras' %}"
+                class="btn btn-outline-secondary"
+            >
+                Cancelar
+            </a>
+        </div>
+
+    </form>
+</section>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const empresa = document.getElementById(
+        "id_empresa_externa"
+    );
+
+    const termo = document.getElementById(
+        "id_termo"
+    );
+
+    const prestacao = document.getElementById(
+        "id_prestacao"
+    );
+
+    const competencia = document.getElementById(
+        "id_competencia"
+    );
+
+    const urlTermos =
+        "{% url 'financeiro_termos' %}";
+
+    const urlPrestacoes =
+        "{% url 'financeiro_prestacoes' %}";
+
+    const urlCompetencias =
+        "{% url 'financeiro_competencias' %}";
+
+    function limpar(select) {
+        if (!select) {
+            return;
+        }
+
+        select.innerHTML = "";
+
+        const opcao =
+            document.createElement("option");
+
+        opcao.value = "";
+        opcao.textContent = "---------";
+
+        select.appendChild(opcao);
+    }
+
+    function preencher(select, itens) {
+        limpar(select);
+
+        itens.forEach(function (item) {
+            const opcao =
+                document.createElement("option");
+
+            opcao.value = item.id;
+            opcao.textContent = item.texto;
+
+            select.appendChild(opcao);
+        });
+    }
+
+    async function carregarTermos() {
+        if (!empresa || !empresa.value) {
+            limpar(termo);
+            limpar(prestacao);
+            limpar(competencia);
+            return;
+        }
+
+        const url = new URL(
+            urlTermos,
+            window.location.origin
+        );
+
+        url.searchParams.set(
+            "empresa",
+            empresa.value
+        );
+
+        const resposta = await fetch(url);
+        const dados = await resposta.json();
+
+        preencher(
+            termo,
+            dados.termos || []
+        );
+
+        limpar(prestacao);
+        limpar(competencia);
+    }
+
+    async function carregarPrestacoes() {
+        if (!termo || !termo.value) {
+            limpar(prestacao);
+            limpar(competencia);
+            return;
+        }
+
+        const url = new URL(
+            urlPrestacoes,
+            window.location.origin
+        );
+
+        url.searchParams.set(
+            "termo",
+            termo.value
+        );
+
+        const resposta = await fetch(url);
+        const dados = await resposta.json();
+
+        preencher(
+            prestacao,
+            dados.prestacoes || []
+        );
+
+        limpar(competencia);
+    }
+
+    async function carregarCompetencias() {
+        if (!prestacao || !prestacao.value) {
+            limpar(competencia);
+            return;
+        }
+
+        const url = new URL(
+            urlCompetencias,
+            window.location.origin
+        );
+
+        url.searchParams.set(
+            "prestacao",
+            prestacao.value
+        );
+
+        const resposta = await fetch(url);
+        const dados = await resposta.json();
+
+        preencher(
+            competencia,
+            dados.competencias || []
+        );
+    }
+
+    if (empresa) {
+        empresa.addEventListener(
+            "change",
+            carregarTermos
+        );
+    }
+
+    if (termo) {
+        termo.addEventListener(
+            "change",
+            carregarPrestacoes
+        );
+    }
+
+    if (prestacao) {
+        prestacao.addEventListener(
+            "change",
+            carregarCompetencias
+        );
+    }
+});
+</script>
+
+{% endblock %}

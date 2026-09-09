@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+{% load static humanize %}
+
+{% block title %}Financeiro | SGM{% endblock %}
+{% block page_name %}Financeiro{% endblock %}
+
+{% block staticcss %}
+<link rel="stylesheet" href="{% static 'css/lancamentos-v3.css' %}">
+{% endblock %}
+
+{% block main %}
+<section class="entries-page">
+
+    <header class="entries-header">
+        <div>
+            <span class="sgm-eyebrow">
+                MOVIMENTAÇÃO FINANCEIRA
+            </span>
+            <h1>Financeiro</h1>
+            <p>
+                Controle repasses, rendimentos, aplicações,
+                resgates e demais movimentações.
+            </p>
+        </div>
+
+        {% if perms.financeiro.add_movimentacaofinanceira %}
+            <a
+                href="{% url 'create_movimentacao_financeira' %}{% if empresa_filtro %}?empresa={{ empresa_filtro }}{% endif %}"
+                class="btn btn-primary"
+            >
+                <i class="fa fa-plus mr-1"></i>
+                Nova movimentação
+            </a>
+        {% endif %}
+    </header>
+
+    <div class="entries-summary">
+        <article>
+            <small>Movimentações</small>
+            <strong>{{ total_movimentacoes }}</strong>
+        </article>
+
+        {% if empresa_resumo %}
+            <article>
+                <small>Receitas</small>
+                <strong>
+                    R$ {{ empresa_resumo.receitaTotal|floatformat:2|intcomma }}
+                </strong>
+            </article>
+
+            <article>
+                <small>Conta aplicação</small>
+                <strong>
+                    R$ {{ empresa_resumo.saldoContaAplicacao|floatformat:2|intcomma }}
+                </strong>
+            </article>
+
+            <article>
+                <small>Saldo financeiro</small>
+                <strong>
+                    R$ {{ empresa_resumo.saldoFinanceiro|floatformat:2|intcomma }}
+                </strong>
+            </article>
+        {% endif %}
+    </div>
+
+    <form method="get" class="entries-toolbar">
+
+        {% if pode_selecionar_empresa %}
+            <select
+                name="empresa"
+                id="filtro_empresa"
+                class="form-control"
+            >
+                <option value="">Selecione a empresa</option>
+
+                {% for empresa in empresas_disponiveis %}
+                    <option
+                        value="{{ empresa.pk }}"
+                        {% if empresa_filtro == empresa.pk|stringformat:"s" %}
+                            selected
+                        {% endif %}
+                    >
+                        {{ empresa.nome }}
+                    </option>
+                {% endfor %}
+            </select>
+        {% endif %}
+
+        <select
+            name="termo"
+            id="filtro_termo"
+            class="form-control"
+        >
+            <option value="">Todos os termos</option>
+
+            {% for termo in termos_disponiveis %}
+                <option
+                    value="{{ termo.pk }}"
+                    {% if termo_filtro == termo.pk|stringformat:"s" %}
+                        selected
+                    {% endif %}
+                >
+                    {{ termo }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <select
+            name="prestacao"
+            id="filtro_prestacao"
+            class="form-control"
+        >
+            <option value="">Todas as prestações</option>
+
+            {% for prestacao in prestacoes_disponiveis %}
+                <option
+                    value="{{ prestacao.pk }}"
+                    {% if prestacao_filtro == prestacao.pk|stringformat:"s" %}
+                        selected
+                    {% endif %}
+                >
+                    {{ prestacao }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <select
+            name="competencia"
+            id="filtro_competencia"
+            class="form-control"
+        >
+            <option value="">Todas as competências</option>
+
+            {% for competencia in competencias_disponiveis %}
+                <option
+                    value="{{ competencia.pk }}"
+                    {% if competencia_filtro == competencia.pk|stringformat:"s" %}
+                        selected
+                    {% endif %}
+                >
+                    {{ competencia }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <select name="tipo" class="form-control">
+            <option value="">Todos os tipos</option>
+
+            {% for valor, rotulo in tipos %}
+                <option
+                    value="{{ valor }}"
+                    {% if tipo_filtro == valor %}selected{% endif %}
+                >
+                    {{ rotulo }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <button class="btn btn-outline-primary">
+            Filtrar
+        </button>
+
+        {% if empresa_filtro or termo_filtro or prestacao_filtro or competencia_filtro or tipo_filtro %}
+            <a
+                href="{% url 'list_movimentacoes_financeiras' %}"
+                class="btn btn-outline-secondary"
+            >
+                Limpar
+            </a>
+        {% endif %}
+    </form>
+
+    {% if pode_selecionar_empresa and not empresa_resumo %}
+        <div class="sgm-panel entries-empty">
+            Selecione uma empresa para visualizar o
+            resumo financeiro e os filtros hierárquicos.
+        </div>
+    {% endif %}
+
+    {% if movimentacoes %}
+        <div class="entries-grid">
+            {% for item in movimentacoes %}
+                <article class="entry-card">
+                    <span>{{ item.empresa.nome }}</span>
+
+                    <h2>
+                        {{ item.get_tipo_display }}
+                    </h2>
+
+                    <p>
+                        {{ item.descricao|default:"Sem descrição." }}
+                    </p>
+
+                    <dl>
+                        <div>
+                            <dt>Data</dt>
+                            <dd>{{ item.data|date:"d/m/Y" }}</dd>
+                        </div>
+
+                        <div>
+                            <dt>Valor</dt>
+                            <dd>
+                                R$ {{ item.valor|floatformat:2|intcomma }}
+                            </dd>
+                        </div>
+
+                        <div>
+                            <dt>Termo</dt>
+                            <dd>{{ item.termo }}</dd>
+                        </div>
+
+                        <div>
+                            <dt>Prestação</dt>
+                            <dd>
+                                {{ item.prestacao|default:"Não informada" }}
+                            </dd>
+                        </div>
+
+                        <div>
+                            <dt>Competência</dt>
+                            <dd>
+                                {{ item.competencia|default:"Não informada" }}
+                            </dd>
+                        </div>
+                    </dl>
+
+                    <footer>
+                        <span>
+                            {{ item.get_tipo_display }}
+                        </span>
+
+                        <div>
+                            {% if perms.financeiro.change_movimentacaofinanceira %}
+                                <a href="{% url 'update_movimentacao_financeira' item.pk %}">
+                                    Editar
+                                </a>
+                            {% endif %}
+
+                            {% if perms.financeiro.delete_movimentacaofinanceira %}
+                                &nbsp;
+                                <a href="{% url 'delete_movimentacao_financeira' item.pk %}">
+                                    Excluir
+                                </a>
+                            {% endif %}
+                        </div>
+                    </footer>
+                </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="sgm-panel entries-empty">
+            Nenhuma movimentação financeira encontrada.
+        </div>
+    {% endif %}
+
+</section>
+{% endblock %}
