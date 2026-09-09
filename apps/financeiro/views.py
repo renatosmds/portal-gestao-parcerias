@@ -389,7 +389,7 @@ def _usuario_pode_consultar_financeiro(user):
 def _validar_acesso_ajax_financeiro(request):
     if not request.user.is_authenticated:
         return JsonResponse(
-            {"detail": "Autentica??o necess?ria."},
+            {"detail": "Autenticação necessária."},
             status=401,
         )
 

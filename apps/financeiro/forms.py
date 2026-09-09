@@ -119,7 +119,7 @@ class MovimentacaoFinanceiraForm(forms.ModelForm):
 
         if not self.empresa:
             raise forms.ValidationError(
-                "Empresa n?o definida para a movimenta??o."
+                "Empresa não definida para a movimentação."
             )
 
         if termo and termo.empresa_id != self.empresa.pk:
@@ -132,25 +132,25 @@ class MovimentacaoFinanceiraForm(forms.ModelForm):
             if prestacao.empresa_id != self.empresa.pk:
                 self.add_error(
                     "prestacao",
-                    "A presta??o n?o pertence ? empresa selecionada.",
+                    "A prestação não pertence à empresa selecionada.",
                 )
 
             if termo and prestacao.termo_id != termo.pk:
                 self.add_error(
                     "prestacao",
-                    "A presta??o n?o pertence ao termo selecionado.",
+                    "A prestação não pertence ao termo selecionado.",
                 )
 
         if competencia:
             if not prestacao:
                 self.add_error(
                     "competencia",
-                    "Selecione a presta??o antes da compet?ncia.",
+                    "Selecione a prestação antes da competência.",
                 )
             elif competencia.prestacao_id != prestacao.pk:
                 self.add_error(
                     "competencia",
-                    "A compet?ncia n?o pertence ? presta??o selecionada.",
+                    "A competência não pertence à prestação selecionada.",
                 )
 
         return cleaned_data
