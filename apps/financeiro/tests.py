@@ -3,6 +3,7 @@ from decimal import Decimal
 
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
+from django.db import IntegrityError, transaction
 from django.test import TestCase
 
 from apps.empresas.models import Empresa
@@ -385,6 +386,21 @@ class MovimentacaoFinanceiraEstruturaTests(TestCase):
             self.empresa_a.saldoContaAplicacao,
             Decimal("750.00"),
         )
+
+    def test_banco_rejeita_valor_zero(self):
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                MovimentacaoFinanceira.objects.create(
+                    empresa=self.empresa_a,
+                    termo=self.termo_a,
+                    prestacao=self.prestacao_a,
+                    competencia=self.competencia_a,
+                    data=date(2026, 9, 8),
+                    tipo=MovimentacaoFinanceira.Tipo.REPASSE,
+                    valor=Decimal("0.00"),
+                    descricao="Teste constraint valor zero",
+                    criado_por=self.usuario,
+                )
 
     def test_prestacao_de_outra_empresa_e_rejeitada(self):
         prestacao_inconsistente = Prestacao.objects.create(

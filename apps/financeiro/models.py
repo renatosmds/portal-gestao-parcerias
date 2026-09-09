@@ -110,6 +110,12 @@ class MovimentacaoFinanceira(models.Model):
         )
         verbose_name = "Movimentacao financeira"
         verbose_name_plural = "Movimentacoes financeiras"
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(valor__gt=0),
+                name="financeiro_valor_maior_que_zero",
+            ),
+        ]
 
     def __str__(self):
         return (
