@@ -585,3 +585,66 @@ class ResumoFinanceiroCompetenciaTests(TestCase):
             Decimal("200.00"),
         )
 
+    def test_dois_debitos_nao_podem_conciliar_com_mesmo_lancamento(self):
+        self.criar_lancamento(
+            self.janeiro,
+            "JAN-COLISAO-001",
+            "250.00",
+        )
+
+        lancamento = Lancamento.objects.get(
+            numero_lancamento="JAN-COLISAO-001"
+        )
+
+        lancamento.data_pagamento = date(
+            2026,
+            1,
+            10,
+        )
+        lancamento.save(
+            update_fields=["data_pagamento"]
+        )
+
+        for descricao in [
+            "Debito duplicado A",
+            "Debito duplicado B",
+        ]:
+            MovimentacaoFinanceira.objects.create(
+                empresa=self.empresa,
+                termo=self.termo,
+                prestacao=self.prestacao,
+                competencia=self.janeiro,
+                data=date(2026, 1, 10),
+                tipo=(
+                    MovimentacaoFinanceira.Tipo
+                    .DEBITO_AUTORIZADO
+                ),
+                valor=Decimal("250.00"),
+                descricao=descricao,
+                criado_por=self.usuario,
+            )
+
+        resumo = resumo_financeiro_competencia(
+            self.janeiro
+        )
+
+        self.assertEqual(
+            resumo["debito_autorizado"],
+            Decimal("500.00"),
+        )
+
+        self.assertEqual(
+            resumo["debito_autorizado_conciliado"],
+            Decimal("0.00"),
+        )
+
+        self.assertEqual(
+            resumo["debito_autorizado_pendente"],
+            Decimal("500.00"),
+        )
+
+        self.assertEqual(
+            resumo["despesa_total"],
+            Decimal("750.00"),
+        )
+

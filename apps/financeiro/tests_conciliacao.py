@@ -310,3 +310,57 @@ class ConciliacaoFinanceiraTests(TestCase):
             "Correspondencia exata",
         )
 
+    def test_resumo_marca_colisao_de_movimentacoes_como_ambigua(self):
+        self.criar_lancamento(
+            "030",
+            "250.00",
+            date(2026, 1, 10),
+        )
+
+        self.criar_movimentacao(
+            MovimentacaoFinanceira.Tipo.DEBITO_AUTORIZADO,
+            "250.00",
+            date(2026, 1, 10),
+        )
+
+        self.criar_movimentacao(
+            MovimentacaoFinanceira.Tipo.DEBITO_AUTORIZADO,
+            "250.00",
+            date(2026, 1, 10),
+        )
+
+        resumo = resumo_conciliacao_competencia(
+            self.competencia
+        )
+
+        self.assertEqual(
+            resumo["total"],
+            2,
+        )
+
+        self.assertEqual(
+            resumo["exatos"],
+            0,
+        )
+
+        self.assertEqual(
+            resumo["ambiguos"],
+            2,
+        )
+
+        self.assertEqual(
+            resumo["conciliaveis"],
+            0,
+        )
+
+        self.assertEqual(
+            resumo["pendentes"],
+            2,
+        )
+
+        for item in resumo["itens"]:
+            self.assertEqual(
+                item["status"],
+                StatusConciliacao.AMBIGUO,
+            )
+

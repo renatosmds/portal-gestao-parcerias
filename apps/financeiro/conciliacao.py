@@ -141,6 +141,44 @@ def resumo_conciliacao_competencia(competencia):
     )
 
     itens = []
+
+    for movimentacao in movimentacoes:
+        resultado = buscar_candidatos_lancamento(
+            movimentacao
+        )
+
+        itens.append(resultado)
+
+    correspondencias_exatas = {}
+
+    for item in itens:
+        if (
+            item["status"]
+            != StatusConciliacao.EXATO
+            or item["candidato"] is None
+        ):
+            continue
+
+        candidato_id = item[
+            "candidato"
+        ].pk
+
+        correspondencias_exatas.setdefault(
+            candidato_id,
+            [],
+        ).append(item)
+
+    for grupo in correspondencias_exatas.values():
+        if len(grupo) <= 1:
+            continue
+
+        for item in grupo:
+            item["status"] = (
+                StatusConciliacao.AMBIGUO
+            )
+
+            item["candidato"] = None
+
     totais = {
         StatusConciliacao.EXATO: 0,
         StatusConciliacao.PROVAVEL: 0,
@@ -148,24 +186,18 @@ def resumo_conciliacao_competencia(competencia):
         StatusConciliacao.SEM_CORRESPONDENCIA: 0,
     }
 
-    for movimentacao in movimentacoes:
-        resultado = buscar_candidatos_lancamento(
-            movimentacao
-        )
-
-        status = resultado["status"]
+    for item in itens:
+        status = item["status"]
 
         if status in totais:
             totais[status] += 1
 
-        resultado["rotulo_status"] = (
+        item["rotulo_status"] = (
             ROTULOS_STATUS_CONCILIACAO.get(
                 status,
                 status,
             )
         )
-
-        itens.append(resultado)
 
     total = len(itens)
 
@@ -183,9 +215,15 @@ def resumo_conciliacao_competencia(competencia):
 
     return {
         "total": total,
-        "exatos": totais[StatusConciliacao.EXATO],
-        "provaveis": totais[StatusConciliacao.PROVAVEL],
-        "ambiguos": totais[StatusConciliacao.AMBIGUO],
+        "exatos": totais[
+            StatusConciliacao.EXATO
+        ],
+        "provaveis": totais[
+            StatusConciliacao.PROVAVEL
+        ],
+        "ambiguos": totais[
+            StatusConciliacao.AMBIGUO
+        ],
         "sem_correspondencia": totais[
             StatusConciliacao.SEM_CORRESPONDENCIA
         ],
@@ -193,4 +231,3 @@ def resumo_conciliacao_competencia(competencia):
         "pendentes": pendentes,
         "itens": itens,
     }
-
