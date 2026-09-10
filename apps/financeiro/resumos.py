@@ -220,3 +220,70 @@ def resumo_financeiro_competencia(competencia):
         "diferenca_saldo": diferenca_saldo,
         "conciliado": diferenca_saldo == ZERO,
     }
+
+
+def resumo_financeiro_competencias(competencias):
+    total_competencias = 0
+
+    receita_total = ZERO
+    despesa_total = ZERO
+    movimento_financeiro = ZERO
+
+    debito_autorizado = ZERO
+    debito_autorizado_conciliado = ZERO
+    debito_autorizado_pendente = ZERO
+
+    conciliadas = 0
+    divergentes = 0
+
+    for competencia in competencias:
+        resumo = resumo_financeiro_competencia(
+            competencia
+        )
+
+        total_competencias += 1
+
+        receita_total += resumo[
+            "receita_total"
+        ]
+
+        despesa_total += resumo[
+            "despesa_total"
+        ]
+
+        movimento_financeiro += resumo[
+            "movimento_financeiro"
+        ]
+
+        debito_autorizado += resumo[
+            "debito_autorizado"
+        ]
+
+        debito_autorizado_conciliado += resumo[
+            "debito_autorizado_conciliado"
+        ]
+
+        debito_autorizado_pendente += resumo[
+            "debito_autorizado_pendente"
+        ]
+
+        if resumo["conciliado"]:
+            conciliadas += 1
+        else:
+            divergentes += 1
+
+    return {
+        "total_competencias": total_competencias,
+        "receita_total": receita_total,
+        "despesa_total": despesa_total,
+        "movimento_financeiro": movimento_financeiro,
+        "debito_autorizado": debito_autorizado,
+        "debito_autorizado_conciliado": (
+            debito_autorizado_conciliado
+        ),
+        "debito_autorizado_pendente": (
+            debito_autorizado_pendente
+        ),
+        "competencias_conciliadas": conciliadas,
+        "competencias_divergentes": divergentes,
+    }

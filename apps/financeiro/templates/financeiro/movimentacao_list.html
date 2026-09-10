@@ -62,33 +62,79 @@
 
     <div class="entries-summary">
         <article>
-            <small>Movimentações</small>
+            <small>Movimenta&ccedil;&otilde;es</small>
             <strong>{{ total_movimentacoes }}</strong>
         </article>
 
-        {% if empresa_resumo %}
+        {% if resumo_consolidado %}
             <article>
                 <small>Receitas</small>
                 <strong>
-                    R$ {{ empresa_resumo.receitaTotal|floatformat:2|intcomma }}
+                    R$ {{ resumo_consolidado.receita_total|floatformat:2|intcomma }}
                 </strong>
             </article>
 
             <article>
-                <small>Conta aplicação</small>
+                <small>Despesas</small>
                 <strong>
-                    R$ {{ empresa_resumo.saldoContaAplicacao|floatformat:2|intcomma }}
+                    R$ {{ resumo_consolidado.despesa_total|floatformat:2|intcomma }}
                 </strong>
             </article>
 
             <article>
-                <small>Saldo financeiro</small>
+                <small>Movimento l&iacute;quido</small>
                 <strong>
-                    R$ {{ empresa_resumo.saldoFinanceiro|floatformat:2|intcomma }}
+                    R$ {{ resumo_consolidado.movimento_financeiro|floatformat:2|intcomma }}
+                </strong>
+            </article>
+
+            <article>
+                <small>Compet&ecirc;ncias</small>
+                <strong>
+                    {{ resumo_consolidado.total_competencias }}
+                </strong>
+            </article>
+
+            <article class="resumo-conciliado">
+                <small>Conciliadas</small>
+                <strong>
+                    {{ resumo_consolidado.competencias_conciliadas }}
+                </strong>
+            </article>
+
+            <article
+                class="{% if resumo_consolidado.competencias_divergentes %}resumo-divergente{% endif %}"
+            >
+                <small>Divergentes</small>
+                <strong>
+                    {{ resumo_consolidado.competencias_divergentes }}
+                </strong>
+            </article>
+
+            <article>
+                <small>D&eacute;bitos pendentes</small>
+                <strong>
+                    R$ {{ resumo_consolidado.debito_autorizado_pendente|floatformat:2|intcomma }}
                 </strong>
             </article>
         {% endif %}
     </div>
+
+    {% if resumo_consolidado %}
+        <div class="sgm-panel">
+            <h2>
+                Resumo consolidado -
+                {% if nivel_resumo == "Empresa" %}
+                    Empresa:
+                {% elif nivel_resumo == "Termo" %}
+                    Termo:
+                {% else %}
+                    Presta&ccedil;&atilde;o:
+                {% endif %}
+                {{ objeto_resumo }}
+            </h2>
+        </div>
+    {% endif %}
 
     {% if resumo_competencia %}
         <div class="sgm-panel">

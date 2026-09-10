@@ -155,3 +155,171 @@ class ResumoCompetenciaViewSegurancaTests(TestCase):
                 "resumo_competencia"
             ]
         )
+
+    def test_empresa_exibe_resumo_consolidado(self):
+        resposta = self.client.get(
+            reverse(
+                "list_movimentacoes_financeiras"
+            ),
+            {
+                "empresa": self.empresa_a.pk,
+            },
+        )
+
+        self.assertEqual(
+            resposta.status_code,
+            200,
+        )
+
+        self.assertIsNotNone(
+            resposta.context["resumo_consolidado"]
+        )
+
+        self.assertEqual(
+            resposta.context["nivel_resumo"],
+            "Empresa",
+        )
+
+        self.assertEqual(
+            resposta.context["objeto_resumo"],
+            self.empresa_a,
+        )
+
+
+    def test_termo_exibe_resumo_consolidado(self):
+        resposta = self.client.get(
+            reverse(
+                "list_movimentacoes_financeiras"
+            ),
+            {
+                "empresa": self.empresa_a.pk,
+                "termo": self.termo_a.pk,
+            },
+        )
+
+        self.assertEqual(
+            resposta.status_code,
+            200,
+        )
+
+        self.assertIsNotNone(
+            resposta.context["resumo_consolidado"]
+        )
+
+        self.assertEqual(
+            resposta.context["nivel_resumo"],
+            "Termo",
+        )
+
+        self.assertEqual(
+            resposta.context["objeto_resumo"],
+            self.termo_a,
+        )
+
+
+    def test_prestacao_exibe_resumo_consolidado(self):
+        resposta = self.client.get(
+            reverse(
+                "list_movimentacoes_financeiras"
+            ),
+            {
+                "empresa": self.empresa_a.pk,
+                "termo": self.termo_a.pk,
+                "prestacao": self.prestacao_a.pk,
+            },
+        )
+
+        self.assertEqual(
+            resposta.status_code,
+            200,
+        )
+
+        self.assertIsNotNone(
+            resposta.context["resumo_consolidado"]
+        )
+
+        self.assertEqual(
+            resposta.context["nivel_resumo"],
+            "Prestacao",
+        )
+
+        self.assertEqual(
+            resposta.context["objeto_resumo"],
+            self.prestacao_a,
+        )
+
+
+    def test_competencia_remove_consolidado(self):
+        resposta = self.client.get(
+            reverse(
+                "list_movimentacoes_financeiras"
+            ),
+            {
+                "empresa": self.empresa_a.pk,
+                "termo": self.termo_a.pk,
+                "prestacao": self.prestacao_a.pk,
+                "competencia": self.competencia_a.pk,
+            },
+        )
+
+        self.assertEqual(
+            resposta.status_code,
+            200,
+        )
+
+        self.assertIsNone(
+            resposta.context["resumo_consolidado"]
+        )
+
+        self.assertIsNotNone(
+            resposta.context["resumo_competencia"]
+        )
+
+        self.assertIsNotNone(
+            resposta.context["resumo_conciliacao"]
+        )
+
+
+    def test_prestacao_de_outro_termo_nao_e_aceita(self):
+        termo_outro = Termos.objects.create(
+            empresa=self.empresa_a,
+            numtermo="A-002/2026",
+            termo="Termo A 2",
+        )
+
+        prestacao_outro = Prestacao.objects.create(
+            empresa=self.empresa_a,
+            termo=termo_outro,
+            tipo="MENSAL",
+            numtermo="A-002/2026",
+        )
+
+        resposta = self.client.get(
+            reverse(
+                "list_movimentacoes_financeiras"
+            ),
+            {
+                "empresa": self.empresa_a.pk,
+                "termo": self.termo_a.pk,
+                "prestacao": prestacao_outro.pk,
+            },
+        )
+
+        self.assertEqual(
+            resposta.status_code,
+            200,
+        )
+
+        self.assertIsNone(
+            resposta.context["prestacao_resumo"]
+        )
+
+        self.assertEqual(
+            resposta.context["nivel_resumo"],
+            "Termo",
+        )
+
+        self.assertEqual(
+            resposta.context["objeto_resumo"],
+            self.termo_a,
+        )

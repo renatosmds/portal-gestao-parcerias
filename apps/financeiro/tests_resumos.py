@@ -6,7 +6,10 @@ from django.test import TestCase
 
 from apps.empresas.models import Empresa
 from apps.financeiro.models import MovimentacaoFinanceira
-from apps.financeiro.resumos import resumo_financeiro_competencia
+from apps.financeiro.resumos import (
+    resumo_financeiro_competencia,
+    resumo_financeiro_competencias,
+)
 from apps.lancamentos.models import Lancamento
 from apps.prestacao.models import (
     CompetenciaPrestacao,
@@ -433,5 +436,152 @@ class ResumoFinanceiroCompetenciaTests(TestCase):
         self.assertEqual(
             resumo["despesa_total"],
             Decimal("600.00"),
+        )
+
+    def test_resumo_consolidado_soma_competencias(self):
+        self.criar_movimento(
+            self.janeiro,
+            MovimentacaoFinanceira.Tipo.REPASSE,
+            "1000.00",
+            "Repasse janeiro",
+        )
+
+        self.criar_lancamento(
+            self.janeiro,
+            "JAN-DASH-001",
+            "250.00",
+        )
+
+        self.criar_movimento(
+            self.fevereiro,
+            MovimentacaoFinanceira.Tipo.REPASSE,
+            "500.00",
+            "Repasse fevereiro",
+        )
+
+        self.criar_lancamento(
+            self.fevereiro,
+            "FEV-DASH-001",
+            "100.00",
+        )
+
+        resumo = resumo_financeiro_competencias(
+            [
+                self.janeiro,
+                self.fevereiro,
+            ]
+        )
+
+        self.assertEqual(
+            resumo["total_competencias"],
+            2,
+        )
+
+        self.assertEqual(
+            resumo["receita_total"],
+            Decimal("1500.00"),
+        )
+
+        self.assertEqual(
+            resumo["despesa_total"],
+            Decimal("350.00"),
+        )
+
+        self.assertEqual(
+            resumo["movimento_financeiro"],
+            Decimal("1150.00"),
+        )
+
+
+    def test_resumo_consolidado_conta_conciliadas_e_divergentes(self):
+        self.janeiro.saldo_final = Decimal(
+            "100.00"
+        )
+        self.janeiro.save(
+            update_fields=["saldo_final"]
+        )
+
+        self.fevereiro.saldo_final = Decimal(
+            "999.00"
+        )
+        self.fevereiro.save(
+            update_fields=["saldo_final"]
+        )
+
+        resumo = resumo_financeiro_competencias(
+            [
+                self.janeiro,
+                self.fevereiro,
+            ]
+        )
+
+        self.assertEqual(
+            resumo["competencias_conciliadas"],
+            1,
+        )
+
+        self.assertEqual(
+            resumo["competencias_divergentes"],
+            1,
+        )
+
+
+    def test_resumo_consolidado_preserva_antidupla_contagem(self):
+        self.criar_lancamento(
+            self.janeiro,
+            "JAN-DASH-CONC",
+            "200.00",
+        )
+
+        lancamento = Lancamento.objects.get(
+            numero_lancamento="JAN-DASH-CONC"
+        )
+
+        lancamento.data_pagamento = date(
+            2026,
+            1,
+            10,
+        )
+        lancamento.save(
+            update_fields=["data_pagamento"]
+        )
+
+        MovimentacaoFinanceira.objects.create(
+            empresa=self.empresa,
+            termo=self.termo,
+            prestacao=self.prestacao,
+            competencia=self.janeiro,
+            data=date(2026, 1, 10),
+            tipo=(
+                MovimentacaoFinanceira.Tipo
+                .DEBITO_AUTORIZADO
+            ),
+            valor=Decimal("200.00"),
+            descricao="Debito conciliado",
+            criado_por=self.usuario,
+        )
+
+        resumo = resumo_financeiro_competencias(
+            [self.janeiro]
+        )
+
+        self.assertEqual(
+            resumo["debito_autorizado"],
+            Decimal("200.00"),
+        )
+
+        self.assertEqual(
+            resumo["debito_autorizado_conciliado"],
+            Decimal("200.00"),
+        )
+
+        self.assertEqual(
+            resumo["debito_autorizado_pendente"],
+            Decimal("0.00"),
+        )
+
+        self.assertEqual(
+            resumo["despesa_total"],
+            Decimal("200.00"),
         )
 

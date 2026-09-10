@@ -27,7 +27,10 @@ from .mixins import (
 )
 from .conciliacao import resumo_conciliacao_competencia
 from .models import MovimentacaoFinanceira
-from .resumos import resumo_financeiro_competencia
+from .resumos import (
+    resumo_financeiro_competencia,
+    resumo_financeiro_competencias,
+)
 
 
 class MovimentacaoFinanceiraList(
@@ -182,6 +185,9 @@ class MovimentacaoFinanceiraList(
         prestacoes = Prestacao.objects.none()
         competencias = CompetenciaPrestacao.objects.none()
 
+        termo_resumo = None
+        prestacao_resumo = None
+
         if empresa_resumo:
             termos = (
                 Termos.objects
@@ -192,26 +198,45 @@ class MovimentacaoFinanceiraList(
             termo_id = context["termo_filtro"]
 
             if termo_id.isdigit():
+                termo_resumo = (
+                    termos
+                    .filter(pk=termo_id)
+                    .first()
+                )
+
+            if termo_resumo:
                 prestacoes = (
                     Prestacao.objects
                     .filter(
                         empresa=empresa_resumo,
-                        termo_id=termo_id,
+                        termo=termo_resumo,
                     )
                     .order_by("numtermo")
                 )
 
             prestacao_id = context["prestacao_filtro"]
 
-            if prestacao_id.isdigit():
+            if (
+                termo_resumo
+                and prestacao_id.isdigit()
+            ):
+                prestacao_resumo = (
+                    prestacoes
+                    .filter(pk=prestacao_id)
+                    .first()
+                )
+
+            if prestacao_resumo:
                 competencias = (
                     CompetenciaPrestacao.objects
                     .filter(
-                        prestacao_id=prestacao_id,
-                        prestacao__empresa=empresa_resumo,
+                        prestacao=prestacao_resumo,
                     )
                     .order_by("-ano", "-mes")
                 )
+
+        context["termo_resumo"] = termo_resumo
+        context["prestacao_resumo"] = prestacao_resumo
 
         context["termos_disponiveis"] = termos
         context["prestacoes_disponiveis"] = prestacoes
@@ -230,6 +255,9 @@ class MovimentacaoFinanceiraList(
             )
 
         resumo_conciliacao = None
+        resumo_consolidado = None
+        nivel_resumo = None
+        objeto_resumo = None
 
         if competencia_resumo:
             resumo_competencia = (
@@ -243,6 +271,57 @@ class MovimentacaoFinanceiraList(
                     competencia_resumo
                 )
             )
+
+        elif empresa_resumo:
+            competencias_resumo = (
+                CompetenciaPrestacao.objects
+                .filter(
+                    prestacao__empresa=empresa_resumo
+                )
+                .order_by(
+                    "ano",
+                    "mes",
+                    "id",
+                )
+            )
+
+            if prestacao_resumo:
+                competencias_resumo = (
+                    competencias_resumo
+                    .filter(
+                        prestacao=prestacao_resumo
+                    )
+                )
+
+                nivel_resumo = "Prestacao"
+                objeto_resumo = prestacao_resumo
+
+            elif termo_resumo:
+                competencias_resumo = (
+                    competencias_resumo
+                    .filter(
+                        prestacao__termo=termo_resumo
+                    )
+                )
+
+                nivel_resumo = "Termo"
+                objeto_resumo = termo_resumo
+
+            else:
+                nivel_resumo = "Empresa"
+                objeto_resumo = empresa_resumo
+
+            resumo_consolidado = (
+                resumo_financeiro_competencias(
+                    competencias_resumo
+                )
+            )
+
+        context["resumo_consolidado"] = (
+            resumo_consolidado
+        )
+        context["nivel_resumo"] = nivel_resumo
+        context["objeto_resumo"] = objeto_resumo
 
         context["competencia_resumo"] = (
             competencia_resumo
