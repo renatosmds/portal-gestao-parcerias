@@ -1,4 +1,4 @@
-﻿from datetime import date
+from datetime import date
 from decimal import Decimal
 
 from django.contrib.auth import get_user_model
@@ -268,3 +268,170 @@ class ResumoFinanceiroCompetenciaTests(TestCase):
             resumo["diferenca_saldo"],
             Decimal("-50.00"),
         )
+
+    def test_debito_exato_nao_deve_duplicar_despesa(self):
+        self.criar_lancamento(
+            self.janeiro,
+            "JAN-CONC-001",
+            "250.00",
+        )
+
+        lancamento = (
+            Lancamento.objects
+            .get(
+                numero_lancamento="JAN-CONC-001"
+            )
+        )
+
+        lancamento.data_pagamento = date(
+            2026,
+            1,
+            10,
+        )
+        lancamento.save(
+            update_fields=["data_pagamento"]
+        )
+
+        MovimentacaoFinanceira.objects.create(
+            empresa=self.empresa,
+            termo=self.termo,
+            prestacao=self.prestacao,
+            competencia=self.janeiro,
+            data=date(2026, 1, 10),
+            tipo=(
+                MovimentacaoFinanceira.Tipo
+                .DEBITO_AUTORIZADO
+            ),
+            valor=Decimal("250.00"),
+            descricao="Pagamento exato",
+            criado_por=self.usuario,
+        )
+
+        resumo = resumo_financeiro_competencia(
+            self.janeiro
+        )
+
+        self.assertEqual(
+            resumo["valor_lancamentos"],
+            Decimal("250.00"),
+        )
+
+        self.assertEqual(
+            resumo["debito_autorizado"],
+            Decimal("250.00"),
+        )
+
+        self.assertEqual(
+            resumo["debito_autorizado_conciliado"],
+            Decimal("250.00"),
+        )
+
+        self.assertEqual(
+            resumo["debito_autorizado_pendente"],
+            Decimal("0.00"),
+        )
+
+        self.assertEqual(
+            resumo["despesa_total"],
+            Decimal("250.00"),
+        )
+
+
+    def test_debito_sem_correspondencia_permanece_como_despesa(self):
+        MovimentacaoFinanceira.objects.create(
+            empresa=self.empresa,
+            termo=self.termo,
+            prestacao=self.prestacao,
+            competencia=self.janeiro,
+            data=date(2026, 1, 20),
+            tipo=(
+                MovimentacaoFinanceira.Tipo
+                .DEBITO_AUTORIZADO
+            ),
+            valor=Decimal("175.00"),
+            descricao="Debito sem lancamento",
+            criado_por=self.usuario,
+        )
+
+        resumo = resumo_financeiro_competencia(
+            self.janeiro
+        )
+
+        self.assertEqual(
+            resumo["debito_autorizado"],
+            Decimal("175.00"),
+        )
+
+        self.assertEqual(
+            resumo["debito_autorizado_conciliado"],
+            Decimal("0.00"),
+        )
+
+        self.assertEqual(
+            resumo["debito_autorizado_pendente"],
+            Decimal("175.00"),
+        )
+
+        self.assertEqual(
+            resumo["despesa_total"],
+            Decimal("175.00"),
+        )
+
+
+    def test_debito_provavel_nao_e_excluido_automaticamente(self):
+        self.criar_lancamento(
+            self.janeiro,
+            "JAN-CONC-002",
+            "300.00",
+        )
+
+        lancamento = (
+            Lancamento.objects
+            .get(
+                numero_lancamento="JAN-CONC-002"
+            )
+        )
+
+        lancamento.data_pagamento = date(
+            2026,
+            1,
+            12,
+        )
+        lancamento.save(
+            update_fields=["data_pagamento"]
+        )
+
+        MovimentacaoFinanceira.objects.create(
+            empresa=self.empresa,
+            termo=self.termo,
+            prestacao=self.prestacao,
+            competencia=self.janeiro,
+            data=date(2026, 1, 10),
+            tipo=(
+                MovimentacaoFinanceira.Tipo
+                .DEBITO_AUTORIZADO
+            ),
+            valor=Decimal("300.00"),
+            descricao="Pagamento provavel",
+            criado_por=self.usuario,
+        )
+
+        resumo = resumo_financeiro_competencia(
+            self.janeiro
+        )
+
+        self.assertEqual(
+            resumo["debito_autorizado_conciliado"],
+            Decimal("0.00"),
+        )
+
+        self.assertEqual(
+            resumo["debito_autorizado_pendente"],
+            Decimal("300.00"),
+        )
+
+        self.assertEqual(
+            resumo["despesa_total"],
+            Decimal("600.00"),
+        )
+

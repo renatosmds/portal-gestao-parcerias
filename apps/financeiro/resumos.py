@@ -4,6 +4,10 @@ from django.db.models import Sum
 
 from apps.lancamentos.models import Lancamento
 
+from .conciliacao import (
+    StatusConciliacao,
+    buscar_candidatos_lancamento,
+)
 from .models import MovimentacaoFinanceira
 
 
@@ -80,6 +84,40 @@ def resumo_financeiro_competencia(competencia):
         MovimentacaoFinanceira.Tipo.DEBITO_AUTORIZADO,
     )
 
+    debitos_autorizados = (
+        movimentacoes
+        .filter(
+            tipo=(
+                MovimentacaoFinanceira.Tipo
+                .DEBITO_AUTORIZADO
+            )
+        )
+        .order_by(
+            "data",
+            "id",
+        )
+    )
+
+    debito_autorizado_conciliado = ZERO
+
+    for movimento in debitos_autorizados:
+        resultado = buscar_candidatos_lancamento(
+            movimento
+        )
+
+        if (
+            resultado["status"]
+            == StatusConciliacao.EXATO
+        ):
+            debito_autorizado_conciliado += (
+                movimento.valor
+            )
+
+    debito_autorizado_pendente = (
+        debito_autorizado
+        - debito_autorizado_conciliado
+    )
+
     despesa_bancaria = _somar_movimentacoes(
         movimentacoes,
         MovimentacaoFinanceira.Tipo.DESPESA_BANCARIA,
@@ -116,7 +154,7 @@ def resumo_financeiro_competencia(competencia):
     )
 
     despesa_total = (
-        debito_autorizado
+        debito_autorizado_pendente
         + despesa_bancaria
         + imposto_renda
         + iof
@@ -130,7 +168,7 @@ def resumo_financeiro_competencia(competencia):
 
     total_saidas = (
         aplicacao
-        + debito_autorizado
+        + debito_autorizado_pendente
         + despesa_bancaria
         + imposto_renda
         + iof
@@ -161,6 +199,12 @@ def resumo_financeiro_competencia(competencia):
         "estorno": estorno,
         "aplicacao": aplicacao,
         "debito_autorizado": debito_autorizado,
+        "debito_autorizado_conciliado": (
+            debito_autorizado_conciliado
+        ),
+        "debito_autorizado_pendente": (
+            debito_autorizado_pendente
+        ),
         "despesa_bancaria": despesa_bancaria,
         "imposto_renda": imposto_renda,
         "iof": iof,
