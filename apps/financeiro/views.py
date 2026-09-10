@@ -26,6 +26,7 @@ from .mixins import (
     MovimentacaoFinanceiraPermissaoMixin,
 )
 from .models import MovimentacaoFinanceira
+from .resumos import resumo_financeiro_competencia
 
 
 class MovimentacaoFinanceiraList(
@@ -214,6 +215,32 @@ class MovimentacaoFinanceiraList(
         context["termos_disponiveis"] = termos
         context["prestacoes_disponiveis"] = prestacoes
         context["competencias_disponiveis"] = competencias
+
+        competencia_resumo = None
+        resumo_competencia = None
+
+        competencia_id = context["competencia_filtro"]
+
+        if competencia_id.isdigit():
+            competencia_resumo = (
+                competencias
+                .filter(pk=competencia_id)
+                .first()
+            )
+
+        if competencia_resumo:
+            resumo_competencia = (
+                resumo_financeiro_competencia(
+                    competencia_resumo
+                )
+            )
+
+        context["competencia_resumo"] = (
+            competencia_resumo
+        )
+        context["resumo_competencia"] = (
+            resumo_competencia
+        )
 
         return context
 
