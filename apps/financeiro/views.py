@@ -25,6 +25,7 @@ from .mixins import (
     MovimentacaoFinanceiraEscopoMixin,
     MovimentacaoFinanceiraPermissaoMixin,
 )
+from .conciliacao import resumo_conciliacao_competencia
 from .models import MovimentacaoFinanceira
 from .resumos import resumo_financeiro_competencia
 
@@ -228,9 +229,17 @@ class MovimentacaoFinanceiraList(
                 .first()
             )
 
+        resumo_conciliacao = None
+
         if competencia_resumo:
             resumo_competencia = (
                 resumo_financeiro_competencia(
+                    competencia_resumo
+                )
+            )
+
+            resumo_conciliacao = (
+                resumo_conciliacao_competencia(
                     competencia_resumo
                 )
             )
@@ -240,6 +249,9 @@ class MovimentacaoFinanceiraList(
         )
         context["resumo_competencia"] = (
             resumo_competencia
+        )
+        context["resumo_conciliacao"] = (
+            resumo_conciliacao
         )
 
         return context

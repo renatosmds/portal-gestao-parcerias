@@ -154,6 +154,129 @@
         </div>
     {% endif %}
 
+    {% if resumo_conciliacao %}
+        <div class="sgm-panel">
+            <h2>Concilia&ccedil;&atilde;o financeira</h2>
+
+            <div class="entries-summary">
+                <article>
+                    <small>D&eacute;bitos analisados</small>
+                    <strong>
+                        {{ resumo_conciliacao.total }}
+                    </strong>
+                </article>
+
+                <article>
+                    <small>Correspond&ecirc;ncia exata</small>
+                    <strong>
+                        {{ resumo_conciliacao.exatos }}
+                    </strong>
+                </article>
+
+                <article>
+                    <small>Correspond&ecirc;ncia prov&aacute;vel</small>
+                    <strong>
+                        {{ resumo_conciliacao.provaveis }}
+                    </strong>
+                </article>
+
+                <article>
+                    <small>Amb&iacute;guos</small>
+                    <strong>
+                        {{ resumo_conciliacao.ambiguos }}
+                    </strong>
+                </article>
+
+                <article>
+                    <small>Sem correspond&ecirc;ncia</small>
+                    <strong>
+                        {{ resumo_conciliacao.sem_correspondencia }}
+                    </strong>
+                </article>
+
+                <article>
+                    <small>Pendentes de revis&atilde;o</small>
+                    <strong>
+                        {{ resumo_conciliacao.pendentes }}
+                    </strong>
+                </article>
+            </div>
+
+            {% if resumo_conciliacao.itens %}
+                <div class="entries-grid">
+                    {% for item in resumo_conciliacao.itens %}
+                        <article class="entry-card">
+                            <span>
+                                {{ item.rotulo_status }}
+                            </span>
+
+                            <h2>
+                                R$ {{ item.movimentacao.valor|floatformat:2|intcomma }}
+                            </h2>
+
+                            <p>
+                                {{ item.movimentacao.descricao|default:"Sem descricao." }}
+                            </p>
+
+                            <dl>
+                                <div>
+                                    <dt>Data da movimentacao</dt>
+                                    <dd>
+                                        {{ item.movimentacao.data|date:"d/m/Y" }}
+                                    </dd>
+                                </div>
+
+                                <div>
+                                    <dt>Tipo</dt>
+                                    <dd>
+                                        {{ item.movimentacao.get_tipo_display }}
+                                    </dd>
+                                </div>
+
+                                {% if item.candidato %}
+                                    <div>
+                                        <dt>Lancamento candidato</dt>
+                                        <dd>
+                                            {{ item.candidato.numero_lancamento }}
+                                        </dd>
+                                    </div>
+
+                                    <div>
+                                        <dt>Data do pagamento</dt>
+                                        <dd>
+                                            {{ item.candidato.data_pagamento|date:"d/m/Y" }}
+                                        </dd>
+                                    </div>
+
+                                    <div>
+                                        <dt>Valor do lancamento</dt>
+                                        <dd>
+                                            R$ {{ item.candidato.valor_documento|floatformat:2|intcomma }}
+                                        </dd>
+                                    </div>
+                                {% elif item.candidatos %}
+                                    <div>
+                                        <dt>Candidatos encontrados</dt>
+                                        <dd>
+                                            {{ item.candidatos|length }}
+                                        </dd>
+                                    </div>
+                                {% else %}
+                                    <div>
+                                        <dt>Lancamento candidato</dt>
+                                        <dd>
+                                            Nenhum
+                                        </dd>
+                                    </div>
+                                {% endif %}
+                            </dl>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
+
     <form method="get" class="entries-toolbar">
 
         {% if pode_selecionar_empresa %}
