@@ -4,11 +4,10 @@ from django.db.models import Sum
 
 from apps.lancamentos.models import Lancamento
 
-from .conciliacao import (
-    StatusConciliacao,
-    buscar_candidatos_lancamento,
+from .models import (
+    ConciliacaoFinanceira,
+    MovimentacaoFinanceira,
 )
-from .models import MovimentacaoFinanceira
 
 
 ZERO = Decimal("0.00")
@@ -98,38 +97,28 @@ def resumo_financeiro_competencia(competencia):
         )
     )
 
-    debito_autorizado_conciliado = ZERO
-
-    correspondencias_exatas = {}
-
-    for movimento in debitos_autorizados:
-        resultado = buscar_candidatos_lancamento(
-            movimento
+    confirmado = (
+        ConciliacaoFinanceira.objects
+        .filter(
+            movimentacao__competencia=competencia,
+            movimentacao__tipo=(
+                MovimentacaoFinanceira.Tipo
+                .DEBITO_AUTORIZADO
+            ),
+            status=(
+                ConciliacaoFinanceira.Status
+                .CONFIRMADO
+            ),
         )
+        .aggregate(
+            total=Sum(
+                "movimentacao__valor"
+            )
+        )["total"]
+        or ZERO
+    )
 
-        if (
-            resultado["status"]
-            != StatusConciliacao.EXATO
-            or resultado["candidato"] is None
-        ):
-            continue
-
-        candidato_id = resultado[
-            "candidato"
-        ].pk
-
-        correspondencias_exatas.setdefault(
-            candidato_id,
-            [],
-        ).append(movimento)
-
-    for movimentos in correspondencias_exatas.values():
-        if len(movimentos) != 1:
-            continue
-
-        debito_autorizado_conciliado += (
-            movimentos[0].valor
-        )
+    debito_autorizado_conciliado = confirmado
 
     debito_autorizado_pendente = (
         debito_autorizado

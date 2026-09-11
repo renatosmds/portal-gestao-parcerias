@@ -3,7 +3,10 @@ from decimal import Decimal
 
 from apps.lancamentos.models import Lancamento
 
-from .models import MovimentacaoFinanceira
+from .models import (
+    ConciliacaoFinanceira,
+    MovimentacaoFinanceira,
+)
 
 
 class StatusConciliacao:
@@ -140,11 +143,43 @@ def resumo_conciliacao_competencia(competencia):
         )
     )
 
+    movimentacoes = list(
+        movimentacoes
+    )
+
+    decisoes = {
+        item.movimentacao_id: item
+        for item in (
+            ConciliacaoFinanceira.objects
+            .filter(
+                movimentacao__in=movimentacoes
+            )
+            .select_related(
+                "lancamento",
+                "decidido_por",
+            )
+        )
+    }
+
     itens = []
 
     for movimentacao in movimentacoes:
         resultado = buscar_candidatos_lancamento(
             movimentacao
+        )
+
+        decisao = decisoes.get(
+            movimentacao.pk
+        )
+
+        resultado["decisao_manual"] = (
+            decisao
+        )
+
+        resultado["status_manual"] = (
+            decisao.status
+            if decisao
+            else None
         )
 
         itens.append(resultado)
@@ -213,8 +248,31 @@ def resumo_conciliacao_competencia(competencia):
         ]
     )
 
+    confirmados = sum(
+        1
+        for item in itens
+        if item["status_manual"]
+        == ConciliacaoFinanceira.Status.CONFIRMADO
+    )
+
+    rejeitados = sum(
+        1
+        for item in itens
+        if item["status_manual"]
+        == ConciliacaoFinanceira.Status.REJEITADO
+    )
+
+    nao_analisados = (
+        total
+        - confirmados
+        - rejeitados
+    )
+
     return {
         "total": total,
+        "confirmados": confirmados,
+        "rejeitados": rejeitados,
+        "nao_analisados": nao_analisados,
         "exatos": totais[
             StatusConciliacao.EXATO
         ],

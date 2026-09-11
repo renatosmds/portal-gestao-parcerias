@@ -1,5 +1,13 @@
 from django.contrib import messages
+from django.contrib.auth.decorators import (
+    login_required,
+    permission_required,
+)
+from django.core.exceptions import ValidationError
 from django.http import HttpResponseRedirect, JsonResponse
+from django.shortcuts import get_object_or_404
+from django.utils.http import url_has_allowed_host_and_scheme
+from django.views.decorators.http import require_POST
 from django.urls import reverse_lazy
 from django.views.generic import (
     CreateView,
@@ -14,6 +22,7 @@ from apps.core.acesso import (
     usuario_pode_ver_todas_empresas,
 )
 from apps.empresas.models import Empresa
+from apps.lancamentos.models import Lancamento
 from apps.prestacao.models import (
     CompetenciaPrestacao,
     Prestacao,
@@ -25,8 +34,14 @@ from .mixins import (
     MovimentacaoFinanceiraEscopoMixin,
     MovimentacaoFinanceiraPermissaoMixin,
 )
-from .conciliacao import resumo_conciliacao_competencia
-from .models import MovimentacaoFinanceira
+from .conciliacao import (
+    buscar_candidatos_lancamento,
+    resumo_conciliacao_competencia,
+)
+from .models import (
+    ConciliacaoFinanceira,
+    MovimentacaoFinanceira,
+)
 from .resumos import (
     resumo_financeiro_competencia,
     resumo_financeiro_competencias,
@@ -331,6 +346,12 @@ class MovimentacaoFinanceiraList(
         )
         context["resumo_conciliacao"] = (
             resumo_conciliacao
+        )
+
+        context["pode_decidir_conciliacao"] = (
+            self.request.user.has_perm(
+                "financeiro.change_movimentacaofinanceira"
+            )
         )
 
         return context
@@ -661,4 +682,243 @@ def competencias_financeiro(request):
 
     return JsonResponse(
         {"competencias": dados}
+    )
+
+
+def _movimentacao_financeira_do_usuario(
+    user,
+    movimentacao_id,
+):
+    queryset = (
+        MovimentacaoFinanceira.objects
+        .select_related(
+            "empresa",
+            "termo",
+            "prestacao",
+            "competencia",
+        )
+    )
+
+    queryset = filtrar_por_empresa(
+        queryset,
+        user,
+        campo="empresa",
+    )
+
+    return get_object_or_404(
+        queryset,
+        pk=movimentacao_id,
+    )
+
+
+def _lancamento_candidato_da_movimentacao(
+    movimentacao,
+    lancamento_id,
+):
+    resultado = buscar_candidatos_lancamento(
+        movimentacao
+    )
+
+    candidatos_ids = {
+        candidato.pk
+        for candidato in resultado["candidatos"]
+    }
+
+    if lancamento_id not in candidatos_ids:
+        return None
+
+    return get_object_or_404(
+        Lancamento.objects.filter(
+            empresa_id=movimentacao.empresa_id,
+            termo_id=movimentacao.termo_id,
+            prestacao_id=movimentacao.prestacao_id,
+            competencia_id=movimentacao.competencia_id,
+        ),
+        pk=lancamento_id,
+    )
+
+
+def _retorno_conciliacao(request):
+    destino = (
+        request.POST.get("next") or ""
+    ).strip()
+
+    if (
+        destino
+        and url_has_allowed_host_and_scheme(
+            url=destino,
+            allowed_hosts={
+                request.get_host()
+            },
+            require_https=request.is_secure(),
+        )
+    ):
+        return destino
+
+    return reverse_lazy(
+        "list_movimentacoes_financeiras"
+    )
+
+
+@login_required
+@permission_required(
+    "financeiro.change_movimentacaofinanceira",
+    raise_exception=True,
+)
+@require_POST
+def confirmar_conciliacao_financeira(
+    request,
+    movimentacao_id,
+    lancamento_id,
+):
+    movimentacao = (
+        _movimentacao_financeira_do_usuario(
+            request.user,
+            movimentacao_id,
+        )
+    )
+
+    lancamento = (
+        _lancamento_candidato_da_movimentacao(
+            movimentacao,
+            lancamento_id,
+        )
+    )
+
+    if lancamento is None:
+        messages.error(
+            request,
+            "O lancamento informado nao e candidato "
+            "para esta movimentacao.",
+        )
+
+        return HttpResponseRedirect(
+            _retorno_conciliacao(request)
+        )
+
+    conciliacao, _ = (
+        ConciliacaoFinanceira.objects
+        .get_or_create(
+            movimentacao=movimentacao,
+            defaults={
+                "lancamento": lancamento,
+                "status": (
+                    ConciliacaoFinanceira.Status
+                    .CONFIRMADO
+                ),
+                "decidido_por": request.user,
+            },
+        )
+    )
+
+    conciliacao.lancamento = lancamento
+    conciliacao.status = (
+        ConciliacaoFinanceira.Status.CONFIRMADO
+    )
+    conciliacao.decidido_por = request.user
+
+    try:
+        conciliacao.full_clean()
+        conciliacao.save()
+
+    except ValidationError as exc:
+        messages.error(
+            request,
+            "Nao foi possivel confirmar a conciliacao: "
+            f"{exc}",
+        )
+
+        return HttpResponseRedirect(
+            _retorno_conciliacao(request)
+        )
+
+    messages.success(
+        request,
+        "Conciliacao confirmada com sucesso.",
+    )
+
+    return HttpResponseRedirect(
+        _retorno_conciliacao(request)
+    )
+
+
+@login_required
+@permission_required(
+    "financeiro.change_movimentacaofinanceira",
+    raise_exception=True,
+)
+@require_POST
+def rejeitar_conciliacao_financeira(
+    request,
+    movimentacao_id,
+    lancamento_id,
+):
+    movimentacao = (
+        _movimentacao_financeira_do_usuario(
+            request.user,
+            movimentacao_id,
+        )
+    )
+
+    lancamento = (
+        _lancamento_candidato_da_movimentacao(
+            movimentacao,
+            lancamento_id,
+        )
+    )
+
+    if lancamento is None:
+        messages.error(
+            request,
+            "O lancamento informado nao e candidato "
+            "para esta movimentacao.",
+        )
+
+        return HttpResponseRedirect(
+            _retorno_conciliacao(request)
+        )
+
+    conciliacao, _ = (
+        ConciliacaoFinanceira.objects
+        .get_or_create(
+            movimentacao=movimentacao,
+            defaults={
+                "lancamento": lancamento,
+                "status": (
+                    ConciliacaoFinanceira.Status
+                    .REJEITADO
+                ),
+                "decidido_por": request.user,
+            },
+        )
+    )
+
+    conciliacao.lancamento = lancamento
+    conciliacao.status = (
+        ConciliacaoFinanceira.Status.REJEITADO
+    )
+    conciliacao.decidido_por = request.user
+
+    try:
+        conciliacao.full_clean()
+        conciliacao.save()
+
+    except ValidationError as exc:
+        messages.error(
+            request,
+            "Nao foi possivel rejeitar a conciliacao: "
+            f"{exc}",
+        )
+
+        return HttpResponseRedirect(
+            _retorno_conciliacao(request)
+        )
+
+    messages.success(
+        request,
+        "Correspondencia rejeitada.",
+    )
+
+    return HttpResponseRedirect(
+        _retorno_conciliacao(request)
     )

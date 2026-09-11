@@ -5,7 +5,10 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 
 from apps.empresas.models import Empresa
-from apps.financeiro.models import MovimentacaoFinanceira
+from apps.financeiro.models import (
+    ConciliacaoFinanceira,
+    MovimentacaoFinanceira,
+)
 from apps.financeiro.resumos import (
     resumo_financeiro_competencia,
     resumo_financeiro_competencias,
@@ -326,17 +329,17 @@ class ResumoFinanceiroCompetenciaTests(TestCase):
 
         self.assertEqual(
             resumo["debito_autorizado_conciliado"],
-            Decimal("250.00"),
-        )
-
-        self.assertEqual(
-            resumo["debito_autorizado_pendente"],
             Decimal("0.00"),
         )
 
         self.assertEqual(
-            resumo["despesa_total"],
+            resumo["debito_autorizado_pendente"],
             Decimal("250.00"),
+        )
+
+        self.assertEqual(
+            resumo["despesa_total"],
+            Decimal("500.00"),
         )
 
 
@@ -546,7 +549,7 @@ class ResumoFinanceiroCompetenciaTests(TestCase):
             update_fields=["data_pagamento"]
         )
 
-        MovimentacaoFinanceira.objects.create(
+        movimento = MovimentacaoFinanceira.objects.create(
             empresa=self.empresa,
             termo=self.termo,
             prestacao=self.prestacao,
@@ -559,6 +562,16 @@ class ResumoFinanceiroCompetenciaTests(TestCase):
             valor=Decimal("200.00"),
             descricao="Debito conciliado",
             criado_por=self.usuario,
+        )
+
+        ConciliacaoFinanceira.objects.create(
+            movimentacao=movimento,
+            lancamento=lancamento,
+            status=(
+                ConciliacaoFinanceira.Status
+                .CONFIRMADO
+            ),
+            decidido_por=self.usuario,
         )
 
         resumo = resumo_financeiro_competencias(
@@ -648,3 +661,71 @@ class ResumoFinanceiroCompetenciaTests(TestCase):
             Decimal("750.00"),
         )
 
+    def test_debito_rejeitado_permanece_pendente(self):
+        self.criar_lancamento(
+            self.janeiro,
+            "JAN-REJEITADO-001",
+            "180.00",
+        )
+
+        lancamento = Lancamento.objects.get(
+            numero_lancamento="JAN-REJEITADO-001"
+        )
+
+        lancamento.data_pagamento = date(
+            2026,
+            1,
+            10,
+        )
+        lancamento.save(
+            update_fields=["data_pagamento"]
+        )
+
+        movimento = MovimentacaoFinanceira.objects.create(
+            empresa=self.empresa,
+            termo=self.termo,
+            prestacao=self.prestacao,
+            competencia=self.janeiro,
+            data=date(2026, 1, 10),
+            tipo=(
+                MovimentacaoFinanceira.Tipo
+                .DEBITO_AUTORIZADO
+            ),
+            valor=Decimal("180.00"),
+            descricao="Debito rejeitado",
+            criado_por=self.usuario,
+        )
+
+        ConciliacaoFinanceira.objects.create(
+            movimentacao=movimento,
+            lancamento=lancamento,
+            status=(
+                ConciliacaoFinanceira.Status
+                .REJEITADO
+            ),
+            decidido_por=self.usuario,
+        )
+
+        resumo = resumo_financeiro_competencia(
+            self.janeiro
+        )
+
+        self.assertEqual(
+            resumo["debito_autorizado"],
+            Decimal("180.00"),
+        )
+
+        self.assertEqual(
+            resumo["debito_autorizado_conciliado"],
+            Decimal("0.00"),
+        )
+
+        self.assertEqual(
+            resumo["debito_autorizado_pendente"],
+            Decimal("180.00"),
+        )
+
+        self.assertEqual(
+            resumo["despesa_total"],
+            Decimal("360.00"),
+        )

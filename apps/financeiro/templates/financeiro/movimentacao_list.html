@@ -315,7 +315,79 @@
                                         </dd>
                                     </div>
                                 {% endif %}
+                                <div>
+                                    <dt>Decisao manual</dt>
+                                    <dd>
+                                        {% if item.status_manual == "confirmado" %}
+                                            Confirmado
+                                        {% elif item.status_manual == "rejeitado" %}
+                                            Rejeitado
+                                        {% else %}
+                                            Nao analisado
+                                        {% endif %}
+                                    </dd>
+                                </div>
+
+                                {% if item.decisao_manual %}
+                                    <div>
+                                        <dt>Decidido por</dt>
+                                        <dd>
+                                            {{ item.decisao_manual.decidido_por }}
+                                        </dd>
+                                    </div>
+
+                                    <div>
+                                        <dt>Data da decisao</dt>
+                                        <dd>
+                                            {{ item.decisao_manual.decidido_em|date:"d/m/Y H:i" }}
+                                        </dd>
+                                    </div>
+                                {% endif %}
                             </dl>
+
+                            {% if item.candidato and pode_decidir_conciliacao %}
+                                <div class="entry-actions">
+                                    <form
+                                        method="post"
+                                        action="{% url 'confirmar_conciliacao_financeira' item.movimentacao.pk item.candidato.pk %}"
+                                    >
+                                        {% csrf_token %}
+
+                                        <input
+                                            type="hidden"
+                                            name="next"
+                                            value="{{ request.get_full_path }}"
+                                        >
+
+                                        <button
+                                            type="submit"
+                                            class="btn btn-primary"
+                                        >
+                                            Confirmar correspondencia
+                                        </button>
+                                    </form>
+
+                                    <form
+                                        method="post"
+                                        action="{% url 'rejeitar_conciliacao_financeira' item.movimentacao.pk item.candidato.pk %}"
+                                    >
+                                        {% csrf_token %}
+
+                                        <input
+                                            type="hidden"
+                                            name="next"
+                                            value="{{ request.get_full_path }}"
+                                        >
+
+                                        <button
+                                            type="submit"
+                                            class="btn btn-outline-danger"
+                                        >
+                                            Rejeitar correspondencia
+                                        </button>
+                                    </form>
+                                </div>
+                            {% endif %}
                         </article>
                     {% endfor %}
                 </div>
@@ -579,4 +651,3 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 </script>
-

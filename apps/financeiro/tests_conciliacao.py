@@ -11,6 +11,7 @@ from apps.financeiro.conciliacao import (
     resumo_conciliacao_competencia,
 )
 from apps.financeiro.models import (
+    ConciliacaoFinanceira,
     MovimentacaoFinanceira,
 )
 from apps.lancamentos.models import Lancamento
@@ -364,3 +365,147 @@ class ConciliacaoFinanceiraTests(TestCase):
                 StatusConciliacao.AMBIGUO,
             )
 
+    def test_resumo_informa_decisao_manual_confirmada(self):
+        lancamento = self.criar_lancamento(
+            "040",
+            "250.00",
+            date(2026, 1, 10),
+        )
+
+        movimento = self.criar_movimentacao(
+            MovimentacaoFinanceira.Tipo.DEBITO_AUTORIZADO,
+            "250.00",
+            date(2026, 1, 10),
+        )
+
+        conciliacao = ConciliacaoFinanceira.objects.create(
+            movimentacao=movimento,
+            lancamento=lancamento,
+            status=(
+                ConciliacaoFinanceira.Status
+                .CONFIRMADO
+            ),
+            decidido_por=self.usuario,
+        )
+
+        resumo = resumo_conciliacao_competencia(
+            self.competencia
+        )
+
+        item = resumo["itens"][0]
+
+        self.assertEqual(
+            item["decisao_manual"],
+            conciliacao,
+        )
+
+        self.assertEqual(
+            item["status_manual"],
+            ConciliacaoFinanceira.Status.CONFIRMADO,
+        )
+
+        self.assertEqual(
+            resumo["confirmados"],
+            1,
+        )
+
+        self.assertEqual(
+            resumo["rejeitados"],
+            0,
+        )
+
+        self.assertEqual(
+            resumo["nao_analisados"],
+            0,
+        )
+
+    def test_resumo_informa_decisao_manual_rejeitada(self):
+        lancamento = self.criar_lancamento(
+            "041",
+            "300.00",
+            date(2026, 1, 10),
+        )
+
+        movimento = self.criar_movimentacao(
+            MovimentacaoFinanceira.Tipo.DEBITO_AUTORIZADO,
+            "300.00",
+            date(2026, 1, 10),
+        )
+
+        ConciliacaoFinanceira.objects.create(
+            movimentacao=movimento,
+            lancamento=lancamento,
+            status=(
+                ConciliacaoFinanceira.Status
+                .REJEITADO
+            ),
+            decidido_por=self.usuario,
+        )
+
+        resumo = resumo_conciliacao_competencia(
+            self.competencia
+        )
+
+        item = resumo["itens"][0]
+
+        self.assertEqual(
+            item["status_manual"],
+            ConciliacaoFinanceira.Status.REJEITADO,
+        )
+
+        self.assertEqual(
+            resumo["confirmados"],
+            0,
+        )
+
+        self.assertEqual(
+            resumo["rejeitados"],
+            1,
+        )
+
+        self.assertEqual(
+            resumo["nao_analisados"],
+            0,
+        )
+
+    def test_resumo_informa_item_nao_analisado(self):
+        self.criar_lancamento(
+            "042",
+            "180.00",
+            date(2026, 1, 10),
+        )
+
+        self.criar_movimentacao(
+            MovimentacaoFinanceira.Tipo.DEBITO_AUTORIZADO,
+            "180.00",
+            date(2026, 1, 10),
+        )
+
+        resumo = resumo_conciliacao_competencia(
+            self.competencia
+        )
+
+        item = resumo["itens"][0]
+
+        self.assertIsNone(
+            item["decisao_manual"]
+        )
+
+        self.assertIsNone(
+            item["status_manual"]
+        )
+
+        self.assertEqual(
+            resumo["confirmados"],
+            0,
+        )
+
+        self.assertEqual(
+            resumo["rejeitados"],
+            0,
+        )
+
+        self.assertEqual(
+            resumo["nao_analisados"],
+            1,
+        )

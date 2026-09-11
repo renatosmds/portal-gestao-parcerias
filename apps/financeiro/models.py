@@ -167,3 +167,135 @@ class MovimentacaoFinanceira(models.Model):
 
         if erros:
             raise ValidationError(erros)
+
+
+class ConciliacaoFinanceira(models.Model):
+
+    class Status(models.TextChoices):
+        CONFIRMADO = (
+            "confirmado",
+            "Confirmado",
+        )
+        REJEITADO = (
+            "rejeitado",
+            "Rejeitado",
+        )
+
+    movimentacao = models.OneToOneField(
+        "financeiro.MovimentacaoFinanceira",
+        on_delete=models.CASCADE,
+        related_name="conciliacao_manual",
+    )
+
+    lancamento = models.ForeignKey(
+        "lancamentos.Lancamento",
+        on_delete=models.PROTECT,
+        related_name="conciliacoes_financeiras",
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+    )
+
+    decidido_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="conciliacoes_financeiras_decididas",
+    )
+
+    decidido_em = models.DateTimeField(
+        auto_now=True,
+    )
+
+    observacao = models.TextField(
+        blank=True,
+    )
+
+    class Meta:
+        ordering = (
+            "-decidido_em",
+            "-id",
+        )
+
+        verbose_name = (
+            "Conciliacao financeira"
+        )
+
+        verbose_name_plural = (
+            "Conciliacoes financeiras"
+        )
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=["lancamento"],
+                condition=models.Q(
+                    status="confirmado"
+                ),
+                name=(
+                    "financeiro_lancamento_"
+                    "confirmado_unico"
+                ),
+            ),
+        ]
+
+    def __str__(self):
+        return (
+            f"{self.movimentacao} -> "
+            f"{self.lancamento} "
+            f"({self.get_status_display()})"
+        )
+
+    def clean(self):
+        erros = {}
+
+        movimentacao = self.movimentacao
+        lancamento = self.lancamento
+
+        if (
+            movimentacao.tipo
+            != MovimentacaoFinanceira.Tipo.DEBITO_AUTORIZADO
+        ):
+            erros["movimentacao"] = (
+                "Somente debitos autorizados podem "
+                "ser conciliados com lancamentos."
+            )
+
+        if (
+            movimentacao.empresa_id
+            != lancamento.empresa_id
+        ):
+            erros["lancamento"] = (
+                "O lancamento nao pertence "
+                "a mesma empresa da movimentacao."
+            )
+
+        elif (
+            movimentacao.termo_id
+            != lancamento.termo_id
+        ):
+            erros["lancamento"] = (
+                "O lancamento nao pertence "
+                "ao mesmo termo da movimentacao."
+            )
+
+        elif (
+            movimentacao.prestacao_id
+            != lancamento.prestacao_id
+        ):
+            erros["lancamento"] = (
+                "O lancamento nao pertence "
+                "a mesma prestacao da movimentacao."
+            )
+
+        elif (
+            movimentacao.competencia_id
+            != lancamento.competencia_id
+        ):
+            erros["lancamento"] = (
+                "O lancamento nao pertence "
+                "a mesma competencia da movimentacao."
+            )
+
+        if erros:
+            raise ValidationError(erros)
