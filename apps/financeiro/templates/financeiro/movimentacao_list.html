@@ -1,3 +1,29 @@
+
+<style>
+.resumo-conciliado {
+    border: 2px solid #198754 !important;
+}
+
+.resumo-divergente {
+    border: 2px solid #dc3545 !important;
+}
+
+.status-conciliacao {
+    display: block;
+    margin-top: 6px;
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.resumo-conciliado .status-conciliacao {
+    color: #198754;
+}
+
+.resumo-divergente .status-conciliacao {
+    color: #b02a37;
+}
+</style>
+
 {% extends "base.html" %}
 {% load static humanize %}
 
@@ -36,33 +62,338 @@
 
     <div class="entries-summary">
         <article>
-            <small>Movimentações</small>
+            <small>Movimenta&ccedil;&otilde;es</small>
             <strong>{{ total_movimentacoes }}</strong>
         </article>
 
-        {% if empresa_resumo %}
+        {% if resumo_consolidado %}
             <article>
                 <small>Receitas</small>
                 <strong>
-                    R$ {{ empresa_resumo.receitaTotal|floatformat:2|intcomma }}
+                    R$ {{ resumo_consolidado.receita_total|floatformat:2|intcomma }}
                 </strong>
             </article>
 
             <article>
-                <small>Conta aplicação</small>
+                <small>Despesas</small>
                 <strong>
-                    R$ {{ empresa_resumo.saldoContaAplicacao|floatformat:2|intcomma }}
+                    R$ {{ resumo_consolidado.despesa_total|floatformat:2|intcomma }}
                 </strong>
             </article>
 
             <article>
-                <small>Saldo financeiro</small>
+                <small>Movimento l&iacute;quido</small>
                 <strong>
-                    R$ {{ empresa_resumo.saldoFinanceiro|floatformat:2|intcomma }}
+                    R$ {{ resumo_consolidado.movimento_financeiro|floatformat:2|intcomma }}
+                </strong>
+            </article>
+
+            <article>
+                <small>Compet&ecirc;ncias</small>
+                <strong>
+                    {{ resumo_consolidado.total_competencias }}
+                </strong>
+            </article>
+
+            <article class="resumo-conciliado">
+                <small>Conciliadas</small>
+                <strong>
+                    {{ resumo_consolidado.competencias_conciliadas }}
+                </strong>
+            </article>
+
+            <article
+                class="{% if resumo_consolidado.competencias_divergentes %}resumo-divergente{% endif %}"
+            >
+                <small>Divergentes</small>
+                <strong>
+                    {{ resumo_consolidado.competencias_divergentes }}
+                </strong>
+            </article>
+
+            <article>
+                <small>D&eacute;bitos pendentes</small>
+                <strong>
+                    R$ {{ resumo_consolidado.debito_autorizado_pendente|floatformat:2|intcomma }}
                 </strong>
             </article>
         {% endif %}
     </div>
+
+    {% if resumo_consolidado %}
+        <div class="sgm-panel">
+            <h2>
+                Resumo consolidado -
+                {% if nivel_resumo == "Empresa" %}
+                    Empresa:
+                {% elif nivel_resumo == "Termo" %}
+                    Termo:
+                {% else %}
+                    Presta&ccedil;&atilde;o:
+                {% endif %}
+                {{ objeto_resumo }}
+            </h2>
+        </div>
+    {% endif %}
+
+    {% if resumo_competencia %}
+        <div class="sgm-panel">
+            <h2>
+                Resumo da compet&ecirc;ncia
+                {{ competencia_resumo }}
+            </h2>
+
+            <div class="entries-summary">
+                <article>
+                    <small>Saldo inicial</small>
+                    <strong>
+                        R$ {{ resumo_competencia.saldo_inicial|floatformat:2|intcomma }}
+                    </strong>
+                </article>
+
+                <article>
+                    <small>Receitas</small>
+                    <strong>
+                        R$ {{ resumo_competencia.receita_total|floatformat:2|intcomma }}
+                    </strong>
+                </article>
+
+                <article>
+                    <small>Despesas</small>
+                    <strong>
+                        R$ {{ resumo_competencia.despesa_total|floatformat:2|intcomma }}
+                    </strong>
+                </article>
+
+                <article>
+                    <small>Saldo calculado</small>
+                    <strong>
+                        R$ {{ resumo_competencia.saldo_final_calculado|floatformat:2|intcomma }}
+                    </strong>
+                </article>
+
+                <article>
+                    <small>Saldo informado</small>
+                    <strong>
+                        R$ {{ resumo_competencia.saldo_final_informado|floatformat:2|intcomma }}
+                    </strong>
+                </article>
+
+                <article
+                    class="{% if resumo_competencia.conciliado %}resumo-conciliado{% else %}resumo-divergente{% endif %}"
+                >
+                    <small>Diferen&ccedil;a</small>
+
+                    <strong>
+                        R$ {{ resumo_competencia.diferenca_saldo|floatformat:2|intcomma }}
+                    </strong>
+
+                    <span class="status-conciliacao">
+                        {% if resumo_competencia.conciliado %}
+                            &#10003; Conciliado
+                        {% else %}
+                            &#9888; Diverg&ecirc;ncia identificada
+                        {% endif %}
+                    </span>
+                </article>
+            </div>
+        </div>
+    {% endif %}
+
+    {% if resumo_conciliacao %}
+        <div class="sgm-panel">
+            <h2>Concilia&ccedil;&atilde;o financeira</h2>
+
+            <div class="entries-summary">
+                <article>
+                    <small>D&eacute;bitos analisados</small>
+                    <strong>
+                        {{ resumo_conciliacao.total }}
+                    </strong>
+                </article>
+
+                <article>
+                    <small>Correspond&ecirc;ncia exata</small>
+                    <strong>
+                        {{ resumo_conciliacao.exatos }}
+                    </strong>
+                </article>
+
+                <article>
+                    <small>Correspond&ecirc;ncia prov&aacute;vel</small>
+                    <strong>
+                        {{ resumo_conciliacao.provaveis }}
+                    </strong>
+                </article>
+
+                <article>
+                    <small>Amb&iacute;guos</small>
+                    <strong>
+                        {{ resumo_conciliacao.ambiguos }}
+                    </strong>
+                </article>
+
+                <article>
+                    <small>Sem correspond&ecirc;ncia</small>
+                    <strong>
+                        {{ resumo_conciliacao.sem_correspondencia }}
+                    </strong>
+                </article>
+
+                <article>
+                    <small>Pendentes de revis&atilde;o</small>
+                    <strong>
+                        {{ resumo_conciliacao.pendentes }}
+                    </strong>
+                </article>
+            </div>
+
+            {% if resumo_conciliacao.itens %}
+                <div class="entries-grid">
+                    {% for item in resumo_conciliacao.itens %}
+                        <article class="entry-card">
+                            <span>
+                                {{ item.rotulo_status }}
+                            </span>
+
+                            <h2>
+                                R$ {{ item.movimentacao.valor|floatformat:2|intcomma }}
+                            </h2>
+
+                            <p>
+                                {{ item.movimentacao.descricao|default:"Sem descricao." }}
+                            </p>
+
+                            <dl>
+                                <div>
+                                    <dt>Data da movimentacao</dt>
+                                    <dd>
+                                        {{ item.movimentacao.data|date:"d/m/Y" }}
+                                    </dd>
+                                </div>
+
+                                <div>
+                                    <dt>Tipo</dt>
+                                    <dd>
+                                        {{ item.movimentacao.get_tipo_display }}
+                                    </dd>
+                                </div>
+
+                                {% if item.candidato %}
+                                    <div>
+                                        <dt>Lancamento candidato</dt>
+                                        <dd>
+                                            {{ item.candidato.numero_lancamento }}
+                                        </dd>
+                                    </div>
+
+                                    <div>
+                                        <dt>Data do pagamento</dt>
+                                        <dd>
+                                            {{ item.candidato.data_pagamento|date:"d/m/Y" }}
+                                        </dd>
+                                    </div>
+
+                                    <div>
+                                        <dt>Valor do lancamento</dt>
+                                        <dd>
+                                            R$ {{ item.candidato.valor_documento|floatformat:2|intcomma }}
+                                        </dd>
+                                    </div>
+                                {% elif item.candidatos %}
+                                    <div>
+                                        <dt>Candidatos encontrados</dt>
+                                        <dd>
+                                            {{ item.candidatos|length }}
+                                        </dd>
+                                    </div>
+                                {% else %}
+                                    <div>
+                                        <dt>Lancamento candidato</dt>
+                                        <dd>
+                                            Nenhum
+                                        </dd>
+                                    </div>
+                                {% endif %}
+                                <div>
+                                    <dt>Decisao manual</dt>
+                                    <dd>
+                                        {% if item.status_manual == "confirmado" %}
+                                            Confirmado
+                                        {% elif item.status_manual == "rejeitado" %}
+                                            Rejeitado
+                                        {% else %}
+                                            Nao analisado
+                                        {% endif %}
+                                    </dd>
+                                </div>
+
+                                {% if item.decisao_manual %}
+                                    <div>
+                                        <dt>Decidido por</dt>
+                                        <dd>
+                                            {{ item.decisao_manual.decidido_por }}
+                                        </dd>
+                                    </div>
+
+                                    <div>
+                                        <dt>Data da decisao</dt>
+                                        <dd>
+                                            {{ item.decisao_manual.decidido_em|date:"d/m/Y H:i" }}
+                                        </dd>
+                                    </div>
+                                {% endif %}
+                            </dl>
+
+                            {% if item.candidato and pode_decidir_conciliacao %}
+                                <div class="entry-actions">
+                                    <form
+                                        method="post"
+                                        action="{% url 'confirmar_conciliacao_financeira' item.movimentacao.pk item.candidato.pk %}"
+                                    >
+                                        {% csrf_token %}
+
+                                        <input
+                                            type="hidden"
+                                            name="next"
+                                            value="{{ request.get_full_path }}"
+                                        >
+
+                                        <button
+                                            type="submit"
+                                            class="btn btn-primary"
+                                        >
+                                            Confirmar correspondencia
+                                        </button>
+                                    </form>
+
+                                    <form
+                                        method="post"
+                                        action="{% url 'rejeitar_conciliacao_financeira' item.movimentacao.pk item.candidato.pk %}"
+                                    >
+                                        {% csrf_token %}
+
+                                        <input
+                                            type="hidden"
+                                            name="next"
+                                            value="{{ request.get_full_path }}"
+                                        >
+
+                                        <button
+                                            type="submit"
+                                            class="btn btn-outline-danger"
+                                        >
+                                            Rejeitar correspondencia
+                                        </button>
+                                    </form>
+                                </div>
+                            {% endif %}
+                        </article>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
 
     <form method="get" class="entries-toolbar">
 
@@ -256,3 +587,67 @@
 
 </section>
 {% endblock %}
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const empresa = document.getElementById("filtro_empresa");
+    const termo = document.getElementById("filtro_termo");
+    const prestacao = document.getElementById("filtro_prestacao");
+    const competencia = document.getElementById("filtro_competencia");
+
+    const formulario = document.querySelector(
+        "form.entries-toolbar"
+    );
+
+    if (!formulario) {
+        return;
+    }
+
+    function enviar() {
+        formulario.submit();
+    }
+
+    if (empresa) {
+        empresa.addEventListener("change", function () {
+            if (termo) {
+                termo.value = "";
+            }
+
+            if (prestacao) {
+                prestacao.value = "";
+            }
+
+            if (competencia) {
+                competencia.value = "";
+            }
+
+            enviar();
+        });
+    }
+
+    if (termo) {
+        termo.addEventListener("change", function () {
+            if (prestacao) {
+                prestacao.value = "";
+            }
+
+            if (competencia) {
+                competencia.value = "";
+            }
+
+            enviar();
+        });
+    }
+
+    if (prestacao) {
+        prestacao.addEventListener("change", function () {
+            if (competencia) {
+                competencia.value = "";
+            }
+
+            enviar();
+        });
+    }
+});
+</script>

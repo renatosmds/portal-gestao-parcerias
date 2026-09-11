@@ -1,5 +1,13 @@
 from django.contrib import messages
+from django.contrib.auth.decorators import (
+    login_required,
+    permission_required,
+)
+from django.core.exceptions import ValidationError
 from django.http import HttpResponseRedirect, JsonResponse
+from django.shortcuts import get_object_or_404
+from django.utils.http import url_has_allowed_host_and_scheme
+from django.views.decorators.http import require_POST
 from django.urls import reverse_lazy
 from django.views.generic import (
     CreateView,
@@ -14,6 +22,7 @@ from apps.core.acesso import (
     usuario_pode_ver_todas_empresas,
 )
 from apps.empresas.models import Empresa
+from apps.lancamentos.models import Lancamento
 from apps.prestacao.models import (
     CompetenciaPrestacao,
     Prestacao,
@@ -25,7 +34,18 @@ from .mixins import (
     MovimentacaoFinanceiraEscopoMixin,
     MovimentacaoFinanceiraPermissaoMixin,
 )
-from .models import MovimentacaoFinanceira
+from .conciliacao import (
+    buscar_candidatos_lancamento,
+    resumo_conciliacao_competencia,
+)
+from .models import (
+    ConciliacaoFinanceira,
+    MovimentacaoFinanceira,
+)
+from .resumos import (
+    resumo_financeiro_competencia,
+    resumo_financeiro_competencias,
+)
 
 
 class MovimentacaoFinanceiraList(
@@ -180,6 +200,9 @@ class MovimentacaoFinanceiraList(
         prestacoes = Prestacao.objects.none()
         competencias = CompetenciaPrestacao.objects.none()
 
+        termo_resumo = None
+        prestacao_resumo = None
+
         if empresa_resumo:
             termos = (
                 Termos.objects
@@ -190,30 +213,146 @@ class MovimentacaoFinanceiraList(
             termo_id = context["termo_filtro"]
 
             if termo_id.isdigit():
+                termo_resumo = (
+                    termos
+                    .filter(pk=termo_id)
+                    .first()
+                )
+
+            if termo_resumo:
                 prestacoes = (
                     Prestacao.objects
                     .filter(
                         empresa=empresa_resumo,
-                        termo_id=termo_id,
+                        termo=termo_resumo,
                     )
                     .order_by("numtermo")
                 )
 
             prestacao_id = context["prestacao_filtro"]
 
-            if prestacao_id.isdigit():
+            if (
+                termo_resumo
+                and prestacao_id.isdigit()
+            ):
+                prestacao_resumo = (
+                    prestacoes
+                    .filter(pk=prestacao_id)
+                    .first()
+                )
+
+            if prestacao_resumo:
                 competencias = (
                     CompetenciaPrestacao.objects
                     .filter(
-                        prestacao_id=prestacao_id,
-                        prestacao__empresa=empresa_resumo,
+                        prestacao=prestacao_resumo,
                     )
                     .order_by("-ano", "-mes")
                 )
 
+        context["termo_resumo"] = termo_resumo
+        context["prestacao_resumo"] = prestacao_resumo
+
         context["termos_disponiveis"] = termos
         context["prestacoes_disponiveis"] = prestacoes
         context["competencias_disponiveis"] = competencias
+
+        competencia_resumo = None
+        resumo_competencia = None
+
+        competencia_id = context["competencia_filtro"]
+
+        if competencia_id.isdigit():
+            competencia_resumo = (
+                competencias
+                .filter(pk=competencia_id)
+                .first()
+            )
+
+        resumo_conciliacao = None
+        resumo_consolidado = None
+        nivel_resumo = None
+        objeto_resumo = None
+
+        if competencia_resumo:
+            resumo_competencia = (
+                resumo_financeiro_competencia(
+                    competencia_resumo
+                )
+            )
+
+            resumo_conciliacao = (
+                resumo_conciliacao_competencia(
+                    competencia_resumo
+                )
+            )
+
+        elif empresa_resumo:
+            competencias_resumo = (
+                CompetenciaPrestacao.objects
+                .filter(
+                    prestacao__empresa=empresa_resumo
+                )
+                .order_by(
+                    "ano",
+                    "mes",
+                    "id",
+                )
+            )
+
+            if prestacao_resumo:
+                competencias_resumo = (
+                    competencias_resumo
+                    .filter(
+                        prestacao=prestacao_resumo
+                    )
+                )
+
+                nivel_resumo = "Prestacao"
+                objeto_resumo = prestacao_resumo
+
+            elif termo_resumo:
+                competencias_resumo = (
+                    competencias_resumo
+                    .filter(
+                        prestacao__termo=termo_resumo
+                    )
+                )
+
+                nivel_resumo = "Termo"
+                objeto_resumo = termo_resumo
+
+            else:
+                nivel_resumo = "Empresa"
+                objeto_resumo = empresa_resumo
+
+            resumo_consolidado = (
+                resumo_financeiro_competencias(
+                    competencias_resumo
+                )
+            )
+
+        context["resumo_consolidado"] = (
+            resumo_consolidado
+        )
+        context["nivel_resumo"] = nivel_resumo
+        context["objeto_resumo"] = objeto_resumo
+
+        context["competencia_resumo"] = (
+            competencia_resumo
+        )
+        context["resumo_competencia"] = (
+            resumo_competencia
+        )
+        context["resumo_conciliacao"] = (
+            resumo_conciliacao
+        )
+
+        context["pode_decidir_conciliacao"] = (
+            self.request.user.has_perm(
+                "financeiro.change_movimentacaofinanceira"
+            )
+        )
 
         return context
 
@@ -543,4 +682,243 @@ def competencias_financeiro(request):
 
     return JsonResponse(
         {"competencias": dados}
+    )
+
+
+def _movimentacao_financeira_do_usuario(
+    user,
+    movimentacao_id,
+):
+    queryset = (
+        MovimentacaoFinanceira.objects
+        .select_related(
+            "empresa",
+            "termo",
+            "prestacao",
+            "competencia",
+        )
+    )
+
+    queryset = filtrar_por_empresa(
+        queryset,
+        user,
+        campo="empresa",
+    )
+
+    return get_object_or_404(
+        queryset,
+        pk=movimentacao_id,
+    )
+
+
+def _lancamento_candidato_da_movimentacao(
+    movimentacao,
+    lancamento_id,
+):
+    resultado = buscar_candidatos_lancamento(
+        movimentacao
+    )
+
+    candidatos_ids = {
+        candidato.pk
+        for candidato in resultado["candidatos"]
+    }
+
+    if lancamento_id not in candidatos_ids:
+        return None
+
+    return get_object_or_404(
+        Lancamento.objects.filter(
+            empresa_id=movimentacao.empresa_id,
+            termo_id=movimentacao.termo_id,
+            prestacao_id=movimentacao.prestacao_id,
+            competencia_id=movimentacao.competencia_id,
+        ),
+        pk=lancamento_id,
+    )
+
+
+def _retorno_conciliacao(request):
+    destino = (
+        request.POST.get("next") or ""
+    ).strip()
+
+    if (
+        destino
+        and url_has_allowed_host_and_scheme(
+            url=destino,
+            allowed_hosts={
+                request.get_host()
+            },
+            require_https=request.is_secure(),
+        )
+    ):
+        return destino
+
+    return reverse_lazy(
+        "list_movimentacoes_financeiras"
+    )
+
+
+@login_required
+@permission_required(
+    "financeiro.change_movimentacaofinanceira",
+    raise_exception=True,
+)
+@require_POST
+def confirmar_conciliacao_financeira(
+    request,
+    movimentacao_id,
+    lancamento_id,
+):
+    movimentacao = (
+        _movimentacao_financeira_do_usuario(
+            request.user,
+            movimentacao_id,
+        )
+    )
+
+    lancamento = (
+        _lancamento_candidato_da_movimentacao(
+            movimentacao,
+            lancamento_id,
+        )
+    )
+
+    if lancamento is None:
+        messages.error(
+            request,
+            "O lancamento informado nao e candidato "
+            "para esta movimentacao.",
+        )
+
+        return HttpResponseRedirect(
+            _retorno_conciliacao(request)
+        )
+
+    conciliacao, _ = (
+        ConciliacaoFinanceira.objects
+        .get_or_create(
+            movimentacao=movimentacao,
+            defaults={
+                "lancamento": lancamento,
+                "status": (
+                    ConciliacaoFinanceira.Status
+                    .CONFIRMADO
+                ),
+                "decidido_por": request.user,
+            },
+        )
+    )
+
+    conciliacao.lancamento = lancamento
+    conciliacao.status = (
+        ConciliacaoFinanceira.Status.CONFIRMADO
+    )
+    conciliacao.decidido_por = request.user
+
+    try:
+        conciliacao.full_clean()
+        conciliacao.save()
+
+    except ValidationError as exc:
+        messages.error(
+            request,
+            "Nao foi possivel confirmar a conciliacao: "
+            f"{exc}",
+        )
+
+        return HttpResponseRedirect(
+            _retorno_conciliacao(request)
+        )
+
+    messages.success(
+        request,
+        "Conciliacao confirmada com sucesso.",
+    )
+
+    return HttpResponseRedirect(
+        _retorno_conciliacao(request)
+    )
+
+
+@login_required
+@permission_required(
+    "financeiro.change_movimentacaofinanceira",
+    raise_exception=True,
+)
+@require_POST
+def rejeitar_conciliacao_financeira(
+    request,
+    movimentacao_id,
+    lancamento_id,
+):
+    movimentacao = (
+        _movimentacao_financeira_do_usuario(
+            request.user,
+            movimentacao_id,
+        )
+    )
+
+    lancamento = (
+        _lancamento_candidato_da_movimentacao(
+            movimentacao,
+            lancamento_id,
+        )
+    )
+
+    if lancamento is None:
+        messages.error(
+            request,
+            "O lancamento informado nao e candidato "
+            "para esta movimentacao.",
+        )
+
+        return HttpResponseRedirect(
+            _retorno_conciliacao(request)
+        )
+
+    conciliacao, _ = (
+        ConciliacaoFinanceira.objects
+        .get_or_create(
+            movimentacao=movimentacao,
+            defaults={
+                "lancamento": lancamento,
+                "status": (
+                    ConciliacaoFinanceira.Status
+                    .REJEITADO
+                ),
+                "decidido_por": request.user,
+            },
+        )
+    )
+
+    conciliacao.lancamento = lancamento
+    conciliacao.status = (
+        ConciliacaoFinanceira.Status.REJEITADO
+    )
+    conciliacao.decidido_por = request.user
+
+    try:
+        conciliacao.full_clean()
+        conciliacao.save()
+
+    except ValidationError as exc:
+        messages.error(
+            request,
+            "Nao foi possivel rejeitar a conciliacao: "
+            f"{exc}",
+        )
+
+        return HttpResponseRedirect(
+            _retorno_conciliacao(request)
+        )
+
+    messages.success(
+        request,
+        "Correspondencia rejeitada.",
+    )
+
+    return HttpResponseRedirect(
+        _retorno_conciliacao(request)
     )

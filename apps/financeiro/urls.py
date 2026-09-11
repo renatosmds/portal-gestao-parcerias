@@ -6,7 +6,9 @@ from .views import (
     MovimentacaoFinanceiraList,
     MovimentacaoFinanceiraUpdate,
     competencias_financeiro,
+    confirmar_conciliacao_financeira,
     prestacoes_financeiro,
+    rejeitar_conciliacao_financeira,
     termos_financeiro,
 )
 
@@ -31,6 +33,18 @@ urlpatterns = [
         "<int:pk>/excluir/",
         MovimentacaoFinanceiraDelete.as_view(),
         name="delete_movimentacao_financeira",
+    ),
+    path(
+        "<int:movimentacao_id>/conciliar/"
+        "<int:lancamento_id>/",
+        confirmar_conciliacao_financeira,
+        name="confirmar_conciliacao_financeira",
+    ),
+    path(
+        "<int:movimentacao_id>/rejeitar/"
+        "<int:lancamento_id>/",
+        rejeitar_conciliacao_financeira,
+        name="rejeitar_conciliacao_financeira",
     ),
     path(
         "ajax/termos/",
