@@ -6,6 +6,7 @@ from .models import Fornecedores
 @admin.register(Fornecedores)
 class FornecedoresAdmin(admin.ModelAdmin):
     list_display = (
+        "codigo_pseudonimo",
         "credor",
         "pessoa",
         "tipo",
@@ -15,6 +16,8 @@ class FornecedoresAdmin(admin.ModelAdmin):
         "estado",
         "telefone",
     )
+    readonly_fields = ("codigo_pseudonimo",)
+
     list_filter = (
         "empresa",
         "pessoa",
@@ -22,6 +25,7 @@ class FornecedoresAdmin(admin.ModelAdmin):
         "estado",
     )
     search_fields = (
+        "codigo_pseudonimo",
         "credor",
         "razao",
         "fantasia",

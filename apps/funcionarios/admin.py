@@ -3,7 +3,7 @@ from .models import Funcionario, FolhaPonto, FolhaPagamento
 
 
 class FuncionarioAdmin(admin.ModelAdmin):
-    list_display = ['nome', 'usuario', 'cargo', 'nivel', 'equipamento', 'endereco', 'bairro', 'cep', 'cidade', 'estado',
+    list_display = ['codigo_pseudonimo', 'nome', 'usuario', 'cargo', 'nivel', 'equipamento', 'endereco', 'bairro', 'cep', 'cidade', 'estado',
                     'email', 'Telefone', 'de_ferias', 'ativo', 'salarioBase', 'salarioBruto', 'salarioLiquido',
                     'diasTrabalhados', 'avisoPrevio', 'avosFerias', 'avosTercoFerias', 'avos13Salario', 'fgts',
                     'multafgts', 'inss', 'totalVerbaRescisoria', 'totalRescisao'
@@ -13,7 +13,7 @@ class FuncionarioAdmin(admin.ModelAdmin):
     fieldsets = (
         ('DADOS GERAIS', {
             'classes': ('collapse',),
-            'fields': (('nome', 'usuario', 'de_ferias', 'ativo'), ('cargo', 'nivel', 'equipamento'), ('Telefone', 'email'))}),
+            'fields': ('codigo_pseudonimo', ('nome', 'usuario', 'de_ferias', 'ativo'), ('cargo', 'nivel', 'equipamento'), ('Telefone', 'email'))}),
 
         ('DADOS DO RELATÓRIO DE AUDITORIA', {
             'classes': ('collapse',),
@@ -22,12 +22,14 @@ class FuncionarioAdmin(admin.ModelAdmin):
                        )}),
     )
 
+    readonly_fields = ('codigo_pseudonimo',)
+
     list_filter = ('nome', 'usuario', 'cargo', 'nivel', 'equipamento', 'endereco', 'bairro', 'cep', 'cidade',
                    'estado', 'email', 'Telefone', 'de_ferias', 'ativo', 'salarioBase', 'salarioBruto', 'salarioLiquido',
                    'diasTrabalhados', 'avisoPrevio', 'avosFerias', 'avosTercoFerias', 'avos13Salario', 'fgts',
                    'multafgts', 'inss', 'totalVerbaRescisoria', 'totalRescisao', 'curso')
 
-    search_fields = ('nome', 'usuario', 'cargo', 'nivel', 'equipamento', 'endereco', 'bairro', 'cep', 'cidade',
+    search_fields = ('codigo_pseudonimo', 'nome', 'usuario', 'cargo', 'nivel', 'equipamento', 'endereco', 'bairro', 'cep', 'cidade',
                    'estado', 'email', 'Telefone', 'de_ferias', 'ativo', 'salarioBase', 'salarioBruto', 'salarioLiquido',
                    'diasTrabalhados', 'avisoPrevio', 'avosFerias', 'avosTercoFerias', 'avos13Salario', 'fgts',
                    'multafgts', 'inss', 'totalVerbaRescisoria', 'totalRescisao', 'curso')
