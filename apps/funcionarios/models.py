@@ -227,6 +227,10 @@ class Funcionario(models.Model):
 
         self.cpf_normalizado = cpf
 
+    def clean(self):
+        super().clean()
+        self._validar_identidade_pseudonima()
+
     def save(self, *args, **kwargs):
         self._validar_identidade_pseudonima()
 

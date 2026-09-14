@@ -229,6 +229,10 @@ class Fornecedores(models.Model):
 
         self.documento_normalizado = documento
 
+    def clean(self):
+        super().clean()
+        self._validar_identidade_pseudonima()
+
     def save(self, *args, **kwargs):
         self._validar_identidade_pseudonima()
 
