@@ -1,4 +1,5 @@
-﻿from datetime import date
+﻿from apps.core.testes_documentos import cpf_teste
+from datetime import date
 from decimal import Decimal
 
 from django.contrib.auth.models import User
@@ -36,6 +37,7 @@ class PGPRulesRHSprint4410Tests(TestCase):
         )
 
         self.funcionario = Funcionario.objects.create(
+            cpf=cpf_teste(),
             nome="Trabalhador RH 44.10",
             usuario="rh4410",
             endereco="Endereco ficticio",
@@ -216,12 +218,11 @@ class PGPRulesRHSprint4410Tests(TestCase):
         )
 
     def test_resumo_executivo_nao_expoe_dados_pessoais(self):
-        self.funcionario.cpf = "000.000.000-00"
+        cpf_pessoal = self.funcionario.cpf
         self.funcionario.conta_bancaria = "12345-6"
 
         self.funcionario.save(
             update_fields=[
-                "cpf",
                 "conta_bancaria",
             ]
         )
@@ -237,7 +238,7 @@ class PGPRulesRHSprint4410Tests(TestCase):
         )
 
         self.assertNotIn(
-            "000.000.000-00",
+            cpf_pessoal,
             resumo,
         )
 

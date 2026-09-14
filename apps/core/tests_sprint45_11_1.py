@@ -1,3 +1,4 @@
+from apps.core.testes_documentos import cpf_teste
 from datetime import date
 from decimal import Decimal
 
@@ -45,6 +46,7 @@ class PlanoTrabalhoSprint45111Tests(TestCase):
         )
 
         Funcionario.objects.create(
+            cpf=cpf_teste(),
             nome="Usuário Sprint 45.11.1",
             usuario="usuario45111",
             endereco="Endereço fictício",

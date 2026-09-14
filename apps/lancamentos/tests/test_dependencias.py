@@ -1,3 +1,4 @@
+from apps.core.testes_documentos import cpf_teste
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
 from django.test import TestCase
@@ -31,6 +32,7 @@ class LancamentoDependenciasTests(TestCase):
         )
 
         Funcionario.objects.create(
+            cpf=cpf_teste(),
             nome="Usuario Dependencias",
             usuario="usuario_dependencias",
             endereco="-",

@@ -1,4 +1,5 @@
-﻿from django.contrib.auth.models import AnonymousUser, Group, Permission, User
+﻿from apps.core.testes_documentos import cpf_teste
+from django.contrib.auth.models import AnonymousUser, Group, Permission, User
 from django.test import TestCase
 
 from apps.core.permissoes_modulos import (
@@ -714,6 +715,7 @@ class Sprint4616ParceriasEscopoGrupoTests(TestCase):
         )
 
         Funcionario.objects.create(
+            cpf=cpf_teste(),
             nome="Usuario A 46.16",
             usuario="osc_a_4616",
             endereco="Endereco ficticio",
@@ -729,6 +731,7 @@ class Sprint4616ParceriasEscopoGrupoTests(TestCase):
         )
 
         Funcionario.objects.create(
+            cpf=cpf_teste(),
             nome="Usuario B 46.16",
             usuario="osc_b_4616",
             endereco="Endereco ficticio",

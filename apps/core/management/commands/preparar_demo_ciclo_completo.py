@@ -70,6 +70,39 @@ CENARIOS = (
 )
 
 
+
+def _cnpj_demo(indice, rubrica_indice):
+    base = f"99{indice:02d}{rubrica_indice:02d}000001"
+
+    pesos_1 = [
+        5, 4, 3, 2, 9, 8,
+        7, 6, 5, 4, 3, 2,
+    ]
+
+    soma = sum(
+        int(base[i]) * pesos_1[i]
+        for i in range(12)
+    )
+    resto = soma % 11
+    primeiro = 0 if resto < 2 else 11 - resto
+
+    parcial = base + str(primeiro)
+
+    pesos_2 = [
+        6, 5, 4, 3, 2, 9, 8,
+        7, 6, 5, 4, 3, 2,
+    ]
+
+    soma = sum(
+        int(parcial[i]) * pesos_2[i]
+        for i in range(13)
+    )
+    resto = soma % 11
+    segundo = 0 if resto < 2 else 11 - resto
+
+    return parcial + str(segundo)
+
+
 class Command(BaseCommand):
     help = (
         "Cria três ciclos demonstrativos completos, com três prefeituras, "
@@ -320,7 +353,7 @@ class Command(BaseCommand):
         for rubrica_indice, (codigo, rubrica, valor_base) in enumerate(RUBRICAS, start=1):
             fornecedor, _ = Fornecedores.objects.get_or_create(
                 empresa=prefeitura,
-                numero=f"{indice}{rubrica_indice:02d}000000001",
+                numero=_cnpj_demo(indice, rubrica_indice),
                 defaults={
                     "credor": f"Fornecedor {rubrica} — Município {indice}",
                     "razao": f"Fornecedor Demonstrativo {codigo} Ltda.",

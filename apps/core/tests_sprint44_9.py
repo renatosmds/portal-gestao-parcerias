@@ -1,4 +1,5 @@
-﻿from datetime import date
+﻿from apps.core.testes_documentos import cpf_teste
+from datetime import date
 from decimal import Decimal
 
 from django.contrib.auth.models import User
@@ -38,7 +39,7 @@ class PGPRulesRHSprint449Tests(TestCase):
             estado="MG",
             email="rh449@example.invalid",
             Telefone="31999999999",
-            cpf="000.000.000-00",
+            cpf=cpf_teste(),
             pis_pasep_nit="00000000000",
             data_nascimento=date(1990, 1, 1),
             banco="000",

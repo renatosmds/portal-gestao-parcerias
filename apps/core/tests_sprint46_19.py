@@ -180,7 +180,7 @@ class Sprint4619CompetenciaPrestacaoTests(TestCase):
         )
 
         self.assertEqual(resposta.status_code, 200)
-        self.assertContains(resposta, "COMPET?NCIA SELECIONADA")
+        self.assertContains(resposta, "COMPET\u00caNCIA SELECIONADA")
         self.assertContains(resposta, "01/2026")
 
     def test_resumo_consolidado_da_competencia(self):

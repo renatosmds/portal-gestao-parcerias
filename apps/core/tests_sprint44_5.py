@@ -1,4 +1,5 @@
-﻿from datetime import date
+﻿from apps.core.testes_documentos import cpf_teste
+from datetime import date
 from decimal import Decimal
 
 from django.contrib.auth.models import User
@@ -35,6 +36,7 @@ class PGPRulesRHSprint445Tests(TestCase):
         )
 
         self.funcionario = Funcionario.objects.create(
+            cpf=cpf_teste(),
             nome="Trabalhador RH 44.5",
             usuario="rh445",
             endereco="Endereco ficticio",

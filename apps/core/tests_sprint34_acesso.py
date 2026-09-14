@@ -1,3 +1,4 @@
+from apps.core.testes_documentos import cpf_teste
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from django.test import TestCase
@@ -16,6 +17,7 @@ class Sprint34IsolamentoTests(TestCase):
         self.g, _ = Group.objects.get_or_create(name='Usuário da OSC')
         self.u.groups.add(self.g)
         Funcionario.objects.create(
+            cpf=cpf_teste(),
             nome='Usuário OSC A', usuario='osc_a', endereco='-', bairro='-', cep='-',
             cidade='-', estado='MG', email='a@example.com', Telefone='-', user=self.u,
             empresa=self.e1, imagem='funcionarios_photos/teste.jpg'

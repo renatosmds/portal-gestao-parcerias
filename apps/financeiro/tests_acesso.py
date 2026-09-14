@@ -1,3 +1,4 @@
+from apps.core.testes_documentos import cpf_teste
 from datetime import date
 from decimal import Decimal
 
@@ -92,6 +93,7 @@ class FinanceiroAcessoTests(TestCase):
         )
 
         Funcionario.objects.create(
+            cpf=cpf_teste(),
             nome="Usuario OSC A",
             usuario="financeiro_osc_a",
             endereco="Rua Teste",

@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
-from django.db import models
+from django.db import models, transaction
 
 from apps.core.permissoes_modulos import MODULOS
 
@@ -234,3 +234,52 @@ class ConfiguracaoDashboardWidgetGrupo(models.Model):
             f"{self.widget} - "
             f"{situacao}"
         )
+
+
+class SequenciaPseudonimo(models.Model):
+
+    class Tipo(models.TextChoices):
+        COLABORADOR = "COL", "Colaborador"
+        FORNECEDOR = "FOR", "Fornecedor"
+
+    tipo = models.CharField(
+        max_length=3,
+        choices=Tipo.choices,
+        unique=True,
+    )
+
+    ultimo_numero = models.PositiveBigIntegerField(
+        default=0,
+    )
+
+    class Meta:
+        verbose_name = "Sequencia de pseudonimo"
+        verbose_name_plural = "Sequencias de pseudonimos"
+
+    def __str__(self):
+        return (
+            f"{self.tipo}: "
+            f"{self.ultimo_numero}"
+        )
+
+    @classmethod
+    def proximo_codigo(cls, tipo):
+        with transaction.atomic():
+            sequencia = (
+                cls.objects
+                .select_for_update()
+                .get(tipo=tipo)
+            )
+
+            sequencia.ultimo_numero += 1
+
+            sequencia.save(
+                update_fields=[
+                    "ultimo_numero",
+                ]
+            )
+
+            numero = sequencia.ultimo_numero
+
+        return f"{tipo}-{numero:06d}"
+

@@ -1,3 +1,4 @@
+from apps.core.testes_documentos import cpf_teste
 from django.contrib.auth.models import Permission, User
 from django.test import TestCase
 from django.urls import reverse
@@ -88,6 +89,7 @@ class PrestacaoIsolamentoEmpresaTests(TestCase):
         cls.user.user_permissions.add(*permissoes)
 
         Funcionario.objects.create(
+            cpf=cpf_teste(),
             nome="Usuario Prestacao Empresa A",
             usuario="prestacao_empresa_a",
             endereco="-",

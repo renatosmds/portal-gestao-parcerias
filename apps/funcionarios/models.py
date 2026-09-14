@@ -1,7 +1,10 @@
-from django.db import models
+from django.core.exceptions import ValidationError
+from django.db import models, transaction
 from django.contrib.auth.models import User
 from django.urls import reverse
 from apps.departamentos.models import Departamento
+from apps.core.models import SequenciaPseudonimo
+from apps.core.documentos_fiscais import documento_cpf_normalizado
 from apps.empresas.models import Empresa
 from apps.curso.models import Curso
 from django.db.models import Sum
@@ -117,6 +120,22 @@ class Funcionario(models.Model):
         ("outro", "Outro"),
     )
     cpf = models.CharField(max_length=14, blank=True, null=True, verbose_name="CPF")
+    cpf_normalizado = models.CharField(
+        max_length=11,
+        blank=True,
+        null=True,
+        unique=True,
+        editable=False,
+        verbose_name="CPF normalizado",
+    )
+    codigo_pseudonimo = models.CharField(
+        max_length=10,
+        blank=True,
+        null=True,
+        unique=True,
+        editable=False,
+        verbose_name="Código pseudonimizado",
+    )
     pis_pasep_nit = models.CharField(max_length=20, blank=True, null=True, verbose_name="PIS/PASEP/NIT")
     data_nascimento = models.DateField(blank=True, null=True, verbose_name="Data de nascimento")
     tipo_vinculo = models.CharField(max_length=30, choices=TIPO_VINCULO_CHOICES, default="clt", verbose_name="Tipo de vínculo")
@@ -130,7 +149,12 @@ class Funcionario(models.Model):
     agencia = models.CharField(max_length=20, blank=True, null=True, verbose_name="Agência")
     conta_bancaria = models.CharField(max_length=30, blank=True, null=True, verbose_name="Conta bancária")
 
-    user = models.OneToOneField(User, on_delete=models.PROTECT)
+    user = models.OneToOneField(
+        User,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+    )
     curso = models.ManyToManyField(Curso, verbose_name='Cursos Realizados')
     # curso = models.ForeignKey(
     #     Curso, on_delete=models.PROTECT, null=True, blank=True)  # ok
@@ -140,6 +164,81 @@ class Funcionario(models.Model):
     imagem = models.ImageField()
     de_ferias = models.BooleanField(default=False)
     ativo = models.BooleanField(default=True)
+
+    def _validar_identidade_pseudonima(self):
+        precisa_validar = (
+            not self.codigo_pseudonimo
+            or self.cpf_normalizado is not None
+        )
+
+        if not precisa_validar:
+            # Registro legado preservado ate saneamento posterior.
+            return
+
+        try:
+            cpf = documento_cpf_normalizado(self.cpf)
+        except ValueError as exc:
+            raise ValidationError(
+                {
+                    "cpf": (
+                        "CPF obrigatorio e valido para "
+                        "identificacao pseudonimizada."
+                    )
+                }
+            ) from exc
+
+        if self.pk and self.codigo_pseudonimo:
+            anterior = (
+                type(self).objects
+                .filter(pk=self.pk)
+                .values_list(
+                    "cpf_normalizado",
+                    flat=True,
+                )
+                .first()
+            )
+
+            if anterior and anterior != cpf:
+                raise ValidationError(
+                    {
+                        "cpf": (
+                            "O CPF associado ao codigo "
+                            "pseudonimizado nao pode ser alterado."
+                        )
+                    }
+                )
+
+        duplicado = (
+            type(self).objects
+            .exclude(pk=self.pk)
+            .filter(cpf_normalizado=cpf)
+            .exists()
+        )
+
+        if duplicado:
+            raise ValidationError(
+                {
+                    "cpf": (
+                        "Este CPF ja possui um colaborador "
+                        "pseudonimizado."
+                    )
+                }
+            )
+
+        self.cpf_normalizado = cpf
+
+    def save(self, *args, **kwargs):
+        self._validar_identidade_pseudonima()
+
+        with transaction.atomic():
+            if not self.codigo_pseudonimo:
+                self.codigo_pseudonimo = (
+                    SequenciaPseudonimo.proximo_codigo(
+                        SequenciaPseudonimo.Tipo.COLABORADOR
+                    )
+                )
+
+            return super().save(*args, **kwargs)
 
     @property
     def total_horas_extra(self):

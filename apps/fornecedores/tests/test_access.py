@@ -1,3 +1,4 @@
+from apps.core.testes_documentos import cnpj_teste
 from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
@@ -14,7 +15,7 @@ class FornecedorAccessTests(TestCase):
             credor="Fornecedor Teste",
             pessoa="jurídica",
             tipo="cnpj",
-            numero="00.000.000/0001-00",
+            numero=cnpj_teste(),
             empresa=cls.empresa,
         )
         cls.user = User.objects.create_user(
