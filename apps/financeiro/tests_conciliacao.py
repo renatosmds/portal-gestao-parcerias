@@ -509,3 +509,138 @@ class ConciliacaoFinanceiraTests(TestCase):
             resumo["nao_analisados"],
             1,
         )
+
+
+    def test_debito_integralmente_estornado_nao_e_conciliavel(self):
+        self.criar_lancamento(
+            "EST-001",
+            "250.00",
+            date(2026, 1, 10),
+        )
+
+        debito = self.criar_movimentacao(
+            MovimentacaoFinanceira.Tipo.DEBITO_AUTORIZADO,
+            "250.00",
+            date(2026, 1, 10),
+        )
+
+        MovimentacaoFinanceira.objects.create(
+            empresa=self.empresa,
+            termo=self.termo,
+            prestacao=self.prestacao,
+            competencia=self.competencia,
+            data=date(2026, 1, 10),
+            tipo=MovimentacaoFinanceira.Tipo.ESTORNO,
+            valor=Decimal("250.00"),
+            descricao="Estorno integral",
+            movimento_relacionado=debito,
+            criado_por=self.usuario,
+        )
+
+        resultado = buscar_candidatos_lancamento(
+            debito
+        )
+
+        self.assertEqual(
+            resultado["status"],
+            StatusConciliacao.NAO_APLICAVEL,
+        )
+
+        self.assertEqual(
+            resultado["candidatos"],
+            [],
+        )
+
+        self.assertIsNone(
+            resultado["candidato"]
+        )
+
+    def test_resumo_ignora_debito_integralmente_estornado(self):
+        self.criar_lancamento(
+            "EST-002",
+            "300.00",
+            date(2026, 1, 10),
+        )
+
+        debito = self.criar_movimentacao(
+            MovimentacaoFinanceira.Tipo.DEBITO_AUTORIZADO,
+            "300.00",
+            date(2026, 1, 10),
+        )
+
+        MovimentacaoFinanceira.objects.create(
+            empresa=self.empresa,
+            termo=self.termo,
+            prestacao=self.prestacao,
+            competencia=self.competencia,
+            data=date(2026, 1, 10),
+            tipo=MovimentacaoFinanceira.Tipo.ESTORNO,
+            valor=Decimal("300.00"),
+            descricao="Estorno integral resumo",
+            movimento_relacionado=debito,
+            criado_por=self.usuario,
+        )
+
+        resumo = resumo_conciliacao_competencia(
+            self.competencia
+        )
+
+        self.assertEqual(
+            resumo["total"],
+            0,
+        )
+
+        self.assertEqual(
+            resumo["conciliaveis"],
+            0,
+        )
+
+        self.assertEqual(
+            resumo["pendentes"],
+            0,
+        )
+
+        self.assertEqual(
+            resumo["itens"],
+            [],
+        )
+
+    def test_estorno_parcial_nao_exclui_debito_da_conciliacao(self):
+        lancamento = self.criar_lancamento(
+            "EST-003",
+            "500.00",
+            date(2026, 1, 10),
+        )
+
+        debito = self.criar_movimentacao(
+            MovimentacaoFinanceira.Tipo.DEBITO_AUTORIZADO,
+            "500.00",
+            date(2026, 1, 10),
+        )
+
+        MovimentacaoFinanceira.objects.create(
+            empresa=self.empresa,
+            termo=self.termo,
+            prestacao=self.prestacao,
+            competencia=self.competencia,
+            data=date(2026, 1, 10),
+            tipo=MovimentacaoFinanceira.Tipo.ESTORNO,
+            valor=Decimal("100.00"),
+            descricao="Estorno parcial",
+            movimento_relacionado=debito,
+            criado_por=self.usuario,
+        )
+
+        resultado = buscar_candidatos_lancamento(
+            debito
+        )
+
+        self.assertEqual(
+            resultado["status"],
+            StatusConciliacao.EXATO,
+        )
+
+        self.assertEqual(
+            resultado["candidato"],
+            lancamento,
+        )

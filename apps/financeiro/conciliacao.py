@@ -31,6 +31,26 @@ ROTULOS_STATUS_CONCILIACAO = {
 }
 
 
+def movimento_integralmente_estornado(movimentacao):
+    if (
+        movimentacao.tipo
+        != MovimentacaoFinanceira.Tipo.DEBITO_AUTORIZADO
+    ):
+        return False
+
+    if not movimentacao.pk:
+        return False
+
+    return (
+        movimentacao.movimentos_relacionados
+        .filter(
+            tipo=MovimentacaoFinanceira.Tipo.ESTORNO,
+            valor=movimentacao.valor,
+        )
+        .exists()
+    )
+
+
 def buscar_candidatos_lancamento(
     movimentacao,
     tolerancia_dias=3,
@@ -45,6 +65,11 @@ def buscar_candidatos_lancamento(
     if (
         movimentacao.tipo
         not in TIPOS_CONCILIAVEIS_COM_LANCAMENTO
+    ):
+        return resultado
+
+    if movimento_integralmente_estornado(
+        movimentacao
     ):
         return resultado
 
@@ -143,9 +168,14 @@ def resumo_conciliacao_competencia(competencia):
         )
     )
 
-    movimentacoes = list(
-        movimentacoes
-    )
+
+    movimentacoes = [
+        movimentacao
+        for movimentacao in movimentacoes
+        if not movimento_integralmente_estornado(
+            movimentacao
+        )
+    ]
 
     decisoes = {
         item.movimentacao_id: item
