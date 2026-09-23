@@ -10,10 +10,16 @@ from .views import (
     prestacoes_financeiro,
     rejeitar_conciliacao_financeira,
     termos_financeiro,
+    importar_ofx_financeiro,
 )
 
 
 urlpatterns = [
+    path(
+        "importar-ofx/",
+        importar_ofx_financeiro,
+        name="importar_ofx_financeiro",
+    ),
     path(
         "",
         MovimentacaoFinanceiraList.as_view(),

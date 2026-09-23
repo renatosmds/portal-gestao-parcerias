@@ -1,3 +1,5 @@
+from tempfile import NamedTemporaryFile
+from pathlib import Path
 from django.contrib import messages
 from django.contrib.auth.decorators import (
     login_required,
@@ -42,6 +44,8 @@ from .models import (
     ConciliacaoFinanceira,
     MovimentacaoFinanceira,
 )
+from .servicos_ofx import importar_ofx
+
 from .resumos import (
     resumo_financeiro_competencia,
     resumo_financeiro_competencias,
@@ -508,6 +512,298 @@ class MovimentacaoFinanceiraDelete(
     )
     success_url = reverse_lazy(
         "list_movimentacoes_financeiras"
+    )
+
+
+
+@login_required
+@permission_required(
+    "financeiro.add_movimentacaofinanceira",
+    raise_exception=True,
+)
+@require_POST
+def importar_ofx_financeiro(request):
+    empresa_id = (
+        request.POST.get("empresa") or ""
+    ).strip()
+
+    termo_id = (
+        request.POST.get("termo") or ""
+    ).strip()
+
+    prestacao_id = (
+        request.POST.get("prestacao") or ""
+    ).strip()
+
+    competencia_id = (
+        request.POST.get("competencia") or ""
+    ).strip()
+
+    arquivo = request.FILES.get(
+        "arquivo_ofx"
+    )
+
+    if usuario_pode_ver_todas_empresas(
+        request.user
+    ):
+        if not empresa_id.isdigit():
+            messages.error(
+                request,
+                "Selecione uma empresa valida.",
+            )
+            return HttpResponseRedirect(
+                reverse_lazy(
+                    "list_movimentacoes_financeiras"
+                )
+            )
+
+        empresa = (
+            Empresa.objects
+            .filter(pk=empresa_id)
+            .first()
+        )
+    else:
+        empresa = empresa_do_usuario(
+            request.user
+        )
+
+    if not empresa:
+        messages.error(
+            request,
+            "Empresa nao encontrada ou sem acesso.",
+        )
+        return HttpResponseRedirect(
+            reverse_lazy(
+                "list_movimentacoes_financeiras"
+            )
+        )
+
+    if not termo_id.isdigit():
+        messages.error(
+            request,
+            "Selecione um termo valido.",
+        )
+        return HttpResponseRedirect(
+            reverse_lazy(
+                "list_movimentacoes_financeiras"
+            )
+        )
+
+    termo = (
+        Termos.objects
+        .filter(
+            pk=termo_id,
+            empresa=empresa,
+        )
+        .first()
+    )
+
+    if not termo:
+        messages.error(
+            request,
+            "O termo nao pertence a empresa selecionada.",
+        )
+        return HttpResponseRedirect(
+            reverse_lazy(
+                "list_movimentacoes_financeiras"
+            )
+        )
+
+    if not prestacao_id.isdigit():
+        messages.error(
+            request,
+            "Selecione uma prestacao valida.",
+        )
+        return HttpResponseRedirect(
+            reverse_lazy(
+                "list_movimentacoes_financeiras"
+            )
+        )
+
+    prestacao = (
+        Prestacao.objects
+        .filter(
+            pk=prestacao_id,
+            empresa=empresa,
+            termo=termo,
+        )
+        .first()
+    )
+
+    if not prestacao:
+        messages.error(
+            request,
+            "A prestacao nao pertence ao termo selecionado.",
+        )
+        return HttpResponseRedirect(
+            reverse_lazy(
+                "list_movimentacoes_financeiras"
+            )
+        )
+
+    if not competencia_id.isdigit():
+        messages.error(
+            request,
+            "Selecione uma competencia valida.",
+        )
+        return HttpResponseRedirect(
+            reverse_lazy(
+                "list_movimentacoes_financeiras"
+            )
+        )
+
+    competencia = (
+        CompetenciaPrestacao.objects
+        .filter(
+            pk=competencia_id,
+            prestacao=prestacao,
+        )
+        .first()
+    )
+
+    if not competencia:
+        messages.error(
+            request,
+            "A competencia nao pertence "
+            "a prestacao selecionada.",
+        )
+        return HttpResponseRedirect(
+            reverse_lazy(
+                "list_movimentacoes_financeiras"
+            )
+        )
+
+    if arquivo is None:
+        messages.error(
+            request,
+            "Selecione um arquivo OFX.",
+        )
+        return HttpResponseRedirect(
+            reverse_lazy(
+                "list_movimentacoes_financeiras"
+            )
+        )
+
+    nome_arquivo = (
+        arquivo.name or ""
+    )
+
+    if not nome_arquivo.lower().endswith(".ofx"):
+        messages.error(
+            request,
+            "O arquivo deve possuir extensao .ofx.",
+        )
+        return HttpResponseRedirect(
+            reverse_lazy(
+                "list_movimentacoes_financeiras"
+            )
+        )
+
+    if arquivo.size > 5 * 1024 * 1024:
+        messages.error(
+            request,
+            "O arquivo OFX excede o limite de 5 MB.",
+        )
+        return HttpResponseRedirect(
+            reverse_lazy(
+                "list_movimentacoes_financeiras"
+            )
+        )
+
+    caminho_temporario = None
+
+    try:
+        with NamedTemporaryFile(
+            suffix=".ofx",
+            delete=False,
+        ) as temporario:
+            for bloco_arquivo in arquivo.chunks():
+                temporario.write(bloco_arquivo)
+
+            caminho_temporario = Path(
+                temporario.name
+            )
+
+        importacao, criada = importar_ofx(
+            caminho_temporario,
+            empresa=empresa,
+            termo=termo,
+            prestacao=prestacao,
+            competencia=competencia,
+            usuario=request.user,
+        )
+
+        lidos = (
+            importacao.quantidade_movimentos
+        )
+
+        if criada:
+            importados = (
+                importacao.movimentos.count()
+            )
+
+            duplicados = max(
+                lidos - importados,
+                0,
+            )
+
+            messages.success(
+                request,
+                (
+                    "OFX importado com sucesso. "
+                    f"Movimentos lidos: {lidos}. "
+                    f"Novos: {importados}. "
+                    f"Duplicados ignorados: {duplicados}."
+                ),
+            )
+        else:
+            messages.info(
+                request,
+                (
+                    "Este arquivo OFX ja havia sido importado. "
+                    f"Movimentos reconhecidos: {lidos}."
+                ),
+            )
+
+    except ValidationError as exc:
+        messages.error(
+            request,
+            "Nao foi possivel importar o OFX: "
+            f"{exc}",
+        )
+
+    except (ValueError, UnicodeError) as exc:
+        messages.error(
+            request,
+            "Arquivo OFX invalido: "
+            f"{exc}",
+        )
+
+    except Exception:
+        messages.error(
+            request,
+            "Nao foi possivel processar o arquivo OFX.",
+        )
+
+    finally:
+        if (
+            caminho_temporario
+            and caminho_temporario.exists()
+        ):
+            caminho_temporario.unlink()
+
+    destino = (
+        reverse_lazy(
+            "list_movimentacoes_financeiras"
+        )
+        + f"?empresa={empresa.pk}"
+        + f"&termo={termo.pk}"
+        + f"&prestacao={prestacao.pk}"
+        + f"&competencia={competencia.pk}"
+    )
+
+    return HttpResponseRedirect(
+        destino
     )
 
 

@@ -60,6 +60,83 @@
         {% endif %}
     </header>
 
+    {% if perms.financeiro.add_movimentacaofinanceira %}
+        <div class="sgm-panel">
+            <h2>Importar extrato OFX</h2>
+
+            {% if empresa_resumo and termo_resumo and prestacao_resumo and competencia_resumo %}
+                <p>
+                    O arquivo sera importado para:
+                    <strong>{{ empresa_resumo }}</strong> /
+                    <strong>{{ termo_resumo }}</strong> /
+                    <strong>{{ prestacao_resumo }}</strong> /
+                    <strong>{{ competencia_resumo }}</strong>.
+                </p>
+
+                <form
+                    method="post"
+                    action="{% url 'importar_ofx_financeiro' %}"
+                    enctype="multipart/form-data"
+                >
+                    {% csrf_token %}
+
+                    <input
+                        type="hidden"
+                        name="empresa"
+                        value="{{ empresa_resumo.pk }}"
+                    >
+
+                    <input
+                        type="hidden"
+                        name="termo"
+                        value="{{ termo_resumo.pk }}"
+                    >
+
+                    <input
+                        type="hidden"
+                        name="prestacao"
+                        value="{{ prestacao_resumo.pk }}"
+                    >
+
+                    <input
+                        type="hidden"
+                        name="competencia"
+                        value="{{ competencia_resumo.pk }}"
+                    >
+
+                    <div class="form-group">
+                        <label for="arquivo_ofx">
+                            Arquivo OFX
+                        </label>
+
+                        <input
+                            type="file"
+                            id="arquivo_ofx"
+                            name="arquivo_ofx"
+                            accept=".ofx,application/x-ofx"
+                            class="form-control"
+                            required
+                        >
+                    </div>
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                    >
+                        <i class="fa fa-upload mr-1"></i>
+                        Importar OFX
+                    </button>
+                </form>
+            {% else %}
+                <p>
+                    Selecione empresa, termo, prestacao
+                    e competencia nos filtros abaixo
+                    para habilitar a importacao.
+                </p>
+            {% endif %}
+        </div>
+    {% endif %}
+
     <div class="entries-summary">
         <article>
             <small>Movimenta&ccedil;&otilde;es</small>
