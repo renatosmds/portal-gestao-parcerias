@@ -20,6 +20,40 @@ def _data_ofx(valor):
     ).date()
 
 
+def _validar_periodo_competencia(
+    extrato,
+    competencia,
+):
+    if competencia is None:
+        return
+
+    data_inicio = _data_ofx(
+        extrato.data_inicio
+    )
+    data_fim = _data_ofx(
+        extrato.data_fim
+    )
+
+    if (
+        data_inicio < competencia.data_inicial
+        or data_fim > competencia.data_final
+    ):
+        raise ValidationError(
+            {
+                "competencia": (
+                    "O periodo do extrato OFX "
+                    f"({data_inicio:%d/%m/%Y} a "
+                    f"{data_fim:%d/%m/%Y}) "
+                    "nao corresponde ao periodo "
+                    "da competencia selecionada "
+                    f"({competencia.data_inicial:%d/%m/%Y} "
+                    "a "
+                    f"{competencia.data_final:%d/%m/%Y})."
+                )
+            }
+        )
+
+
 def _mascarar_conta(conta):
     conta = (conta or "").strip()
 
@@ -220,6 +254,15 @@ def importar_ofx(
         dados
     ).hexdigest()
 
+    extrato = parse_ofx(
+        caminho
+    )
+
+    _validar_periodo_competencia(
+        extrato,
+        competencia,
+    )
+
     existente = (
         ImportacaoOFX.objects
         .filter(
@@ -232,10 +275,6 @@ def importar_ofx(
 
     if existente:
         return existente, False
-
-    extrato = parse_ofx(
-        caminho
-    )
 
     importacao = ImportacaoOFX(
         empresa=empresa,

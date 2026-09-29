@@ -215,6 +215,44 @@ class ImportacaoOFXEndpointTests(TestCase):
             0,
         )
 
+    def test_rejeita_ofx_fora_do_periodo_da_competencia(self):
+        competencia_marco = (
+            CompetenciaPrestacao.objects.create(
+                prestacao=self.prestacao,
+                ano=2026,
+                mes=3,
+                data_inicial=date(2026, 3, 1),
+                data_final=date(2026, 3, 31),
+            )
+        )
+
+        dados = self.dados()
+
+        dados["competencia"] = str(
+            competencia_marco.pk
+        )
+
+        resposta = self.client.post(
+            self.url,
+            dados,
+        )
+
+        self.assertEqual(
+            resposta.status_code,
+            302,
+        )
+
+        self.assertEqual(
+            ImportacaoOFX.objects.count(),
+            0,
+        )
+
+        self.assertEqual(
+            MovimentacaoFinanceira.objects.count(),
+            0,
+        )
+
+
     def test_reimportacao_mesmo_arquivo_e_idempotente(self):
         resposta_1 = self.client.post(
             self.url,

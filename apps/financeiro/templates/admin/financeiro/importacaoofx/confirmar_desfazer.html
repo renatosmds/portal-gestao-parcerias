@@ -1,0 +1,83 @@
+﻿{% extends "admin/base_site.html" %}
+
+{% block content %}
+
+<h1>Confirmar desfazer importacao OFX</h1>
+
+<p>
+    Esta operacao removera os movimentos vinculados
+    exclusivamente a esta importacao.
+</p>
+
+<table>
+    <tr>
+        <th>Arquivo</th>
+        <td>{{ importacao.nome_arquivo }}</td>
+    </tr>
+    <tr>
+        <th>Empresa</th>
+        <td>{{ importacao.empresa }}</td>
+    </tr>
+    <tr>
+        <th>Termo</th>
+        <td>{{ importacao.termo }}</td>
+    </tr>
+    <tr>
+        <th>Prestacao</th>
+        <td>{{ importacao.prestacao|default:"-" }}</td>
+    </tr>
+    <tr>
+        <th>Periodo OFX</th>
+        <td>
+            {{ importacao.data_inicio|date:"d/m/Y" }}
+            a
+            {{ importacao.data_fim|date:"d/m/Y" }}
+        </td>
+    </tr>
+    <tr>
+        <th>Movimentos a remover</th>
+        <td><strong>{{ quantidade }}</strong></td>
+    </tr>
+</table>
+
+<br>
+
+<form method="post">
+    {% csrf_token %}
+
+    <input
+        type="hidden"
+        name="action"
+        value="desfazer_importacao_ofx"
+    >
+
+    <input
+        type="hidden"
+        name="confirmar"
+        value="sim"
+    >
+
+    {% for objeto in queryset %}
+        <input
+            type="hidden"
+            name="{{ action_checkbox_name }}"
+            value="{{ objeto.pk }}"
+        >
+    {% endfor %}
+
+    <button
+        type="submit"
+        class="button"
+    >
+        Confirmar e desfazer importacao
+    </button>
+
+    <a
+        href="{% url 'admin:financeiro_importacaoofx_changelist' %}"
+        class="button cancel-link"
+    >
+        Cancelar
+    </a>
+</form>
+
+{% endblock %}

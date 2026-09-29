@@ -726,5 +726,16 @@ document.addEventListener("DOMContentLoaded", function () {
             enviar();
         });
     }
+
+    if (competencia) {
+        competencia.addEventListener(
+            "change",
+            function () {
+                enviar();
+            }
+        );
+    }
+
 });
+
 </script>
