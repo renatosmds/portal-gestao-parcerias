@@ -38,6 +38,7 @@ from .mixins import (
 )
 from .conciliacao import (
     buscar_candidatos_lancamento,
+    diagnostico_conciliacao_competencia,
     resumo_conciliacao_competencia,
 )
 from .models import (
@@ -274,6 +275,7 @@ class MovimentacaoFinanceiraList(
             )
 
         resumo_conciliacao = None
+        diagnostico_conciliacao = None
         resumo_consolidado = None
         nivel_resumo = None
         objeto_resumo = None
@@ -287,6 +289,12 @@ class MovimentacaoFinanceiraList(
 
             resumo_conciliacao = (
                 resumo_conciliacao_competencia(
+                    competencia_resumo
+                )
+            )
+
+            diagnostico_conciliacao = (
+                diagnostico_conciliacao_competencia(
                     competencia_resumo
                 )
             )
@@ -350,6 +358,10 @@ class MovimentacaoFinanceiraList(
         )
         context["resumo_conciliacao"] = (
             resumo_conciliacao
+        )
+
+        context["diagnostico_conciliacao"] = (
+            diagnostico_conciliacao
         )
 
         context["pode_decidir_conciliacao"] = (

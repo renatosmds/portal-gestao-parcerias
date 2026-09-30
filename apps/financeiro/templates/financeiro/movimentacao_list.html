@@ -277,6 +277,110 @@
         </div>
     {% endif %}
 
+    {% if diagnostico_conciliacao %}
+        <div class="sgm-panel">
+            <h2>Diagn&oacute;stico da concilia&ccedil;&atilde;o</h2>
+
+            <div class="entries-summary">
+                <article>
+                    <small>D&eacute;bitos analis&aacute;veis</small>
+                    <strong>
+                        {{ diagnostico_conciliacao.total_debitos }}
+                    </strong>
+                </article>
+
+                <article>
+                    <small>Lan&ccedil;amentos cadastrados</small>
+                    <strong>
+                        {{ diagnostico_conciliacao.total_lancamentos }}
+                    </strong>
+                </article>
+
+                <article>
+                    <small>Mesmo valor encontrado</small>
+                    <strong>
+                        {{ diagnostico_conciliacao.valor_existente }}
+                    </strong>
+                </article>
+
+                <article>
+                    <small>Sem mesmo valor</small>
+                    <strong>
+                        {{ diagnostico_conciliacao.sem_mesmo_valor }}
+                    </strong>
+                </article>
+
+                <article>
+                    <small>Mesma data</small>
+                    <strong>
+                        {{ diagnostico_conciliacao.mesma_data }}
+                    </strong>
+                </article>
+
+                <article>
+                    <small>Diferen&ccedil;a de 1 a 3 dias</small>
+                    <strong>
+                        {{ diagnostico_conciliacao.ate_3_dias }}
+                    </strong>
+                </article>
+
+                <article>
+                    <small>Diferen&ccedil;a de 4 a 7 dias</small>
+                    <strong>
+                        {{ diagnostico_conciliacao.ate_7_dias }}
+                    </strong>
+                </article>
+
+                <article>
+                    <small>Diferen&ccedil;a de 8 a 15 dias</small>
+                    <strong>
+                        {{ diagnostico_conciliacao.ate_15_dias }}
+                    </strong>
+                </article>
+
+                <article>
+                    <small>Acima de 15 dias</small>
+                    <strong>
+                        {{ diagnostico_conciliacao.acima_15_dias }}
+                    </strong>
+                </article>
+
+                <article>
+                    <small>Lan&ccedil;amentos sem data de pagamento</small>
+                    <strong>
+                        {{ diagnostico_conciliacao.lancamentos_sem_data_pagamento }}
+                    </strong>
+                </article>
+            </div>
+
+            <p>
+                Per&iacute;odo dos d&eacute;bitos:
+                <strong>
+                    {% if diagnostico_conciliacao.data_inicial_debitos %}
+                        {{ diagnostico_conciliacao.data_inicial_debitos|date:"d/m/Y" }}
+                        a
+                        {{ diagnostico_conciliacao.data_final_debitos|date:"d/m/Y" }}
+                    {% else %}
+                        sem dados
+                    {% endif %}
+                </strong>
+            </p>
+
+            <p>
+                Per&iacute;odo dos lan&ccedil;amentos:
+                <strong>
+                    {% if diagnostico_conciliacao.data_inicial_lancamentos %}
+                        {{ diagnostico_conciliacao.data_inicial_lancamentos|date:"d/m/Y" }}
+                        a
+                        {{ diagnostico_conciliacao.data_final_lancamentos|date:"d/m/Y" }}
+                    {% else %}
+                        sem dados
+                    {% endif %}
+                </strong>
+            </p>
+        </div>
+    {% endif %}
+
     {% if resumo_conciliacao %}
         <div class="sgm-panel">
             <h2>Concilia&ccedil;&atilde;o financeira</h2>

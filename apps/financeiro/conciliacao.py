@@ -319,3 +319,178 @@ def resumo_conciliacao_competencia(competencia):
         "pendentes": pendentes,
         "itens": itens,
     }
+
+
+def diagnostico_conciliacao_competencia(
+    competencia,
+):
+    movimentacoes = list(
+        MovimentacaoFinanceira.objects
+        .filter(
+            competencia=competencia,
+            tipo=(
+                MovimentacaoFinanceira.Tipo
+                .DEBITO_AUTORIZADO
+            ),
+        )
+        .order_by(
+            "data",
+            "id",
+        )
+    )
+
+    movimentacoes = [
+        movimento
+        for movimento in movimentacoes
+        if not movimento_integralmente_estornado(
+            movimento
+        )
+    ]
+
+    lancamentos = list(
+        Lancamento.objects
+        .filter(
+            competencia=competencia,
+            empresa_id=competencia.prestacao.empresa_id,
+            prestacao=competencia.prestacao,
+        )
+        .order_by(
+            "data_pagamento",
+            "id",
+        )
+    )
+
+    com_data_pagamento = [
+        lancamento
+        for lancamento in lancamentos
+        if lancamento.data_pagamento
+    ]
+
+    sem_data_pagamento = (
+        len(lancamentos)
+        - len(com_data_pagamento)
+    )
+
+    mesma_data = 0
+    ate_3_dias = 0
+    ate_7_dias = 0
+    ate_15_dias = 0
+    acima_15_dias = 0
+    valor_existente = 0
+    sem_mesmo_valor = 0
+
+    exemplos_sem_valor = []
+
+    for movimento in movimentacoes:
+        candidatos_valor = [
+            lancamento
+            for lancamento in lancamentos
+            if lancamento.valor_documento
+            == movimento.valor
+        ]
+
+        if not candidatos_valor:
+            sem_mesmo_valor += 1
+
+            if len(exemplos_sem_valor) < 10:
+                exemplos_sem_valor.append(
+                    {
+                        "movimentacao_id": (
+                            movimento.pk
+                        ),
+                        "data": movimento.data,
+                        "valor": movimento.valor,
+                        "descricao": (
+                            movimento.memo_ofx
+                            or movimento.descricao
+                            or ""
+                        ),
+                    }
+                )
+
+            continue
+
+        valor_existente += 1
+
+        candidatos_com_data = [
+            lancamento
+            for lancamento in candidatos_valor
+            if lancamento.data_pagamento
+        ]
+
+        if not candidatos_com_data:
+            continue
+
+        menor_diferenca = min(
+            abs(
+                (
+                    lancamento.data_pagamento
+                    - movimento.data
+                ).days
+            )
+            for lancamento
+            in candidatos_com_data
+        )
+
+        if menor_diferenca == 0:
+            mesma_data += 1
+        elif menor_diferenca <= 3:
+            ate_3_dias += 1
+        elif menor_diferenca <= 7:
+            ate_7_dias += 1
+        elif menor_diferenca <= 15:
+            ate_15_dias += 1
+        else:
+            acima_15_dias += 1
+
+    datas_movimentos = [
+        movimento.data
+        for movimento in movimentacoes
+    ]
+
+    datas_lancamentos = [
+        lancamento.data_pagamento
+        for lancamento in com_data_pagamento
+    ]
+
+    return {
+        "total_debitos": len(
+            movimentacoes
+        ),
+        "total_lancamentos": len(
+            lancamentos
+        ),
+        "lancamentos_sem_data_pagamento": (
+            sem_data_pagamento
+        ),
+        "valor_existente": valor_existente,
+        "sem_mesmo_valor": sem_mesmo_valor,
+        "mesma_data": mesma_data,
+        "ate_3_dias": ate_3_dias,
+        "ate_7_dias": ate_7_dias,
+        "ate_15_dias": ate_15_dias,
+        "acima_15_dias": acima_15_dias,
+        "data_inicial_debitos": (
+            min(datas_movimentos)
+            if datas_movimentos
+            else None
+        ),
+        "data_final_debitos": (
+            max(datas_movimentos)
+            if datas_movimentos
+            else None
+        ),
+        "data_inicial_lancamentos": (
+            min(datas_lancamentos)
+            if datas_lancamentos
+            else None
+        ),
+        "data_final_lancamentos": (
+            max(datas_lancamentos)
+            if datas_lancamentos
+            else None
+        ),
+        "exemplos_sem_mesmo_valor": (
+            exemplos_sem_valor
+        ),
+    }

@@ -8,6 +8,7 @@ from apps.empresas.models import Empresa
 from apps.financeiro.conciliacao import (
     StatusConciliacao,
     buscar_candidatos_lancamento,
+    diagnostico_conciliacao_competencia,
     resumo_conciliacao_competencia,
 )
 from apps.financeiro.models import (
@@ -643,4 +644,221 @@ class ConciliacaoFinanceiraTests(TestCase):
         self.assertEqual(
             resultado["candidato"],
             lancamento,
+        )
+
+    def test_diagnostico_conciliacao_classifica_distancias(
+        self,
+    ):
+        self.criar_lancamento(
+            "DIA-0",
+            "100.00",
+            date(2026, 1, 10),
+        )
+
+        self.criar_lancamento(
+            "DIA-3",
+            "200.00",
+            date(2026, 1, 13),
+        )
+
+        self.criar_lancamento(
+            "DIA-7",
+            "300.00",
+            date(2026, 1, 17),
+        )
+
+        self.criar_lancamento(
+            "DIA-15",
+            "400.00",
+            date(2026, 1, 25),
+        )
+
+        self.criar_lancamento(
+            "DIA-16",
+            "500.00",
+            date(2026, 1, 27),
+        )
+
+        for valor in (
+            "100.00",
+            "200.00",
+            "300.00",
+            "400.00",
+            "500.00",
+        ):
+            self.criar_movimentacao(
+                MovimentacaoFinanceira.Tipo
+                .DEBITO_AUTORIZADO,
+                valor,
+                date(2026, 1, 10),
+            )
+
+        resultado = (
+            diagnostico_conciliacao_competencia(
+                self.competencia
+            )
+        )
+
+        self.assertEqual(
+            resultado["total_debitos"],
+            5,
+        )
+
+        self.assertEqual(
+            resultado["total_lancamentos"],
+            5,
+        )
+
+        self.assertEqual(
+            resultado["valor_existente"],
+            5,
+        )
+
+        self.assertEqual(
+            resultado["sem_mesmo_valor"],
+            0,
+        )
+
+        self.assertEqual(
+            resultado["mesma_data"],
+            1,
+        )
+
+        self.assertEqual(
+            resultado["ate_3_dias"],
+            1,
+        )
+
+        self.assertEqual(
+            resultado["ate_7_dias"],
+            1,
+        )
+
+        self.assertEqual(
+            resultado["ate_15_dias"],
+            1,
+        )
+
+        self.assertEqual(
+            resultado["acima_15_dias"],
+            1,
+        )
+
+    def test_diagnostico_identifica_debito_sem_mesmo_valor(
+        self,
+    ):
+        self.criar_lancamento(
+            "SEM-VALOR",
+            "100.00",
+            date(2026, 1, 10),
+        )
+
+        movimento = self.criar_movimentacao(
+            MovimentacaoFinanceira.Tipo
+            .DEBITO_AUTORIZADO,
+            "999.00",
+            date(2026, 1, 10),
+        )
+
+        resultado = (
+            diagnostico_conciliacao_competencia(
+                self.competencia
+            )
+        )
+
+        self.assertEqual(
+            resultado["sem_mesmo_valor"],
+            1,
+        )
+
+        self.assertEqual(
+            len(
+                resultado[
+                    "exemplos_sem_mesmo_valor"
+                ]
+            ),
+            1,
+        )
+
+        self.assertEqual(
+            resultado[
+                "exemplos_sem_mesmo_valor"
+            ][0]["movimentacao_id"],
+            movimento.pk,
+        )
+
+    def test_diagnostico_conta_lancamento_sem_data_pagamento(
+        self,
+    ):
+        lancamento = self.criar_lancamento(
+            "SEM-DATA",
+            "150.00",
+            date(2026, 1, 10),
+        )
+
+        lancamento.data_pagamento = None
+
+        lancamento.save(
+            update_fields=[
+                "data_pagamento",
+            ]
+        )
+
+        self.criar_movimentacao(
+            MovimentacaoFinanceira.Tipo
+            .DEBITO_AUTORIZADO,
+            "150.00",
+            date(2026, 1, 10),
+        )
+
+        resultado = (
+            diagnostico_conciliacao_competencia(
+                self.competencia
+            )
+        )
+
+        self.assertEqual(
+            resultado[
+                "lancamentos_sem_data_pagamento"
+            ],
+            1,
+        )
+
+        self.assertEqual(
+            resultado["valor_existente"],
+            1,
+        )
+
+    def test_diagnostico_ignora_debito_integralmente_estornado(
+        self,
+    ):
+        debito = self.criar_movimentacao(
+            MovimentacaoFinanceira.Tipo
+            .DEBITO_AUTORIZADO,
+            "200.00",
+            date(2026, 1, 10),
+        )
+
+        MovimentacaoFinanceira.objects.create(
+            empresa=self.empresa,
+            termo=self.termo,
+            prestacao=self.prestacao,
+            competencia=self.competencia,
+            data=date(2026, 1, 10),
+            tipo=MovimentacaoFinanceira.Tipo.ESTORNO,
+            valor=Decimal("200.00"),
+            descricao="Estorno integral diagnostico",
+            movimento_relacionado=debito,
+            criado_por=self.usuario,
+        )
+
+        resultado = (
+            diagnostico_conciliacao_competencia(
+                self.competencia
+            )
+        )
+
+        self.assertEqual(
+            resultado["total_debitos"],
+            0,
         )
