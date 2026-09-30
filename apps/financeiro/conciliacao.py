@@ -411,6 +411,29 @@ def diagnostico_conciliacao_competencia(
         )
     )
 
+
+    detalhes_lancamentos_prestacao = list(
+        lancamentos_prestacao
+        .select_related(
+            "competencia"
+        )
+        .values(
+            "id",
+            "numero_lancamento",
+            "data_documento",
+            "data_pagamento",
+            "valor_documento",
+            "competencia__ano",
+            "competencia__mes",
+        )
+        .order_by(
+            "competencia__ano",
+            "competencia__mes",
+            "data_pagamento",
+            "id",
+        )[:20]
+    )
+
     com_data_pagamento = [
         lancamento
         for lancamento in lancamentos
@@ -522,6 +545,9 @@ def diagnostico_conciliacao_competencia(
         ),
         "distribuicao_competencias": (
             distribuicao_competencias
+        ),
+        "detalhes_lancamentos_prestacao": (
+            detalhes_lancamentos_prestacao
         ),
         "lancamentos_sem_data_pagamento": (
             sem_data_pagamento

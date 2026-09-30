@@ -400,6 +400,60 @@
                 </p>
             {% endif %}
 
+            {% if diagnostico_conciliacao.detalhes_lancamentos_prestacao %}
+                <h3>
+                    Detalhes dos lan&ccedil;amentos da presta&ccedil;&atilde;o
+                </h3>
+
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Compet&ecirc;ncia</th>
+                                <th>Lan&ccedil;amento</th>
+                                <th>Data documento</th>
+                                <th>Data pagamento</th>
+                                <th>Valor</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for item in diagnostico_conciliacao.detalhes_lancamentos_prestacao %}
+                                <tr>
+                                    <td>
+                                        {% if item.competencia__mes and item.competencia__ano %}
+                                            {{ item.competencia__mes|stringformat:"02d" }}/{{ item.competencia__ano }}
+                                        {% else %}
+                                            Sem compet&ecirc;ncia
+                                        {% endif %}
+                                    </td>
+
+                                    <td>
+                                        {{ item.numero_lancamento }}
+                                    </td>
+
+                                    <td>
+                                        {{ item.data_documento|date:"d/m/Y" }}
+                                    </td>
+
+                                    <td>
+                                        {% if item.data_pagamento %}
+                                            {{ item.data_pagamento|date:"d/m/Y" }}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+
+                                    <td>
+                                        R$ {{ item.valor_documento|floatformat:2|intcomma }}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+
             <p>
                 Per&iacute;odo dos lan&ccedil;amentos:
                 <strong>
