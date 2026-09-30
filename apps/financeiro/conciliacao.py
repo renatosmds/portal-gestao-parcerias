@@ -541,11 +541,31 @@ def diagnostico_conciliacao_competencia(
         for movimento in movimentacoes[:10]
     ]
 
+    valores_amostra = {
+        movimento.valor
+        for movimento in movimentacoes[:10]
+    }
+
+    frequencia_valores_amostra = [
+        {
+            "valor": valor,
+            "quantidade": sum(
+                1
+                for movimento in movimentacoes
+                if movimento.valor == valor
+            ),
+        }
+        for valor in sorted(valores_amostra)
+    ]
+
     return {
         "total_debitos": len(
             movimentacoes
         ),
         "amostras_debitos": amostras_debitos,
+        "frequencia_valores_amostra": (
+            frequencia_valores_amostra
+        ),
         "total_lancamentos": len(
             lancamentos
         ),

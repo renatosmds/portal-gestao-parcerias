@@ -434,6 +434,31 @@
                 </div>
             {% endif %}
 
+            {% if diagnostico_conciliacao.frequencia_valores_amostra %}
+                <h3>Frequ&ecirc;ncia dos valores da amostra</h3>
+
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Valor</th>
+                                <th>Ocorr&ecirc;ncias nos 77 d&eacute;bitos</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in diagnostico_conciliacao.frequencia_valores_amostra %}
+                                <tr>
+                                    <td>
+                                        R$ {{ item.valor|floatformat:2|intcomma }}
+                                    </td>
+                                    <td>{{ item.quantidade }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+
             {% if diagnostico_conciliacao.detalhes_lancamentos_prestacao %}
                 <h3>
                     Detalhes dos lan&ccedil;amentos da presta&ccedil;&atilde;o
