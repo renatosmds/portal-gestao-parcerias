@@ -527,10 +527,25 @@ def diagnostico_conciliacao_competencia(
         for lancamento in com_data_pagamento
     ]
 
+    amostras_debitos = [
+        {
+            "id": movimento.pk,
+            "data": movimento.data,
+            "valor": movimento.valor,
+            "descricao": (
+                movimento.memo_ofx
+                or movimento.descricao
+                or ""
+            ),
+        }
+        for movimento in movimentacoes[:10]
+    ]
+
     return {
         "total_debitos": len(
             movimentacoes
         ),
+        "amostras_debitos": amostras_debitos,
         "total_lancamentos": len(
             lancamentos
         ),

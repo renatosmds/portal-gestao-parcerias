@@ -400,6 +400,40 @@
                 </p>
             {% endif %}
 
+            {% if diagnostico_conciliacao.amostras_debitos %}
+                <h3>Amostra de d&eacute;bitos de 07/2026</h3>
+
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Data</th>
+                                <th>Valor</th>
+                                <th>Descri&ccedil;&atilde;o OFX</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for item in diagnostico_conciliacao.amostras_debitos %}
+                                <tr>
+                                    <td>{{ item.id }}</td>
+                                    <td>
+                                        {{ item.data|date:"d/m/Y" }}
+                                    </td>
+                                    <td>
+                                        R$ {{ item.valor|floatformat:2|intcomma }}
+                                    </td>
+                                    <td>
+                                        {{ item.descricao|default:"-" }}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+
             {% if diagnostico_conciliacao.detalhes_lancamentos_prestacao %}
                 <h3>
                     Detalhes dos lan&ccedil;amentos da presta&ccedil;&atilde;o
