@@ -1,3 +1,4 @@
+from django.db.models import Count
 from datetime import timedelta
 from decimal import Decimal
 
@@ -360,6 +361,56 @@ def diagnostico_conciliacao_competencia(
         )
     )
 
+
+    lancamentos_prestacao = (
+        Lancamento.objects
+        .filter(
+            prestacao=competencia.prestacao,
+            empresa_id=competencia.prestacao.empresa_id,
+        )
+    )
+
+    total_lancamentos_prestacao = (
+        lancamentos_prestacao.count()
+    )
+
+    lancamentos_sem_competencia = (
+        lancamentos_prestacao
+        .filter(
+            competencia__isnull=True
+        )
+        .count()
+    )
+
+    lancamentos_outras_competencias = (
+        lancamentos_prestacao
+        .exclude(
+            competencia=competencia
+        )
+        .exclude(
+            competencia__isnull=True
+        )
+        .count()
+    )
+
+    distribuicao_competencias = list(
+        lancamentos_prestacao
+        .exclude(
+            competencia__isnull=True
+        )
+        .values(
+            "competencia__ano",
+            "competencia__mes",
+        )
+        .annotate(
+            total=Count("id")
+        )
+        .order_by(
+            "competencia__ano",
+            "competencia__mes",
+        )
+    )
+
     com_data_pagamento = [
         lancamento
         for lancamento in lancamentos
@@ -459,6 +510,18 @@ def diagnostico_conciliacao_competencia(
         ),
         "total_lancamentos": len(
             lancamentos
+        ),
+        "total_lancamentos_prestacao": (
+            total_lancamentos_prestacao
+        ),
+        "lancamentos_sem_competencia": (
+            lancamentos_sem_competencia
+        ),
+        "lancamentos_outras_competencias": (
+            lancamentos_outras_competencias
+        ),
+        "distribuicao_competencias": (
+            distribuicao_competencias
         ),
         "lancamentos_sem_data_pagamento": (
             sem_data_pagamento

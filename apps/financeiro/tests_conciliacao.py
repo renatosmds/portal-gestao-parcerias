@@ -862,3 +862,91 @@ class ConciliacaoFinanceiraTests(TestCase):
             resultado["total_debitos"],
             0,
         )
+
+    def test_diagnostico_mapeia_lancamentos_da_prestacao(
+        self,
+    ):
+        atual = self.criar_lancamento(
+            "MAP-ATUAL",
+            "100.00",
+            date(2026, 1, 10),
+        )
+
+        outra_competencia = (
+            CompetenciaPrestacao.objects.create(
+                prestacao=self.prestacao,
+                ano=2026,
+                mes=2,
+                data_inicial=date(2026, 2, 1),
+                data_final=date(2026, 2, 28),
+            )
+        )
+
+        outro = self.criar_lancamento(
+            "MAP-OUTRA",
+            "200.00",
+            date(2026, 1, 10),
+        )
+
+        outro.competencia = outra_competencia
+        outro.save(
+            update_fields=["competencia"]
+        )
+
+        sem_competencia = self.criar_lancamento(
+            "MAP-SEM",
+            "300.00",
+            date(2026, 1, 10),
+        )
+
+        sem_competencia.competencia = None
+        sem_competencia.save(
+            update_fields=["competencia"]
+        )
+
+        resultado = (
+            diagnostico_conciliacao_competencia(
+                self.competencia
+            )
+        )
+
+        self.assertEqual(
+            resultado["total_lancamentos"],
+            1,
+        )
+
+        self.assertEqual(
+            resultado["total_lancamentos_prestacao"],
+            3,
+        )
+
+        self.assertEqual(
+            resultado["lancamentos_sem_competencia"],
+            1,
+        )
+
+        self.assertEqual(
+            resultado["lancamentos_outras_competencias"],
+            1,
+        )
+
+        self.assertEqual(
+            resultado["distribuicao_competencias"],
+            [
+                {
+                    "competencia__ano": 2026,
+                    "competencia__mes": 1,
+                    "total": 1,
+                },
+                {
+                    "competencia__ano": 2026,
+                    "competencia__mes": 2,
+                    "total": 1,
+                },
+            ],
+        )
+
+        self.assertEqual(
+            atual.competencia,
+            self.competencia,
+        )

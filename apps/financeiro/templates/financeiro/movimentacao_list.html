@@ -297,6 +297,27 @@
                 </article>
 
                 <article>
+                    <small>Total na presta&ccedil;&atilde;o</small>
+                    <strong>
+                        {{ diagnostico_conciliacao.total_lancamentos_prestacao }}
+                    </strong>
+                </article>
+
+                <article>
+                    <small>Sem compet&ecirc;ncia</small>
+                    <strong>
+                        {{ diagnostico_conciliacao.lancamentos_sem_competencia }}
+                    </strong>
+                </article>
+
+                <article>
+                    <small>Em outras compet&ecirc;ncias</small>
+                    <strong>
+                        {{ diagnostico_conciliacao.lancamentos_outras_competencias }}
+                    </strong>
+                </article>
+
+                <article>
                     <small>Mesmo valor encontrado</small>
                     <strong>
                         {{ diagnostico_conciliacao.valor_existente }}
@@ -365,6 +386,19 @@
                     {% endif %}
                 </strong>
             </p>
+
+            {% if diagnostico_conciliacao.distribuicao_competencias %}
+                <p>
+                    Distribui&ccedil;&atilde;o dos lan&ccedil;amentos:
+                    <strong>
+                        {% for item in diagnostico_conciliacao.distribuicao_competencias %}
+                            {{ item.competencia__mes|stringformat:"02d" }}/{{ item.competencia__ano }}:
+                            {{ item.total }}
+                            {% if not forloop.last %} | {% endif %}
+                        {% endfor %}
+                    </strong>
+                </p>
+            {% endif %}
 
             <p>
                 Per&iacute;odo dos lan&ccedil;amentos:
