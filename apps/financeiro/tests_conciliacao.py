@@ -950,3 +950,99 @@ class ConciliacaoFinanceiraTests(TestCase):
             atual.competencia,
             self.competencia,
         )
+
+    def test_motivo_sem_correspondencia_sem_mesmo_valor(
+        self,
+    ):
+        movimento = self.criar_movimentacao(
+            MovimentacaoFinanceira.Tipo.DEBITO_AUTORIZADO,
+            "987.65",
+            date(2026, 1, 10),
+        )
+
+        resultado = buscar_candidatos_lancamento(
+            movimento
+        )
+
+        self.assertEqual(
+            resultado["status"],
+            StatusConciliacao.SEM_CORRESPONDENCIA,
+        )
+
+        self.assertIn(
+            "mesmo valor",
+            resultado["motivo"],
+        )
+
+    def test_motivo_sem_correspondencia_sem_data_pagamento(
+        self,
+    ):
+        lancamento = self.criar_lancamento(
+            "MOTIVO-SEM-DATA",
+            "321.00",
+            date(2026, 1, 10),
+        )
+
+        lancamento.data_pagamento = None
+        lancamento.save(
+            update_fields=["data_pagamento"]
+        )
+
+        movimento = self.criar_movimentacao(
+            MovimentacaoFinanceira.Tipo.DEBITO_AUTORIZADO,
+            "321.00",
+            date(2026, 1, 10),
+        )
+
+        resultado = buscar_candidatos_lancamento(
+            movimento
+        )
+
+        self.assertEqual(
+            resultado["status"],
+            StatusConciliacao.SEM_CORRESPONDENCIA,
+        )
+
+        self.assertIn(
+            "sem data de pagamento",
+            resultado["motivo"],
+        )
+
+    def test_motivo_sem_correspondencia_fora_da_janela(
+        self,
+    ):
+        lancamento = self.criar_lancamento(
+            "MOTIVO-FORA",
+            "654.00",
+            date(2026, 1, 15),
+        )
+
+        movimento = self.criar_movimentacao(
+            MovimentacaoFinanceira.Tipo.DEBITO_AUTORIZADO,
+            "654.00",
+            date(2026, 1, 10),
+        )
+
+        resultado = buscar_candidatos_lancamento(
+            movimento
+        )
+
+        self.assertEqual(
+            resultado["status"],
+            StatusConciliacao.SEM_CORRESPONDENCIA,
+        )
+
+        self.assertEqual(
+            resultado["diferenca_dias"],
+            5,
+        )
+
+        self.assertEqual(
+            resultado["candidato_mais_proximo"],
+            lancamento,
+        )
+
+        self.assertIn(
+            "diferenca de 5 dias",
+            resultado["motivo"],
+        )

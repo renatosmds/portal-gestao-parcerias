@@ -61,6 +61,7 @@ def buscar_candidatos_lancamento(
         "movimentacao": movimentacao,
         "candidatos": [],
         "candidato": None,
+        "motivo": None,
     }
 
     if (
@@ -77,6 +78,9 @@ def buscar_candidatos_lancamento(
     if not movimentacao.competencia_id:
         resultado["status"] = (
             StatusConciliacao.SEM_CORRESPONDENCIA
+        )
+        resultado["motivo"] = (
+            "Movimentacao sem competencia vinculada."
         )
         return resultado
 
@@ -152,6 +156,57 @@ def buscar_candidatos_lancamento(
     resultado["status"] = (
         StatusConciliacao.SEM_CORRESPONDENCIA
     )
+
+    candidatos_mesmo_valor = list(queryset)
+
+    if not candidatos_mesmo_valor:
+        resultado["motivo"] = (
+            "Nao existe lancamento com o mesmo valor "
+            "nesta competencia."
+        )
+        return resultado
+
+    candidatos_com_data = [
+        candidato
+        for candidato in candidatos_mesmo_valor
+        if candidato.data_pagamento
+    ]
+
+    if not candidatos_com_data:
+        resultado["motivo"] = (
+            "Existe lancamento com o mesmo valor, "
+            "mas sem data de pagamento."
+        )
+        return resultado
+
+    candidato_mais_proximo = min(
+        candidatos_com_data,
+        key=lambda candidato: abs(
+            (
+                candidato.data_pagamento
+                - movimentacao.data
+            ).days
+        ),
+    )
+
+    diferenca_dias = abs(
+        (
+            candidato_mais_proximo.data_pagamento
+            - movimentacao.data
+        ).days
+    )
+
+    resultado["motivo"] = (
+        "Existe lancamento com o mesmo valor, "
+        f"mas a data de pagamento esta fora da janela "
+        f"de {tolerancia_dias} dias "
+        f"(diferenca de {diferenca_dias} dias)."
+    )
+
+    resultado["candidato_mais_proximo"] = (
+        candidato_mais_proximo
+    )
+    resultado["diferenca_dias"] = diferenca_dias
 
     return resultado
 
