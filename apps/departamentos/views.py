@@ -10,6 +10,106 @@ from .mixins import DepartamentoEscopoMixin, DepartamentoPermissaoMixin
 from .models import Departamento
 
 
+def _montar_organograma_texto(unidades):
+    unidades = list(unidades)
+
+    if not unidades:
+        return ""
+
+    ids = {
+        unidade.pk
+        for unidade in unidades
+    }
+
+    filhos = {}
+
+    for unidade in unidades:
+        pai_id = unidade.superior_id
+
+        if pai_id not in ids:
+            pai_id = None
+
+        filhos.setdefault(
+            pai_id,
+            [],
+        ).append(unidade)
+
+    ordem_tipos = {
+        Departamento.Tipo.DEPARTAMENTO: 0,
+        Departamento.Tipo.GABINETE: 1,
+        Departamento.Tipo.ASSESSORIA: 2,
+        Departamento.Tipo.SUPERINTENDENCIA: 3,
+        Departamento.Tipo.SUBSECRETARIA: 4,
+        Departamento.Tipo.DIRETORIA: 5,
+        Departamento.Tipo.GERENCIA: 6,
+    }
+
+    for lista in filhos.values():
+        lista.sort(
+            key=lambda unidade: (
+                ordem_tipos.get(
+                    unidade.tipo,
+                    99,
+                ),
+                unidade.nome.casefold(),
+            )
+        )
+
+    linhas = []
+
+    def adicionar(unidade, prefixo="", ultimo=True, raiz=False):
+        if raiz:
+            prefixo_visual = ""
+        else:
+            conector = (
+                "\u2514\u2500\u2500 "
+                if ultimo
+                else "\u251c\u2500\u2500 "
+            )
+            prefixo_visual = f"{prefixo}{conector}"
+
+        linhas.append(
+            {
+                "pk": unidade.pk,
+                "nome": unidade.nome,
+                "prefixo": prefixo_visual,
+            }
+        )
+
+        subunidades = filhos.get(
+            unidade.pk,
+            [],
+        )
+
+        if raiz:
+            novo_prefixo = ""
+        else:
+            novo_prefixo = (
+                prefixo
+                + ("    " if ultimo else "\u2502   ")
+            )
+
+        for indice, subunidade in enumerate(subunidades):
+            adicionar(
+                subunidade,
+                prefixo=novo_prefixo,
+                ultimo=(
+                    indice
+                    == len(subunidades) - 1
+                ),
+            )
+
+    raizes = filhos.get(None, [])
+
+    for raiz in raizes:
+        adicionar(
+            raiz,
+            raiz=True,
+        )
+
+    return linhas
+
+
 class DepartamentosList(
     DepartamentoPermissaoMixin,
     DepartamentoEscopoMixin,
@@ -45,7 +145,46 @@ class DepartamentosList(
         context = super().get_context_data(**kwargs)
         context["termo_busca"] = (self.request.GET.get("q") or "").strip()
         context["empresa_filtro"] = (self.request.GET.get("empresa") or "").strip()
-        context["total_departamentos"] = self.get_queryset().count()
+        queryset_contexto = self.get_queryset()
+
+        context["total_departamentos"] = queryset_contexto.count()
+
+        empresas_ids = list(
+            queryset_contexto
+            .order_by()
+            .values_list(
+                "empresa_id",
+                flat=True,
+            )
+            .distinct()[:2]
+        )
+
+        context["organograma_linhas"] = []
+        context["organograma_disponivel"] = False
+
+        if len(empresas_ids) == 1:
+            unidades_organograma = (
+                Departamento.objects
+                .filter(
+                    empresa_id=empresas_ids[0],
+                )
+                .select_related(
+                    "superior",
+                    "empresa",
+                )
+            )
+
+            context["organograma_linhas"] = (
+                _montar_organograma_texto(
+                    unidades_organograma
+                )
+            )
+
+            context["organograma_disponivel"] = True
+
+        context["organograma_multiplas_empresas"] = (
+            len(empresas_ids) > 1
+        )
 
         if self.request.user.is_superuser:
             context["empresas_disponiveis"] = Empresa.objects.order_by("nome")

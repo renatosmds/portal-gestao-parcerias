@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Estrutura Organizacional | Sistema de Gestão Municipal{% endblock %}
+{% block title %}Estrutura Organizacional | Sistema de GestÃ£o Municipal{% endblock %}
 {% block page_name %}Estrutura Organizacional{% endblock %}
 
 {% block staticcss %}
@@ -18,7 +18,7 @@
             <div>
                 <span class="sgm-eyebrow">ESTRUTURA ORGANIZACIONAL</span>
                 <h1>Estrutura Organizacional</h1>
-                <p>Consulte e administre as unidades organizacionais vinculadas às empresas.</p>
+                <p>Consulte e administre as unidades organizacionais vinculadas Ã s empresas.</p>
             </div>
         </div>
 
@@ -81,10 +81,60 @@
         {% endif %}
     </form>
 
+    {% if organograma_disponivel %}
+        <section class="sgm-panel organization-chart-panel">
+            <div class="department-panel-header">
+                <div>
+                    <span class="sgm-eyebrow">
+                        ESTRUTURA HIERÁRQUICA
+                    </span>
+                    <h2>Organograma</h2>
+                    <p>
+                        Esquema hierárquico das unidades
+                        organizacionais.
+                    </p>
+                </div>
+            </div>
+
+            <div class="organization-chart-scroll">
+                <div class="organization-chart-text">
+                    {% for linha in organograma_linhas %}
+                        <div class="organization-chart-line">
+                            <span class="organization-chart-prefix">{{ linha.prefixo }}</span><a
+                                href="?empresa={{ empresa_filtro|urlencode }}&q={{ linha.nome|urlencode }}#unidade-{{ linha.pk }}"
+                                class="organization-chart-link"
+                                title="Localizar {{ linha.nome }}"
+                            >{{ linha.nome }}</a>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+    {% elif organograma_multiplas_empresas %}
+        <section class="sgm-panel organization-chart-panel">
+            <div class="department-panel-header">
+                <div>
+                    <span class="sgm-eyebrow">
+                        ESTRUTURA HIERÁRQUICA
+                    </span>
+                    <h2>Organograma</h2>
+                </div>
+            </div>
+
+            <div class="department-inline-empty">
+                <i class="fa fa-sitemap"></i>
+                Selecione uma empresa para visualizar
+                o organograma.
+            </div>
+        </section>
+    {% endif %}
+
     {% if departamentos %}
         <div class="departments-grid">
             {% for departamento in departamentos %}
-                <article class="department-card">
+                <article class="department-card"
+                         id="unidade-{{ departamento.pk }}">
                     <div class="department-card-top">
                         <span class="department-avatar">
                             {{ departamento.nome|slice:":1"|upper }}
@@ -140,7 +190,7 @@
                         <div class="department-metrics">
                             <div>
                                 <strong>{{ departamento.quantidade_funcionarios }}</strong>
-                                <small>Funcionários</small>
+                                <small>FuncionÃ¡rios</small>
                             </div>
                             <div>
                                 <strong>{{ departamento.quantidade_ativos }}</strong>
@@ -160,7 +210,7 @@
         </div>
 
         {% if is_paginated %}
-            <nav class="departments-pagination" aria-label="Paginação">
+            <nav class="departments-pagination" aria-label="PaginaÃ§Ã£o">
                 {% if page_obj.has_previous %}
                     <a href="?q={{ termo_busca|urlencode }}&empresa={{ empresa_filtro|urlencode }}&page={{ page_obj.previous_page_number }}"
                        class="btn btn-outline-secondary">
@@ -168,12 +218,12 @@
                     </a>
                 {% endif %}
 
-                <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+                <span>PÃ¡gina {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
 
                 {% if page_obj.has_next %}
                     <a href="?q={{ termo_busca|urlencode }}&empresa={{ empresa_filtro|urlencode }}&page={{ page_obj.next_page_number }}"
                        class="btn btn-outline-secondary">
-                        Próxima <i class="fa fa-angle-right ml-1"></i>
+                        PrÃ³xima <i class="fa fa-angle-right ml-1"></i>
                     </a>
                 {% endif %}
             </nav>
@@ -186,7 +236,7 @@
                 {% if termo_busca or empresa_filtro %}
                     Nenhum cadastro corresponde aos filtros informados.
                 {% else %}
-                    Ainda não existem departamentos disponíveis no seu escopo.
+                    Ainda nÃ£o existem departamentos disponÃ­veis no seu escopo.
                 {% endif %}
             </p>
 
