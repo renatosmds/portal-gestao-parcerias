@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}{{ departamento.nome }} | Departamentos{% endblock %}
-{% block page_name %}Gestão de Departamentos{% endblock %}
+{% block title %}{{ departamento.nome }} | Estrutura Organizacional{% endblock %}
+{% block page_name %}Estrutura Organizacional{% endblock %}
 
 {% block staticcss %}
 <link rel="stylesheet" href="{% static 'css/departamentos-v3.css' %}">
@@ -13,7 +13,7 @@
     <div class="department-detail-top">
         <div>
             <a href="{% url 'list_departamentos' %}" class="departments-back">
-                <i class="fa fa-arrow-left mr-1"></i> Voltar para departamentos
+                <i class="fa fa-arrow-left mr-1"></i> Voltar para estrutura organizacional
             </a>
 
             <div class="department-detail-identity">
@@ -21,7 +21,7 @@
                     {{ departamento.nome|slice:":1"|upper }}
                 </span>
                 <div>
-                    <span class="sgm-eyebrow">DEPARTAMENTO</span>
+                    <span class="sgm-eyebrow">{{ departamento.get_tipo_display|upper }}</span>
                     <h1>{{ departamento.nome }}</h1>
                     <p>
                         <i class="fa fa-building-o mr-1"></i>
@@ -114,19 +114,37 @@
             {% else %}
                 <div class="department-inline-empty">
                     <i class="fa fa-user-o"></i>
-                    Nenhum funcionário vinculado a este departamento.
+                    Nenhum funcionário vinculado a esta unidade.
                 </div>
             {% endif %}
         </section>
 
         <aside class="sgm-panel department-detail-panel">
             <span class="sgm-eyebrow">ESTRUTURA</span>
-            <h2>Dados do departamento</h2>
+            <h2>Dados da unidade</h2>
 
             <dl class="department-data-list">
                 <div>
-                    <dt>Departamento</dt>
+                    <dt>Unidade</dt>
                     <dd>{{ departamento.nome }}</dd>
+                </div>
+
+                <div>
+                    <dt>Tipo</dt>
+                    <dd>{{ departamento.get_tipo_display }}</dd>
+                </div>
+
+                <div>
+                    <dt>Unidade superior</dt>
+                    <dd>
+                        {% if departamento.superior %}
+                            <a href="{% url 'detail_departamento' departamento.superior.pk %}">
+                                {{ departamento.superior.nome }}
+                            </a>
+                        {% else %}
+                            Nenhuma
+                        {% endif %}
+                    </dd>
                 </div>
                 <div>
                     <dt>Empresa</dt>
@@ -147,5 +165,59 @@
             </dl>
         </aside>
     </div>
+
+    <section class="sgm-panel department-detail-panel">
+        <div class="department-panel-header">
+            <div>
+                <span class="sgm-eyebrow">
+                    HIERARQUIA
+                </span>
+
+                <h2>Subunidades</h2>
+            </div>
+
+            {% if perms.departamentos.add_departamento %}
+                <a href="{% url 'create_departamento' %}?empresa={{ departamento.empresa_id }}"
+                   class="btn btn-outline-primary btn-sm">
+                    <i class="fa fa-plus mr-1"></i>
+                    Nova unidade
+                </a>
+            {% endif %}
+        </div>
+
+        {% if subunidades %}
+            <div class="department-employee-list">
+
+                {% for unidade in subunidades %}
+                    <div class="department-employee">
+
+                        <span class="department-employee-avatar">
+                            {{ unidade.nome|slice:":1"|upper }}
+                        </span>
+
+                        <div>
+                            <strong>
+                                <a href="{% url 'detail_departamento' unidade.pk %}">
+                                    {{ unidade.nome }}
+                                </a>
+                            </strong>
+
+                            <small>
+                                {{ unidade.get_tipo_display }}
+                            </small>
+                        </div>
+
+                    </div>
+                {% endfor %}
+
+            </div>
+        {% else %}
+            <div class="department-inline-empty">
+                <i class="fa fa-sitemap"></i>
+                Nenhuma subunidade cadastrada.
+            </div>
+        {% endif %}
+    </section>
+
 </section>
 {% endblock %}

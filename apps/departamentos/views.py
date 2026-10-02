@@ -72,6 +72,16 @@ class DepartamentoDetail(
         context["total_funcionarios"] = funcionarios.count()
         context["total_ativos"] = funcionarios.filter(ativo=True).count()
         context["total_ferias"] = funcionarios.filter(de_ferias=True).count()
+
+        subunidades = (
+            self.object.subunidades
+            .all()
+            .order_by("tipo", "nome")
+        )
+
+        context["subunidades"] = subunidades
+        context["total_subunidades"] = subunidades.count()
+
         return context
 
 

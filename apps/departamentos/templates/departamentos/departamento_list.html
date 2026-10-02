@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Departamentos | Sistema de Gestão Municipal{% endblock %}
-{% block page_name %}Gestão de Departamentos{% endblock %}
+{% block title %}Estrutura Organizacional | Sistema de Gestão Municipal{% endblock %}
+{% block page_name %}Estrutura Organizacional{% endblock %}
 
 {% block staticcss %}
 <link rel="stylesheet" href="{% static 'css/departamentos-v3.css' %}">
@@ -17,14 +17,14 @@
             </span>
             <div>
                 <span class="sgm-eyebrow">ESTRUTURA ORGANIZACIONAL</span>
-                <h1>Departamentos</h1>
-                <p>Consulte e administre os departamentos vinculados às empresas.</p>
+                <h1>Estrutura Organizacional</h1>
+                <p>Consulte e administre as unidades organizacionais vinculadas às empresas.</p>
             </div>
         </div>
 
         {% if perms.departamentos.add_departamento %}
             <a href="{% url 'create_departamento' %}" class="btn btn-primary">
-                <i class="fa fa-plus mr-1"></i> Novo departamento
+                <i class="fa fa-plus mr-1"></i> Nova unidade
             </a>
         {% endif %}
     </header>
@@ -33,7 +33,7 @@
         <article class="departments-summary-card">
             <span><i class="fa fa-sitemap"></i></span>
             <div>
-                <small>Departamentos encontrados</small>
+                <small>Unidades encontradas</small>
                 <strong>{{ total_departamentos }}</strong>
             </div>
         </article>
@@ -56,7 +56,7 @@
                    name="q"
                    class="form-control"
                    value="{{ termo_busca }}"
-                   placeholder="Pesquisar departamento..."
+                   placeholder="Pesquisar unidade..."
                    autocomplete="off">
         </div>
 
@@ -93,14 +93,14 @@
                         <div class="department-card-actions">
                             <a href="{% url 'detail_departamento' departamento.pk %}"
                                class="department-icon-action"
-                               title="Visualizar departamento">
+                               title="Visualizar unidade">
                                 <i class="fa fa-eye"></i>
                             </a>
 
                             {% if perms.departamentos.change_departamento %}
                                 <a href="{% url 'update_departamento' departamento.pk %}"
                                    class="department-icon-action"
-                                   title="Editar departamento">
+                                   title="Editar unidade">
                                     <i class="fa fa-pencil"></i>
                                 </a>
                             {% endif %}
@@ -112,6 +112,24 @@
                             <i class="fa fa-building-o mr-1"></i>
                             {{ departamento.empresa.nome }}
                         </span>
+
+                        <div style="margin-top: 8px;">
+                            <small>
+                                <strong>Tipo:</strong>
+                                {{ departamento.get_tipo_display }}
+                            </small>
+                        </div>
+
+                        <div>
+                            <small>
+                                <strong>Unidade superior:</strong>
+                                {% if departamento.superior %}
+                                    {{ departamento.superior.nome }}
+                                {% else %}
+                                    Nenhuma
+                                {% endif %}
+                            </small>
+                        </div>
 
                         <h2>
                             <a href="{% url 'detail_departamento' departamento.pk %}">
@@ -133,7 +151,7 @@
 
                     <footer class="department-card-footer">
                         <a href="{% url 'detail_departamento' departamento.pk %}">
-                            Abrir departamento
+                            Abrir unidade
                             <i class="fa fa-arrow-right ml-1"></i>
                         </a>
                     </footer>
@@ -163,7 +181,7 @@
     {% else %}
         <div class="sgm-panel departments-empty">
             <span><i class="fa fa-sitemap"></i></span>
-            <h2>Nenhum departamento encontrado</h2>
+            <h2>Nenhuma unidade encontrada</h2>
             <p>
                 {% if termo_busca or empresa_filtro %}
                     Nenhum cadastro corresponde aos filtros informados.
@@ -179,7 +197,7 @@
                 </a>
             {% elif perms.departamentos.add_departamento %}
                 <a href="{% url 'create_departamento' %}" class="btn btn-primary">
-                    <i class="fa fa-plus mr-1"></i> Cadastrar departamento
+                    <i class="fa fa-plus mr-1"></i> Cadastrar unidade
                 </a>
             {% endif %}
         </div>

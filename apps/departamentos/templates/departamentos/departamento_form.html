@@ -2,10 +2,11 @@
 {% load static %}
 
 {% block title %}
-    {% if object %}Editar departamento{% else %}Novo departamento{% endif %}
+    {% if object %}Editar unidade{% else %}Nova unidade{% endif %}
     | Sistema de Gestão Municipal
 {% endblock %}
-{% block page_name %}Gestão de Departamentos{% endblock %}
+
+{% block page_name %}Estrutura Organizacional{% endblock %}
 
 {% block staticcss %}
 <link rel="stylesheet" href="{% static 'css/departamentos-v3.css' %}">
@@ -21,12 +22,20 @@
             </a>
 
             <span class="sgm-eyebrow">ESTRUTURA ORGANIZACIONAL</span>
-            <h1>{% if object %}Editar departamento{% else %}Novo departamento{% endif %}</h1>
+
+            <h1>
+                {% if object %}
+                    Editar unidade
+                {% else %}
+                    Nova unidade
+                {% endif %}
+            </h1>
+
             <p>
                 {% if object %}
                     Atualize o cadastro de {{ object.nome }}.
                 {% else %}
-                    Cadastre um novo departamento no sistema.
+                    Cadastre uma nova unidade organizacional.
                 {% endif %}
             </p>
         </div>
@@ -44,7 +53,9 @@
         {% endif %}
 
         <div class="department-form-layout">
+
             <section class="sgm-panel department-form-panel">
+
                 <div class="department-panel-header">
                     <div>
                         <span class="sgm-eyebrow">DADOS PRINCIPAIS</span>
@@ -55,25 +66,40 @@
                 {% if user.is_superuser and not object %}
                     <div class="form-group">
                         <label for="id_empresa">
-                            Empresa <span class="text-danger">*</span>
+                            Empresa
+                            <span class="text-danger">*</span>
                         </label>
 
                         <select name="empresa"
                                 id="id_empresa"
                                 class="form-control"
                                 required>
-                            <option value="">Selecione uma empresa</option>
+
+                            <option value="">
+                                Selecione uma empresa
+                            </option>
+
                             {% for empresa in empresas_disponiveis %}
                                 <option value="{{ empresa.pk }}"
-                                        {% if empresa_destino and empresa_destino.pk == empresa.pk %}selected{% endif %}>
+                                    {% if empresa_destino and empresa_destino.pk == empresa.pk %}
+                                        selected
+                                    {% endif %}>
                                     {{ empresa.nome }}
                                 </option>
                             {% endfor %}
                         </select>
+
+                        <small class="form-text text-muted">
+                            Ao selecionar a empresa, as unidades
+                            superiores disponíveis serão carregadas.
+                        </small>
                     </div>
+
                 {% else %}
+
                     <div class="department-company-readonly">
                         <small>Empresa vinculada</small>
+
                         <strong>
                             {% if empresa_destino %}
                                 {{ empresa_destino.nome }}
@@ -82,31 +108,85 @@
                             {% endif %}
                         </strong>
                     </div>
+
                 {% endif %}
 
                 <div class="form-group">
                     <label for="{{ form.nome.id_for_label }}">
-                        Nome do departamento <span class="text-danger">*</span>
+                        Nome da unidade
+                        <span class="text-danger">*</span>
                     </label>
 
                     {{ form.nome }}
 
                     {% for error in form.nome.errors %}
                         <small class="department-field-error">
-                            <i class="fa fa-exclamation-circle mr-1"></i>{{ error }}
+                            <i class="fa fa-exclamation-circle mr-1"></i>
+                            {{ error }}
                         </small>
                     {% endfor %}
                 </div>
+
+                <div class="form-group">
+                    <label for="{{ form.tipo.id_for_label }}">
+                        Tipo da unidade
+                        <span class="text-danger">*</span>
+                    </label>
+
+                    {{ form.tipo }}
+
+                    {% for error in form.tipo.errors %}
+                        <small class="department-field-error">
+                            <i class="fa fa-exclamation-circle mr-1"></i>
+                            {{ error }}
+                        </small>
+                    {% endfor %}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.superior.id_for_label }}">
+                        Unidade superior
+                    </label>
+
+                    {{ form.superior }}
+
+                    <small class="form-text text-muted">
+                        Departamento pode ficar sem unidade superior.
+                        Os demais tipos devem possuir uma unidade
+                        superior compatível.
+                    </small>
+
+                    {% for error in form.superior.errors %}
+                        <small class="department-field-error">
+                            <i class="fa fa-exclamation-circle mr-1"></i>
+                            {{ error }}
+                        </small>
+                    {% endfor %}
+                </div>
+
             </section>
 
-            <aside class="sgm-panel department-form-panel department-form-actions">
+            <aside class="sgm-panel
+                          department-form-panel
+                          department-form-actions">
+
                 <span class="sgm-eyebrow">AÇÕES</span>
                 <h2>Concluir cadastro</h2>
-                <p>Revise as informações antes de salvar.</p>
 
-                <button type="submit" class="btn btn-primary btn-block">
+                <p>
+                    Revise as informações antes de salvar.
+                </p>
+
+                <button type="submit"
+                        class="btn btn-primary btn-block">
+
                     <i class="fa fa-check mr-1"></i>
-                    {% if object %}Salvar alterações{% else %}Cadastrar departamento{% endif %}
+
+                    {% if object %}
+                        Salvar alterações
+                    {% else %}
+                        Cadastrar unidade
+                    {% endif %}
                 </button>
 
                 <a href="{% if object %}{% url 'detail_departamento' object.pk %}{% else %}{% url 'list_departamentos' %}{% endif %}"
@@ -114,7 +194,35 @@
                     Cancelar
                 </a>
             </aside>
+
         </div>
     </form>
 </section>
+{% endblock %}
+
+{% block static %}
+{{ block.super }}
+
+{% if user.is_superuser and not object %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const empresa = document.getElementById("id_empresa");
+
+    if (!empresa) {
+        return;
+    }
+
+    empresa.addEventListener("change", function () {
+        if (!empresa.value) {
+            return;
+        }
+
+        const url = new URL(window.location.href);
+        url.searchParams.set("empresa", empresa.value);
+        window.location.href = url.toString();
+    });
+});
+</script>
+{% endif %}
+
 {% endblock %}
