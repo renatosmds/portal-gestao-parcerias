@@ -623,3 +623,40 @@
     outline: 2px solid currentColor;
     outline-offset: 3px;
 }
+
+/* Sprint 47.6.6 - Compacta organograma */
+
+.organization-chart-scroll {
+    padding: 14px 16px;
+}
+
+.organization-chart-text {
+    margin: 0;
+    padding: 0;
+    line-height: 1.35;
+}
+
+.organization-chart-line {
+    display: block;
+    margin: 0;
+    padding: 0;
+    min-height: 0;
+    height: auto;
+    line-height: 1.35;
+}
+
+.organization-chart-line + .organization-chart-line {
+    margin-top: 1px;
+}
+
+.organization-chart-prefix,
+.organization-chart-link {
+    margin: 0;
+    padding: 0;
+    line-height: inherit;
+}
+
+.organization-chart-link {
+    display: inline;
+}
+
