@@ -590,7 +590,7 @@
 .organization-chart-text {
     margin: 0;
     min-width: max-content;
-    white-space: pre;
+    white-space: normal;
     font-family: Consolas, "Courier New", monospace;
     font-size: 14px;
     line-height: 1.65;
