@@ -13,7 +13,13 @@ class FuncionarioAdmin(admin.ModelAdmin):
     fieldsets = (
         ('DADOS GERAIS', {
             'classes': ('collapse',),
-            'fields': ('codigo_pseudonimo', ('nome', 'usuario', 'de_ferias', 'ativo'), ('cargo', 'nivel', 'equipamento'), ('Telefone', 'email'))}),
+            'fields': (
+                ('codigo_pseudonimo', 'cpf'),
+                ('nome', 'usuario', 'de_ferias', 'ativo'),
+                ('cargo', 'nivel', 'equipamento'),
+                ('Telefone', 'email'),
+            )
+        }),
 
         ('DADOS DO RELATÓRIO DE AUDITORIA', {
             'classes': ('collapse',),
