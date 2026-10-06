@@ -32,6 +32,7 @@
         </div>
 
         <nav class="sgm-nav">
+            {% if not usuario_somente_estrutura %}
             <span class="sgm-nav-label">VISÃO GERAL</span>
 
             <a class="sgm-nav-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}"
@@ -39,6 +40,7 @@
                 <i class="fa fa-dashboard" aria-hidden="true"></i>
                 <span>Dashboard</span>
             </a>
+            {% endif %}
 
             <span class="sgm-nav-label">{% if usuario_area_osc %}GESTÃO DA OSC{% else %}GESTÃO DAS PARCERIAS{% endif %}</span>
 
@@ -308,9 +310,11 @@
                         <div class="dropdown-header">
                             <strong>{{ user.get_username }}</strong>
                         </div>
+                        {% if not usuario_somente_estrutura %}
                         <a class="dropdown-item" href="{% url 'home' %}">
                             <i class="fa fa-dashboard mr-2"></i>Dashboard
                         </a>
+                        {% endif %}
                         {% if user.is_superuser %}
                         <a class="dropdown-item" href="{% url 'acessos_painel' %}">
                             <i class="fa fa-key mr-2"></i>Administração de Acessos

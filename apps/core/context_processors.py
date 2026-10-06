@@ -3,6 +3,15 @@ from django.conf import settings
 from .dashboard import usuario_eh_osc
 
 
+def usuario_somente_estrutura(user):
+    if not getattr(user, "is_authenticated", False):
+        return False
+
+    return user.groups.filter(
+        name="Teste - Estrutura Organizacional"
+    ).exists()
+
+
 def access_context(request):
     """Informações leves de acesso usadas pelo cabeçalho e pelo menu."""
     user = getattr(request, "user", None)
@@ -12,6 +21,7 @@ def access_context(request):
         "empresa_usuario": "",
         "usuario_area_osc": False,
         "area_portal": "Portal de Gestão de Parcerias",
+        "usuario_somente_estrutura": usuario_somente_estrutura(request.user),
         "notificacoes_nao_lidas": 0,
         "pgp_ambiente_demo": getattr(settings, "PGP_AMBIENTE_DEMO", False),
         "pgp_demo_mensagem": getattr(settings, "PGP_DEMO_MENSAGEM", ""),

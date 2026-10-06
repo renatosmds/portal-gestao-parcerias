@@ -1,5 +1,5 @@
 # coding=utf-8
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from apps.funcionarios.models import Funcionario
 #from apps.parcerias.models import Parcerias  # ok
@@ -28,6 +28,11 @@ from .dashboard import montar_contexto_dashboard
 @login_required
 def home(request):
     """Dashboard integrado do Portal de Gestão de Parcerias."""
+    if request.user.groups.filter(
+        name="Teste - Estrutura Organizacional"
+    ).exists():
+        return redirect("list_departamentos")
+
     contexto = montar_contexto_dashboard(request)
     return render(request, "core/index.html", contexto)
 
