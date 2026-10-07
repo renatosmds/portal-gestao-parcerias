@@ -2,8 +2,8 @@
 {% load static %}
 {% load i18n %}
 
-{% block title %}Funcionários | Sistema de Gestão Municipal{% endblock %}
-{% block page_name %}Gestão de Funcionários{% endblock %}
+{% block title %}Colaboradores | Sistema de Gestão Municipal{% endblock %}
+{% block page_name %}Gestão de Colaboradores{% endblock %}
 
 {% block staticcss %}
 <link rel="stylesheet" href="{% static 'css/funcionarios-v2.css' %}">
@@ -11,7 +11,7 @@
 
 {% block main %}
 <section class="employees-page">
-    {% include "components/page_header.html" with eyebrow="GESTÃO DE PESSOAS" title="Funcionários" subtitle="Consulte e administre os funcionários vinculados à empresa atual." icon="fa-users" %}
+    {% include "components/page_header.html" with eyebrow="GESTÃO DE PESSOAS" title="Colaboradores" subtitle="Consulte e administre os colaboradores vinculados à empresa atual." icon="fa-users" %}
 
     <div class="employees-toolbar">
         <div class="employees-search">
@@ -32,7 +32,7 @@
             {% if perms.funcionarios.add_funcionario %}
                 <a href="{% url 'create_funcionario' %}" class="btn btn-primary">
                     <i class="fa fa-plus mr-1" aria-hidden="true"></i>
-                    Novo funcionário
+                    Novo colaborador
                 </a>
             {% endif %}
         </div>
@@ -75,7 +75,7 @@
             <table class="table employees-table" id="employeesTable">
                 <thead>
                 <tr>
-                    <th>Funcionário</th>
+                    <th>Colaborador</th>
                     <th>Cargo / nível</th>
                     <th>Contato</th>
                     <th>Equipamento</th>
@@ -100,11 +100,6 @@
                                         {{ funcionario.nome|default:"Não informado" }}
                                     </a>
                                     <small>
-                                        {% if funcionario.usuario %}
-                                            Usuário: {{ funcionario.usuario }}
-                                        {% else %}
-                                            Sem usuário informado
-                                        {% endif %}
                                     </small>
                                 </div>
                             </div>
@@ -162,7 +157,7 @@
                                 {% if perms.funcionarios.change_funcionario %}
                                     <a href="{% url 'update_funcionario' funcionario.id %}"
                                        class="employee-action"
-                                       title="Editar funcionário"
+                                       title="Editar colaborador"
                                        aria-label="Editar {{ funcionario.nome }}">
                                         <i class="fa fa-pencil"></i>
                                     </a>
@@ -170,7 +165,7 @@
                                 {% if perms.funcionarios.delete_funcionario %}
                                     <a href="{% url 'delete_funcionario' funcionario.id %}"
                                        class="employee-action employee-action--danger"
-                                       title="Excluir funcionário"
+                                       title="Excluir colaborador"
                                        aria-label="Excluir {{ funcionario.nome }}">
                                         <i class="fa fa-trash"></i>
                                     </a>
@@ -181,7 +176,7 @@
                 {% empty %}
                     <tr id="employeesEmptyRow">
                         <td colspan="6">
-                            {% include "components/empty_state.html" with icon="fa-users" title="Nenhum funcionário cadastrado" text="Cadastre o primeiro funcionário desta empresa para começar." action_url="create_funcionario" action_text="Cadastrar funcionário" %}
+                            {% include "components/empty_state.html" with icon="fa-users" title="Nenhum colaborador cadastrado" text="Cadastre o primeiro colaborador desta empresa para começar." action_url="create_funcionario" action_text="Cadastrar colaborador" %}
                         </td>
                     </tr>
                 {% endfor %}

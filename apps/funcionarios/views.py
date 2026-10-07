@@ -15,10 +15,10 @@ from django.views.generic import CreateView, DeleteView, ListView, TemplateView,
 from django.views.generic.base import View
 from reportlab.pdfgen import canvas
 
-from .forms import FuncionarioForm, FolhaPontoForm, FolhaPagamentoForm
+from .forms import (FuncionarioForm, FolhaPontoForm, FolhaPagamentoForm, AcessoSistemaForm)
 from .mixins import EmpresaAtualMixin, FuncionarioPorEmpresaMixin, PermissaoFuncionarioMixin
 from .models import Funcionario, FolhaPonto, FolhaPagamento
-from .services import criar_usuario_para_funcionario, get_empresa_do_usuario
+from .services import get_empresa_do_usuario
 
 
 class FuncionariosList(PermissaoFuncionarioMixin, FuncionarioPorEmpresaMixin, ListView):
@@ -66,11 +66,148 @@ class FuncionarioCreate(PermissaoFuncionarioMixin, EmpresaAtualMixin, CreateView
         funcionario = form.save(commit=False)
         if not self.request.user.is_superuser:
             funcionario.empresa = self.empresa_atual
-        funcionario.user = criar_usuario_para_funcionario(funcionario.usuario)
         funcionario.save()
         form.save_m2m()
         self.object = funcionario
         return redirect(self.get_success_url())
+
+
+@login_required
+def gerenciar_acesso_funcionario(request, pk):
+    if not (
+        request.user.is_superuser
+        or request.user.has_perm(
+            "funcionarios.change_funcionario_acesso_sistema"
+        )
+    ):
+        raise PermissionDenied
+
+    if request.user.is_superuser:
+        funcionario = get_object_or_404(
+            Funcionario,
+            pk=pk,
+        )
+    else:
+        empresa = get_empresa_do_usuario(request.user)
+
+        funcionario = get_object_or_404(
+            Funcionario,
+            pk=pk,
+            empresa=empresa,
+        )
+
+    acesso_form = None
+
+    if not funcionario.user_id:
+        acesso_form = AcessoSistemaForm(
+            request.POST or None
+        )
+
+    if request.method == "POST":
+        acao = (
+            request.POST.get("acao") or ""
+        ).strip()
+
+        if acao == "conceder":
+            if funcionario.user_id:
+                messages.error(
+                    request,
+                    "Este colaborador ja possui usuario vinculado.",
+                )
+
+                return redirect(
+                    "gerenciar_acesso_funcionario",
+                    pk=funcionario.pk,
+                )
+
+            if acesso_form.is_valid():
+                with transaction.atomic():
+                    novo_usuario = acesso_form.save()
+
+                    Funcionario.objects.filter(
+                        pk=funcionario.pk
+                    ).update(
+                        user=novo_usuario
+                    )
+
+                messages.success(
+                    request,
+                    "Acesso ao PGP concedido com sucesso.",
+                )
+
+                return redirect(
+                    "gerenciar_acesso_funcionario",
+                    pk=funcionario.pk,
+                )
+
+        elif acao == "desativar":
+            if not funcionario.user_id:
+                messages.error(
+                    request,
+                    "Este colaborador nao possui usuario vinculado.",
+                )
+
+            elif funcionario.user_id == request.user.id:
+                messages.error(
+                    request,
+                    "Voce nao pode desativar sua propria conta por esta tela.",
+                )
+
+            else:
+                funcionario.user.is_active = False
+
+                funcionario.user.save(
+                    update_fields=["is_active"]
+                )
+
+                messages.success(
+                    request,
+                    "Acesso ao sistema desativado.",
+                )
+
+                return redirect(
+                    "gerenciar_acesso_funcionario",
+                    pk=funcionario.pk,
+                )
+
+        elif acao == "ativar":
+            if not funcionario.user_id:
+                messages.error(
+                    request,
+                    "Este colaborador nao possui usuario vinculado.",
+                )
+
+            else:
+                funcionario.user.is_active = True
+
+                funcionario.user.save(
+                    update_fields=["is_active"]
+                )
+
+                messages.success(
+                    request,
+                    "Acesso ao sistema ativado.",
+                )
+
+                return redirect(
+                    "gerenciar_acesso_funcionario",
+                    pk=funcionario.pk,
+                )
+
+        elif acao:
+            messages.error(
+                request,
+                "Acao de acesso ao sistema invalida.",
+            )
+
+    return render(
+        request,
+        "funcionarios/funcionario_acesso.html",
+        {
+            "funcionario": funcionario,
+            "acesso_form": acesso_form,
+        },
+    )
 
 
 @login_required
@@ -82,12 +219,12 @@ def relatorio_funcionario(request):
 
     response = HttpResponse(content_type="application/pdf")
     response["Content-Disposition"] = (
-        'attachment; filename="Relatorio_de_Funcionarios.pdf"'
+        'attachment; filename="Relatorio_de_Colaboradores.pdf"'
     )
 
     buffer = io.BytesIO()
     pdf_canvas = canvas.Canvas(buffer)
-    pdf_canvas.drawString(200, 810, "Relatório de funcionários")
+    pdf_canvas.drawString(200, 810, "Relatório de colaboradores")
     pdf_canvas.drawString(0, 800, "_" * 150)
 
     funcionarios = Funcionario.objects.filter(empresa=empresa)
@@ -148,7 +285,7 @@ class Pdf(PermissaoFuncionarioMixin, EmpresaAtualMixin, View):
         return Render.render(
             "funcionarios/relatorio.html",
             params,
-            "Relatório de Funcionários",
+            "Relatório de Colaboradores",
         )
 
 

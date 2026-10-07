@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Excluir funcionário | Sistema de Gestão Municipal{% endblock %}
-{% block page_name %}Gestão de Funcionários{% endblock %}
+{% block title %}Excluir colaborador | Sistema de Gestão Municipal{% endblock %}
+{% block page_name %}Gestão de Colaboradores{% endblock %}
 
 {% block staticcss %}
 <link rel="stylesheet" href="{% static 'css/funcionarios-v2.css' %}">
@@ -16,7 +16,7 @@
         </span>
 
         <span class="sgm-eyebrow">CONFIRMAÇÃO NECESSÁRIA</span>
-        <h1>Excluir funcionário?</h1>
+        <h1>Excluir colaborador?</h1>
         <p>
             Você está prestes a excluir
             <strong>{{ funcionario|default:object }}</strong>.

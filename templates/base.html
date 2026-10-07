@@ -71,7 +71,7 @@
             {% if perms.funcionarios.view_funcionario or user.is_superuser %}
             <a class="sgm-nav-item" href="{% url 'list_funcionarios' %}">
                 <i class="fa fa-users" aria-hidden="true"></i>
-                <span>Empregados</span>
+                <span>Colaboradores</span>
             </a>
             {% endif %}
             {% if perms.funcionarios.view_folhaponto or user.is_superuser %}

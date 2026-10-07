@@ -125,9 +125,13 @@ class Command(BaseCommand):
                 grupo.permissions.set(Permission.objects.all())
 
             elif configuracao.get("somente_visualizacao_global"):
-                grupo.permissions.set(
-                    Permission.objects.filter(codename__startswith="view_")
+                permissoes = Permission.objects.filter(
+                    codename__startswith="view_"
+                ).exclude(
+                    codename="view_funcionario_acesso_sistema"
                 )
+
+                grupo.permissions.set(permissoes)
 
             else:
                 for app_label in configuracao.get("apps_completos", []):

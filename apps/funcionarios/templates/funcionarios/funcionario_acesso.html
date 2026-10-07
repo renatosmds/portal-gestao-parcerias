@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+Gerenciar acesso | Sistema de Gestão Municipal
+{% endblock %}
+
+{% block page_name %}
+Gestão de Colaboradores
+{% endblock %}
+
+{% block staticcss %}
+<link rel="stylesheet"
+      href="{% static 'css/funcionarios-v2.css' %}">
+{% endblock %}
+
+{% block main %}
+<section class="employees-page">
+
+    <div class="employee-form-header">
+        <div>
+            <a href="{% url 'update_funcionario' funcionario.pk %}"
+               class="employees-back-link">
+                <i class="fa fa-arrow-left mr-1"></i>
+                Voltar para o colaborador
+            </a>
+
+            <span class="sgm-eyebrow">
+                ACESSO AO SISTEMA
+            </span>
+
+            <h1>Gerenciar acesso</h1>
+
+            <p>
+                Controle a conta de acesso ao PGP vinculada a
+                {{ funcionario.nome }}.
+            </p>
+        </div>
+    </div>
+
+    <section class="sgm-panel employee-form-section">
+
+        <div class="employee-form-section-header">
+            <span class="employee-section-icon">
+                <i class="fa fa-lock"></i>
+            </span>
+
+            <div>
+                <h2>Acesso ao PGP</h2>
+                <p>
+                    Este gerenciamento é independente dos
+                    dados cadastrais do colaborador.
+                </p>
+            </div>
+        </div>
+
+        {% if funcionario.user %}
+
+            <dl>
+                <div class="mb-3">
+                    <dt>Colaborador</dt>
+                    <dd>
+                        <strong>{{ funcionario.nome }}</strong>
+                    </dd>
+                </div>
+
+                <div class="mb-3">
+                    <dt>Usuário</dt>
+                    <dd>
+                        {{ funcionario.user.username }}
+                    </dd>
+                </div>
+
+                <div class="mb-3">
+                    <dt>Situação da conta</dt>
+                    <dd>
+                        {% if funcionario.user.is_active %}
+                            <span class="status-badge status-badge--success">
+                                Ativa
+                            </span>
+                        {% else %}
+                            <span class="status-badge status-badge--muted">
+                                Inativa
+                            </span>
+                        {% endif %}
+                    </dd>
+                </div>
+            </dl>
+
+            {% if funcionario.user_id == request.user.id %}
+
+                <div class="alert alert-info">
+                    Esta é a sua própria conta.
+                    Por segurança, ela não pode ser
+                    desativada por esta tela.
+                </div>
+
+            {% elif funcionario.user.is_active %}
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    <input type="hidden"
+                           name="acao"
+                           value="desativar">
+
+                    <button type="submit"
+                            class="btn btn-outline-danger">
+                        <i class="fa fa-ban mr-1"></i>
+                        Desativar acesso
+                    </button>
+                </form>
+
+            {% else %}
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    <input type="hidden"
+                           name="acao"
+                           value="ativar">
+
+                    <button type="submit"
+                            class="btn btn-primary">
+                        <i class="fa fa-check mr-1"></i>
+                        Reativar acesso
+                    </button>
+                </form>
+
+            {% endif %}
+
+        {% else %}
+
+            <div class="employee-inline-empty">
+                <i class="fa fa-user-times"></i>
+                Este colaborador ainda não possui
+                conta de acesso ao PGP.
+            </div>
+
+            <div class="mt-4">
+                <h3>Conceder acesso ao PGP</h3>
+
+                <p class="text-muted">
+                    Crie uma conta somente se este colaborador
+                    precisar entrar no sistema.
+                </p>
+
+                <form method="post" novalidate>
+                    {% csrf_token %}
+
+                    <input
+                        type="hidden"
+                        name="acao"
+                        value="conceder"
+                    >
+
+                    {% if acesso_form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {{ acesso_form.non_field_errors }}
+                        </div>
+                    {% endif %}
+
+                    {% for field in acesso_form %}
+                        <div class="form-group mb-3">
+                            <label for="{{ field.id_for_label }}">
+                                {{ field.label }}
+                                {% if field.field.required %}*{% endif %}
+                            </label>
+
+                            {{ field }}
+
+                            {% if field.help_text %}
+                                <small class="form-text text-muted">
+                                    {{ field.help_text }}
+                                </small>
+                            {% endif %}
+
+                            {% for error in field.errors %}
+                                <div class="text-danger mt-1">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                    >
+                        <i class="fa fa-user-plus mr-1"></i>
+                        Conceder acesso
+                    </button>
+                </form>
+            </div>
+        {% endif %}
+
+    </section>
+
+</section>
+{% endblock %}

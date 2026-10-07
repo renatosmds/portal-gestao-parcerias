@@ -3,13 +3,65 @@
 {% load bootstrap %}
 
 {% block title %}
-    {% if object %}Editar funcionário{% else %}Novo funcionário{% endif %}
+    {% if object %}Editar colaborador{% else %}Novo colaborador{% endif %}
     | Sistema de Gestão Municipal
 {% endblock %}
-{% block page_name %}Gestão de Funcionários{% endblock %}
+{% block page_name %}Gestão de Colaboradores{% endblock %}
 
 {% block staticcss %}
 <link rel="stylesheet" href="{% static 'css/funcionarios-v2.css' %}">
+<style>
+.employee-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0 0 22px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.employee-tab-button {
+    border: 1px solid #d1d5db;
+    background: #fff;
+    border-radius: 8px;
+    padding: 9px 13px;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.employee-tab-button:hover {
+    background: #f8f9fa;
+}
+
+.employee-tab-button.is-active {
+    font-weight: 600;
+    border-color: currentColor;
+    background: #f4f6f8;
+}
+
+.employee-tab-panel {
+    display: none;
+}
+
+.employee-tab-panel.is-active {
+    display: block;
+}
+
+.employee-tab-heading {
+    margin-bottom: 18px;
+}
+
+.employee-tab-heading h3 {
+    margin: 0 0 4px;
+    font-size: 1.05rem;
+}
+
+.employee-tab-heading p {
+    margin: 0;
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+</style>
 {% endblock %}
 
 {% block main %}
@@ -17,21 +69,21 @@
     <div class="employee-form-header">
         <div>
             <a href="{% url 'list_funcionarios' %}" class="employees-back-link">
-                <i class="fa fa-arrow-left mr-1"></i> Voltar para funcionários
+                <i class="fa fa-arrow-left mr-1"></i> Voltar para colaboradores
             </a>
             <span class="sgm-eyebrow">GESTÃO DE PESSOAS</span>
             <h1>
                 {% if object %}
-                    Editar funcionário
+                    Editar colaborador
                 {% else %}
-                    Novo funcionário
+                    Novo colaborador
                 {% endif %}
             </h1>
             <p>
                 {% if object %}
                     Atualize os dados cadastrais e funcionais de {{ object.nome }}.
                 {% else %}
-                    Preencha os dados abaixo para cadastrar um funcionário.
+                    Preencha os dados abaixo para cadastrar um colaborador.
                 {% endif %}
             </p>
         </div>
@@ -62,36 +114,285 @@
                             <i class="fa fa-id-card-o"></i>
                         </span>
                         <div>
-                            <h2>Dados do funcionário</h2>
-                            <p>Informações cadastrais, funcionais e financeiras.</p>
+                            <h2>Cadastro do colaborador</h2>
+                            <p>
+                                Os dados est?o organizados por categoria
+                                e n?vel de acesso.
+                            </p>
                         </div>
                     </div>
 
-                    <div class="employee-form-grid">
-                        {% for field in form %}
-                            <div class="employee-form-field
-                                {% if field.name == 'endereco' or field.name == 'email' %}employee-form-field--wide{% endif %}">
-                                <label for="{{ field.id_for_label }}">
-                                    {{ field.label }}
-                                    {% if field.field.required %}
-                                        <span class="required-marker">*</span>
+                    <div class="employee-tabs"
+                         role="tablist"
+                         aria-label="Dados do colaborador">
+
+                        {% if form.abas_disponiveis.identificacao.view %}
+                            <button type="button"
+                                    class="employee-tab-button"
+                                    data-employee-tab="identificacao">
+                                <i class="fa fa-id-card-o mr-1"></i>
+                                Identificação e vínculo
+                            </button>
+                        {% endif %}
+
+                        {% if form.abas_disponiveis.dados_pessoais.view %}
+                            <button type="button"
+                                    class="employee-tab-button"
+                                    data-employee-tab="dados-pessoais">
+                                <i class="fa fa-user mr-1"></i>
+                                Dados pessoais
+                            </button>
+                        {% endif %}
+
+                        {% if form.abas_disponiveis.endereco.view %}
+                            <button type="button"
+                                    class="employee-tab-button"
+                                    data-employee-tab="endereco">
+                                <i class="fa fa-map-marker mr-1"></i>
+                                Endereço
+                            </button>
+                        {% endif %}
+
+                        {% if form.abas_disponiveis.dados_funcionais.view %}
+                            <button type="button"
+                                    class="employee-tab-button"
+                                    data-employee-tab="dados-funcionais">
+                                <i class="fa fa-briefcase mr-1"></i>
+                                Dados funcionais
+                            </button>
+                        {% endif %}
+
+                        {% if form.abas_disponiveis.folha.view %}
+                            <button type="button"
+                                    class="employee-tab-button"
+                                    data-employee-tab="folha">
+                                <i class="fa fa-lock mr-1"></i>
+                                Folha e bancários
+                            </button>
+                        {% endif %}
+                    </div>
+
+                    {% if form.abas_disponiveis.identificacao.view %}
+                        <div class="employee-tab-panel"
+                             data-employee-panel="identificacao">
+
+                            <div class="employee-tab-heading">
+                                <h3>Identificação e vínculo</h3>
+                                <p>
+                                    Informações de identificação institucional
+                                    e vínculo do colaborador.
+                                </p>
+                            </div>
+
+                            <div class="employee-form-grid">
+                                {% for field in form %}
+                                    {% if field.name == "empresa" or field.name == "nome" or field.name == "cargo" or field.name == "nivel" or field.name == "equipamento" or field.name == "tipo_vinculo" or field.name == "data_admissao" or field.name == "data_desligamento" or field.name == "de_ferias" or field.name == "ativo" or field.name == "curso" %}
+                                        <div class="employee-form-field">
+                                            <label for="{{ field.id_for_label }}">
+                                                {{ field.label }}
+                                                {% if field.field.required %}
+                                                    <span class="required-marker">*</span>
+                                                {% endif %}
+                                            </label>
+
+                                            {{ field }}
+
+                                            {% if field.help_text %}
+                                                <small class="form-text text-muted">
+                                                    {{ field.help_text|safe }}
+                                                </small>
+                                            {% endif %}
+
+                                            {% for error in field.errors %}
+                                                <small class="employee-field-error">
+                                                    <i class="fa fa-exclamation-circle mr-1"></i>
+                                                    {{ error }}
+                                                </small>
+                                            {% endfor %}
+                                        </div>
                                     {% endif %}
-                                </label>
-
-                                {{ field }}
-
-                                {% if field.help_text %}
-                                    <small class="form-text text-muted">{{ field.help_text|safe }}</small>
-                                {% endif %}
-
-                                {% for error in field.errors %}
-                                    <small class="employee-field-error">
-                                        <i class="fa fa-exclamation-circle mr-1"></i>{{ error }}
-                                    </small>
                                 {% endfor %}
                             </div>
-                        {% endfor %}
-                    </div>
+                        </div>
+                    {% endif %}
+
+                    {% if form.abas_disponiveis.dados_pessoais.view %}
+                        <div class="employee-tab-panel"
+                             data-employee-panel="dados-pessoais">
+
+                            <div class="employee-tab-heading">
+                                <h3>Dados pessoais</h3>
+                                <p>
+                                    Informações pessoais de acesso restrito.
+                                </p>
+                            </div>
+
+                            <div class="employee-form-grid">
+                                {% for field in form %}
+                                    {% if field.name == "cpf" or field.name == "data_nascimento" or field.name == "Telefone" or field.name == "email" %}
+                                        <div class="employee-form-field
+                                            {% if field.name == 'email' %}employee-form-field--wide{% endif %}">
+
+                                            <label for="{{ field.id_for_label }}">
+                                                {{ field.label }}
+                                                {% if field.field.required %}
+                                                    <span class="required-marker">*</span>
+                                                {% endif %}
+                                            </label>
+
+                                            {{ field }}
+
+                                            {% if field.help_text %}
+                                                <small class="form-text text-muted">
+                                                    {{ field.help_text|safe }}
+                                                </small>
+                                            {% endif %}
+
+                                            {% for error in field.errors %}
+                                                <small class="employee-field-error">
+                                                    <i class="fa fa-exclamation-circle mr-1"></i>
+                                                    {{ error }}
+                                                </small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {% if form.abas_disponiveis.endereco.view %}
+                        <div class="employee-tab-panel"
+                             data-employee-panel="endereco">
+
+                            <div class="employee-tab-heading">
+                                <h3>Endereço</h3>
+                                <p>
+                                    Dados de localização e correspondência.
+                                </p>
+                            </div>
+
+                            <div class="employee-form-grid">
+                                {% for field in form %}
+                                    {% if field.name == "endereco" or field.name == "bairro" or field.name == "cep" or field.name == "cidade" or field.name == "estado" %}
+                                        <div class="employee-form-field
+                                            {% if field.name == 'endereco' %}employee-form-field--wide{% endif %}">
+
+                                            <label for="{{ field.id_for_label }}">
+                                                {{ field.label }}
+                                                {% if field.field.required %}
+                                                    <span class="required-marker">*</span>
+                                                {% endif %}
+                                            </label>
+
+                                            {{ field }}
+
+                                            {% if field.help_text %}
+                                                <small class="form-text text-muted">
+                                                    {{ field.help_text|safe }}
+                                                </small>
+                                            {% endif %}
+
+                                            {% for error in field.errors %}
+                                                <small class="employee-field-error">
+                                                    <i class="fa fa-exclamation-circle mr-1"></i>
+                                                    {{ error }}
+                                                </small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {% if form.abas_disponiveis.dados_funcionais.view %}
+                        <div class="employee-tab-panel"
+                             data-employee-panel="dados-funcionais">
+
+                            <div class="employee-tab-heading">
+                                <h3>Dados funcionais</h3>
+                                <p>
+                                    Informações administrativas,
+                                    trabalhistas e de lotação funcional.
+                                </p>
+                            </div>
+
+                            <div class="employee-form-grid">
+                                {% for field in form %}
+                                    {% if field.name == "pis_pasep_nit" or field.name == "jornada_semanal" or field.name == "divisor_mensal" or field.name == "termo" or field.name == "centro_custo" %}
+                                        <div class="employee-form-field">
+                                            <label for="{{ field.id_for_label }}">
+                                                {{ field.label }}
+                                                {% if field.field.required %}
+                                                    <span class="required-marker">*</span>
+                                                {% endif %}
+                                            </label>
+
+                                            {{ field }}
+
+                                            {% if field.help_text %}
+                                                <small class="form-text text-muted">
+                                                    {{ field.help_text|safe }}
+                                                </small>
+                                            {% endif %}
+
+                                            {% for error in field.errors %}
+                                                <small class="employee-field-error">
+                                                    <i class="fa fa-exclamation-circle mr-1"></i>
+                                                    {{ error }}
+                                                </small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {% if form.abas_disponiveis.folha.view %}
+                        <div class="employee-tab-panel"
+                             data-employee-panel="folha">
+
+                            <div class="employee-tab-heading">
+                                <h3>Folha e dados bancários</h3>
+                                <p>
+                                    Informações financeiras de acesso
+                                    especialmente restrito.
+                                </p>
+                            </div>
+
+                            <div class="employee-form-grid">
+                                {% for field in form %}
+                                    {% if field.name == "banco" or field.name == "agencia" or field.name == "conta_bancaria" or field.name == "salarioBase" or field.name == "salarioBruto" or field.name == "salarioLiquido" or field.name == "diasTrabalhados" or field.name == "avisoPrevio" or field.name == "avosFerias" or field.name == "avosTercoFerias" or field.name == "avos13Salario" or field.name == "fgts" or field.name == "multafgts" or field.name == "inss" or field.name == "totalVerbaRescisoria" or field.name == "totalRescisao" %}
+                                        <div class="employee-form-field">
+                                            <label for="{{ field.id_for_label }}">
+                                                {{ field.label }}
+                                                {% if field.field.required %}
+                                                    <span class="required-marker">*</span>
+                                                {% endif %}
+                                            </label>
+
+                                            {{ field }}
+
+                                            {% if field.help_text %}
+                                                <small class="form-text text-muted">
+                                                    {{ field.help_text|safe }}
+                                                </small>
+                                            {% endif %}
+
+                                            {% for error in field.errors %}
+                                                <small class="employee-field-error">
+                                                    <i class="fa fa-exclamation-circle mr-1"></i>
+                                                    {{ error }}
+                                                </small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
                 </section>
 
                 {% if object %}
@@ -102,7 +403,7 @@
                             </span>
                             <div>
                                 <h2>Documentos vinculados</h2>
-                                <p>Arquivos já associados a este funcionário.</p>
+                                <p>Arquivos já associados a este colaborador.</p>
                             </div>
                         </div>
 
@@ -141,7 +442,7 @@
 
                     <button type="submit" class="btn btn-primary btn-block">
                         <i class="fa fa-check mr-1"></i>
-                        {% if object %}Salvar alterações{% else %}Cadastrar funcionário{% endif %}
+                        {% if object %}Salvar alterações{% else %}Cadastrar colaborador{% endif %}
                     </button>
 
                     <a href="{% url 'list_funcionarios' %}" class="btn btn-outline-secondary btn-block">
@@ -151,10 +452,95 @@
                     {% if object %}
                         <a href="{% url 'delete_funcionario' object.id %}"
                            class="btn btn-outline-danger btn-block">
-                            <i class="fa fa-trash mr-1"></i> Excluir funcionário
+                            <i class="fa fa-trash mr-1"></i> Excluir colaborador
                         </a>
                     {% endif %}
                 </section>
+
+                {% if object and perms.funcionarios.view_funcionario_acesso_sistema %}
+                    <section class="sgm-panel employee-system-access">
+                        <span class="sgm-eyebrow">ACESSO AO SISTEMA</span>
+
+                        <h2>Acesso ao PGP</h2>
+
+                        {% if object.user %}
+                            <p>
+                                Este colaborador possui uma conta de acesso
+                                vinculada ao sistema.
+                            </p>
+
+                            <dl>
+                                <div>
+                                    <dt>Situação</dt>
+                                    <dd>
+                                        <span class="status-badge status-badge--success">
+                                            Usuário vinculado
+                                        </span>
+                                    </dd>
+                                </div>
+
+                                <div>
+                                    <dt>Usuário</dt>
+                                    <dd>
+                                        <strong>{{ object.user.username }}</strong>
+                                    </dd>
+                                </div>
+
+                                <div>
+                                    <dt>Conta ativa</dt>
+                                    <dd>
+                                        {% if object.user.is_active %}
+                                            Sim
+                                        {% else %}
+                                            Não
+                                        {% endif %}
+                                    </dd>
+                                </div>
+                            </dl>
+
+                            {% if perms.funcionarios.change_funcionario_acesso_sistema %}
+                                <p class="text-muted mb-3">
+                                    Você possui permissão para gerenciar
+                                    o acesso deste colaborador.
+                                </p>
+
+                                <a
+                                    name="gerenciar-acesso-pgp"
+                                    href="{% url 'gerenciar_acesso_funcionario' object.pk %}"
+                                    class="btn btn-outline-primary btn-block"
+                                >
+                                    <i class="fa fa-lock mr-1"></i>
+                                    Gerenciar acesso
+                                </a>
+                            {% endif %}
+
+                        {% else %}
+                            <p>
+                                Este colaborador não possui conta de acesso
+                                vinculada ao PGP.
+                            </p>
+
+                            <span class="status-badge status-badge--muted">
+                                Sem acesso ao sistema
+                            </span>
+
+                            {% if perms.funcionarios.change_funcionario_acesso_sistema %}
+                                <p class="text-muted mt-3 mb-3">
+                                    Você possui permissão para conceder
+                                    acesso ao sistema.
+                                </p>
+
+                                <a
+                                    href="{% url 'gerenciar_acesso_funcionario' object.pk %}"
+                                    class="btn btn-primary btn-block"
+                                >
+                                    <i class="fa fa-user-plus mr-1"></i>
+                                    Conceder acesso ao PGP
+                                </a>
+                            {% endif %}
+                        {% endif %}
+                    </section>
+                {% endif %}
 
                 {% if object %}
                     <section class="sgm-panel employee-quick-info">
@@ -202,6 +588,55 @@
 {{ block.super }}
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+    var tabButtons = Array.from(
+        document.querySelectorAll("[data-employee-tab]")
+    );
+
+    var tabPanels = Array.from(
+        document.querySelectorAll("[data-employee-panel]")
+    );
+
+    function ativarAba(nome) {
+        tabButtons.forEach(function (button) {
+            button.classList.toggle(
+                "is-active",
+                button.dataset.employeeTab === nome
+            );
+        });
+
+        tabPanels.forEach(function (panel) {
+            panel.classList.toggle(
+                "is-active",
+                panel.dataset.employeePanel === nome
+            );
+        });
+    }
+
+    tabButtons.forEach(function (button) {
+        button.addEventListener("click", function () {
+            ativarAba(button.dataset.employeeTab);
+        });
+    });
+
+    if (tabButtons.length) {
+        var painelComErro = document.querySelector(
+            ".employee-tab-panel .employee-field-error"
+        );
+
+        if (painelComErro) {
+            var painel = painelComErro.closest(
+                "[data-employee-panel]"
+            );
+
+            if (painel) {
+                ativarAba(painel.dataset.employeePanel);
+            }
+        } else {
+            ativarAba(tabButtons[0].dataset.employeeTab);
+        }
+    }
+
+
     document.querySelectorAll(".employee-form-field input, .employee-form-field select, .employee-form-field textarea")
         .forEach(function (element) {
             if (!element.classList.contains("form-check-input")) {

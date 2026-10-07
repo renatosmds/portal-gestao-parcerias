@@ -19,6 +19,59 @@ class Funcionario(models.Model):
 
     class Meta:
         ordering = ["nome"]
+        verbose_name = "Colaborador"
+        verbose_name_plural = "Colaboradores"
+
+        permissions = [
+            (
+                "view_funcionario_identificacao",
+                "Pode visualizar identificacao e vinculo do colaborador",
+            ),
+            (
+                "change_funcionario_identificacao",
+                "Pode alterar identificacao e vinculo do colaborador",
+            ),
+            (
+                "view_funcionario_dados_pessoais",
+                "Pode visualizar dados pessoais do colaborador",
+            ),
+            (
+                "change_funcionario_dados_pessoais",
+                "Pode alterar dados pessoais do colaborador",
+            ),
+            (
+                "view_funcionario_endereco",
+                "Pode visualizar endereco do colaborador",
+            ),
+            (
+                "change_funcionario_endereco",
+                "Pode alterar endereco do colaborador",
+            ),
+            (
+                "view_funcionario_dados_funcionais",
+                "Pode visualizar dados funcionais do colaborador",
+            ),
+            (
+                "change_funcionario_dados_funcionais",
+                "Pode alterar dados funcionais do colaborador",
+            ),
+            (
+                "view_funcionario_folha",
+                "Pode visualizar dados de folha e bancarios do colaborador",
+            ),
+            (
+                "change_funcionario_folha",
+                "Pode alterar dados de folha e bancarios do colaborador",
+            ),
+            (
+                "view_funcionario_acesso_sistema",
+                "Pode visualizar acesso ao sistema do colaborador",
+            ),
+            (
+                "change_funcionario_acesso_sistema",
+                "Pode alterar acesso ao sistema do colaborador",
+            ),
+        ]
 
     CARGO_CHOICES = (
         (u'--', u'--'),
@@ -78,7 +131,7 @@ class Funcionario(models.Model):
                           (u'restaurante popular nova contagem', u'Restaurante Popular Nova Contagem'),\
                           (u'restaurante popular ressaca', u'Restaurante Popular Ressaca')
 
-    nome = models.CharField(max_length=100, verbose_name='Credor')
+    nome = models.CharField(max_length=100, verbose_name='Colaborador')
     usuario = models.CharField(max_length=100, verbose_name='Usuario')
     cargo = models.CharField(max_length=100, choices=CARGO_CHOICES, blank=True, null=True, verbose_name='Cargo')
     nivel = models.CharField(max_length=10, choices=NIVEL_CHOICES, blank=True, null=True, verbose_name='Nível')

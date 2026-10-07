@@ -9,7 +9,7 @@ from .views import (
     folhas_pagamento_list, folha_pagamento_form, folha_pagamento_detail, fechar_folha_pagamento
 )
 
-from .views import relatorio_funcionario
+from .views import relatorio_funcionario, gerenciar_acesso_funcionario
 
 urlpatterns = [
     path('ponto/', folhas_ponto_list, name='folhas_ponto_list'),
@@ -24,6 +24,11 @@ urlpatterns = [
     path('', FuncionariosList.as_view(), name='list_funcionarios'),
     path('novo/', FuncionarioCreate.as_view(), name='create_funcionario'),
     path('editar/<int:pk>/', FuncionarioEdit.as_view(), name='update_funcionario'),
+    path(
+        'acesso/<int:pk>/',
+        gerenciar_acesso_funcionario,
+        name='gerenciar_acesso_funcionario',
+    ),
     path('delete/<int:pk>/', FuncionarioDelete.as_view(), name='delete_funcionario'),
     path('relatorio_funcionario', relatorio_funcionario, name='relatorio_funcionario'), # feito com reportlab
     path('relatorio_funcionario_html', Pdf.as_view(), name='relatorio_funcionario_html'),
