@@ -27,6 +27,17 @@ GRUPOS = {
             "assistente_ia",
             "ajuda_contextual",
         ],
+        "permissoes_especificas": [
+            "add_cargo",
+            "change_cargo",
+            "delete_cargo",
+            "add_nivel",
+            "change_nivel",
+            "delete_nivel",
+            "add_equipamento",
+            "change_equipamento",
+            "delete_equipamento",
+        ],
     },
 
     "Analista de Prestação de Contas": {
@@ -157,6 +168,19 @@ class Command(BaseCommand):
                         *self.permissoes_app(
                             app_label,
                             ["view"],
+                        )
+                    )
+
+                permissoes_especificas = configuracao.get(
+                    "permissoes_especificas",
+                    [],
+                )
+
+                if permissoes_especificas:
+                    grupo.permissions.add(
+                        *Permission.objects.filter(
+                            content_type__app_label="funcionarios",
+                            codename__in=permissoes_especificas,
                         )
                     )
 

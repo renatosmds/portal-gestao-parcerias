@@ -11,7 +11,86 @@ from .views import (
 
 from .views import relatorio_funcionario, gerenciar_acesso_funcionario
 
+from .views_cadastros import (
+    CargoCreate,
+    CargoDelete,
+    CargoList,
+    CargoUpdate,
+    EquipamentoCreate,
+    EquipamentoDelete,
+    EquipamentoList,
+    EquipamentoUpdate,
+    NivelCreate,
+    NivelDelete,
+    NivelList,
+    NivelUpdate,
+)
+
+
 urlpatterns = [
+    path(
+        "cargos/",
+        CargoList.as_view(),
+        name="list_cargos",
+    ),
+    path(
+        "cargos/novo/",
+        CargoCreate.as_view(),
+        name="create_cargo",
+    ),
+    path(
+        "cargos/<int:pk>/editar/",
+        CargoUpdate.as_view(),
+        name="update_cargo",
+    ),
+    path(
+        "cargos/<int:pk>/excluir/",
+        CargoDelete.as_view(),
+        name="delete_cargo",
+    ),
+
+    path(
+        "niveis/",
+        NivelList.as_view(),
+        name="list_niveis",
+    ),
+    path(
+        "niveis/novo/",
+        NivelCreate.as_view(),
+        name="create_nivel",
+    ),
+    path(
+        "niveis/<int:pk>/editar/",
+        NivelUpdate.as_view(),
+        name="update_nivel",
+    ),
+    path(
+        "niveis/<int:pk>/excluir/",
+        NivelDelete.as_view(),
+        name="delete_nivel",
+    ),
+
+    path(
+        "equipamentos/",
+        EquipamentoList.as_view(),
+        name="list_equipamentos",
+    ),
+    path(
+        "equipamentos/novo/",
+        EquipamentoCreate.as_view(),
+        name="create_equipamento",
+    ),
+    path(
+        "equipamentos/<int:pk>/editar/",
+        EquipamentoUpdate.as_view(),
+        name="update_equipamento",
+    ),
+    path(
+        "equipamentos/<int:pk>/excluir/",
+        EquipamentoDelete.as_view(),
+        name="delete_equipamento",
+    ),
+
     path('ponto/', folhas_ponto_list, name='folhas_ponto_list'),
     path('ponto/novo/', folha_ponto_form, name='folha_ponto_create'),
     path('ponto/<int:pk>/editar/', folha_ponto_form, name='folha_ponto_update'),

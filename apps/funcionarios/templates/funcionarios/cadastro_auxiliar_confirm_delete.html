@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Excluir cadastro | PGP{% endblock %}
+{% block page_name %}Gest?o de Pessoas{% endblock %}
+
+{% block main %}
+<div class="container-fluid py-4">
+    <div class="card">
+        <div class="card-body">
+            <h1>Excluir cadastro</h1>
+
+            <p>
+                Confirma a exclus?o de
+                <strong>{{ object }}</strong>?
+            </p>
+
+            <form method="post">
+                {% csrf_token %}
+
+                <button type="submit"
+                        class="btn btn-danger">
+                    Excluir
+                </button>
+
+                <a href="javascript:history.back()"
+                   class="btn btn-outline-secondary">
+                    Cancelar
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

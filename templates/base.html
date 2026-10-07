@@ -74,6 +74,31 @@
                 <span>Colaboradores</span>
             </a>
             {% endif %}
+
+            {% if perms.funcionarios.view_cargo or user.is_superuser %}
+            <a class="sgm-nav-item {% if request.resolver_match.url_name == 'list_cargos' or request.resolver_match.url_name == 'create_cargo' or request.resolver_match.url_name == 'update_cargo' or request.resolver_match.url_name == 'delete_cargo' %}active{% endif %}"
+               href="{% url 'list_cargos' %}">
+                <i class="fa fa-id-badge" aria-hidden="true"></i>
+                <span>Cargos</span>
+            </a>
+            {% endif %}
+
+            {% if perms.funcionarios.view_nivel or user.is_superuser %}
+            <a class="sgm-nav-item {% if request.resolver_match.url_name == 'list_niveis' or request.resolver_match.url_name == 'create_nivel' or request.resolver_match.url_name == 'update_nivel' or request.resolver_match.url_name == 'delete_nivel' %}active{% endif %}"
+               href="{% url 'list_niveis' %}">
+                <i class="fa fa-level-up" aria-hidden="true"></i>
+                <span>N?veis</span>
+            </a>
+            {% endif %}
+
+            {% if perms.funcionarios.view_equipamento or user.is_superuser %}
+            <a class="sgm-nav-item {% if request.resolver_match.url_name == 'list_equipamentos' or request.resolver_match.url_name == 'create_equipamento' or request.resolver_match.url_name == 'update_equipamento' or request.resolver_match.url_name == 'delete_equipamento' %}active{% endif %}"
+               href="{% url 'list_equipamentos' %}">
+                <i class="fa fa-building-o" aria-hidden="true"></i>
+                <span>Equipamentos</span>
+            </a>
+            {% endif %}
+
             {% if perms.funcionarios.view_folhaponto or user.is_superuser %}
             <a class="sgm-nav-item" href="{% url 'folhas_ponto_list' %}"><i class="fa fa-calendar-check-o"></i><span>Folha de Ponto</span></a>
             {% endif %}

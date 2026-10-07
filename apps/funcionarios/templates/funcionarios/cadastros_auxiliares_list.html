@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}{{ titulo }} | PGP{% endblock %}
+{% block page_name %}Gest?o de Pessoas{% endblock %}
+
+{% block main %}
+<div class="container-fluid py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>{{ titulo }}</h1>
+            <p class="text-muted mb-0">
+                Cadastros auxiliares de colaboradores.
+            </p>
+        </div>
+
+        {% if tipo == "cargo" %}
+            {% if perms.funcionarios.add_cargo or user.is_superuser %}
+                <a href="{% url 'create_cargo' %}" class="btn btn-primary">
+                    Novo cargo
+                </a>
+            {% endif %}
+        {% elif tipo == "nivel" %}
+            {% if perms.funcionarios.add_nivel or user.is_superuser %}
+                <a href="{% url 'create_nivel' %}" class="btn btn-primary">
+                    Novo n?vel
+                </a>
+            {% endif %}
+        {% else %}
+            {% if perms.funcionarios.add_equipamento or user.is_superuser %}
+                <a href="{% url 'create_equipamento' %}" class="btn btn-primary">
+                    Novo equipamento
+                </a>
+            {% endif %}
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            {% if tipo == "nivel" %}
+                                <th>Ordem</th>
+                            {% endif %}
+                            {% if user.is_superuser %}
+                                <th>Empresa</th>
+                            {% endif %}
+                            <th>Status</th>
+                            <th class="text-right">A??es</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for objeto in objetos %}
+                            <tr>
+                                <td>
+                                    <strong>{{ objeto.nome }}</strong>
+                                    {% if objeto.descricao %}
+                                        <div class="text-muted small">
+                                            {{ objeto.descricao }}
+                                        </div>
+                                    {% endif %}
+                                </td>
+
+                                {% if tipo == "nivel" %}
+                                    <td>{{ objeto.ordem }}</td>
+                                {% endif %}
+
+                                {% if user.is_superuser %}
+                                    <td>{{ objeto.empresa }}</td>
+                                {% endif %}
+
+                                <td>
+                                    {% if objeto.ativo %}
+                                        <span class="badge badge-success">
+                                            Ativo
+                                        </span>
+                                    {% else %}
+                                        <span class="badge badge-secondary">
+                                            Inativo
+                                        </span>
+                                    {% endif %}
+                                </td>
+
+                                <td class="text-right">
+                                    {% if tipo == "cargo" %}
+                                        {% if perms.funcionarios.change_cargo or user.is_superuser %}
+                                            <a href="{% url 'update_cargo' objeto.pk %}"
+                                               class="btn btn-sm btn-outline-primary">
+                                                Editar
+                                            </a>
+                                        {% endif %}
+                                        {% if perms.funcionarios.delete_cargo or user.is_superuser %}
+                                            <a href="{% url 'delete_cargo' objeto.pk %}"
+                                               class="btn btn-sm btn-outline-danger">
+                                                Excluir
+                                            </a>
+                                        {% endif %}
+                                    {% elif tipo == "nivel" %}
+                                        {% if perms.funcionarios.change_nivel or user.is_superuser %}
+                                            <a href="{% url 'update_nivel' objeto.pk %}"
+                                               class="btn btn-sm btn-outline-primary">
+                                                Editar
+                                            </a>
+                                        {% endif %}
+                                        {% if perms.funcionarios.delete_nivel or user.is_superuser %}
+                                            <a href="{% url 'delete_nivel' objeto.pk %}"
+                                               class="btn btn-sm btn-outline-danger">
+                                                Excluir
+                                            </a>
+                                        {% endif %}
+                                    {% else %}
+                                        {% if perms.funcionarios.change_equipamento or user.is_superuser %}
+                                            <a href="{% url 'update_equipamento' objeto.pk %}"
+                                               class="btn btn-sm btn-outline-primary">
+                                                Editar
+                                            </a>
+                                        {% endif %}
+                                        {% if perms.funcionarios.delete_equipamento or user.is_superuser %}
+                                            <a href="{% url 'delete_equipamento' objeto.pk %}"
+                                               class="btn btn-sm btn-outline-danger">
+                                                Excluir
+                                            </a>
+                                        {% endif %}
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center py-5 text-muted">
+                                    Nenhum cadastro encontrado.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

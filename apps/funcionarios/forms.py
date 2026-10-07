@@ -1,8 +1,10 @@
 from django import forms
+
+from apps.empresas.models import Empresa
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 
-from .models import Funcionario, FolhaPonto, FolhaPagamento
+from .models import Cargo, Equipamento, Funcionario, Nivel, FolhaPonto, FolhaPagamento
 
 
 class FuncionarioForm(forms.ModelForm):
@@ -230,6 +232,36 @@ class FuncionarioForm(forms.ModelForm):
 
 
 
+    def clean(self):
+        cleaned_data = super().clean()
+
+        empresa = cleaned_data.get("empresa")
+
+        if not empresa:
+            return cleaned_data
+
+        for campo in (
+            "cargo",
+            "nivel",
+            "equipamento",
+        ):
+            objeto = cleaned_data.get(campo)
+
+            if (
+                objeto
+                and objeto.empresa_id != empresa.pk
+            ):
+                self.add_error(
+                    campo,
+                    (
+                        "O cadastro selecionado pertence "
+                        "a outra empresa."
+                    ),
+                )
+
+        return cleaned_data
+
+
 class DateInput(forms.DateInput):
     input_type = "date"
 
@@ -282,3 +314,109 @@ class AcessoSistemaForm(UserCreationForm):
         self.fields["password2"].help_text = (
             "Digite novamente a senha para confirma??o."
         )
+
+
+
+class CadastroFuncionarioBaseForm(forms.ModelForm):
+    def __init__(
+        self,
+        *args,
+        empresa=None,
+        permitir_empresa=False,
+        **kwargs,
+    ):
+        super().__init__(*args, **kwargs)
+        self.empresa = empresa
+
+        if permitir_empresa:
+            self.fields["empresa"] = forms.ModelChoiceField(
+                queryset=Empresa.objects.order_by("nome"),
+                required=True,
+                label="Empresa",
+            )
+            if self.instance.pk:
+                self.fields["empresa"].initial = (
+                    self.instance.empresa
+                )
+
+        for campo in self.fields.values():
+            classes = campo.widget.attrs.get("class", "")
+            campo.widget.attrs["class"] = (
+                classes + " form-control"
+            ).strip()
+
+        if "empresa" in self.fields:
+            self.fields["empresa"].widget.attrs["class"] = (
+                "form-control"
+            )
+
+        if "ativo" in self.fields:
+            self.fields["ativo"].widget.attrs["class"] = (
+                "form-check-input"
+            )
+
+    def clean_nome(self):
+        nome = (self.cleaned_data.get("nome") or "").strip()
+
+        if not nome:
+            raise forms.ValidationError(
+                "Informe o nome."
+            )
+
+        model = self._meta.model
+        queryset = model.objects.filter(
+            nome__iexact=nome,
+        )
+
+        empresa = self.empresa
+
+        if not empresa and "empresa" in self.cleaned_data:
+            empresa = self.cleaned_data.get("empresa")
+
+        if empresa:
+            queryset = queryset.filter(
+                empresa=empresa,
+            )
+
+        if self.instance.pk:
+            queryset = queryset.exclude(
+                pk=self.instance.pk,
+            )
+
+        if queryset.exists():
+            raise forms.ValidationError(
+                "J? existe um cadastro com este nome nesta empresa."
+            )
+
+        return nome
+
+
+class CargoForm(CadastroFuncionarioBaseForm):
+    class Meta:
+        model = Cargo
+        fields = [
+            "nome",
+            "descricao",
+            "ativo",
+        ]
+
+
+class NivelForm(CadastroFuncionarioBaseForm):
+    class Meta:
+        model = Nivel
+        fields = [
+            "nome",
+            "ordem",
+            "descricao",
+            "ativo",
+        ]
+
+
+class EquipamentoForm(CadastroFuncionarioBaseForm):
+    class Meta:
+        model = Equipamento
+        fields = [
+            "nome",
+            "descricao",
+            "ativo",
+        ]
