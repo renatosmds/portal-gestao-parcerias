@@ -21,6 +21,8 @@ from .models import (
     Equipamento,
     Nivel,
 )
+from apps.empresas.models import Empresa
+
 from .services import get_empresa_do_usuario
 
 
@@ -53,11 +55,74 @@ class CadastroAuxiliarMixin(
         queryset = super().get_queryset()
 
         if self.request.user.is_superuser:
-            return queryset
+            empresa_id = (
+                self.request.GET.get("empresa")
+                or self.request.POST.get("empresa")
+            )
+
+            if empresa_id:
+                return queryset.filter(
+                    empresa_id=empresa_id
+                )
+
+            prefeitura_contagem = (
+                Empresa.objects
+                .filter(
+                    nome__iexact="Prefeitura de Contagem"
+                )
+                .first()
+            )
+
+            if prefeitura_contagem:
+                return queryset.filter(
+                    empresa=prefeitura_contagem
+                )
+
+            return queryset.none()
 
         return queryset.filter(
             empresa=self.empresa_atual
         )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        if self.request.user.is_superuser:
+            empresa_id = (
+                self.request.GET.get("empresa")
+                or self.request.POST.get("empresa")
+            )
+
+            if empresa_id:
+                empresa_selecionada = (
+                    Empresa.objects
+                    .filter(pk=empresa_id)
+                    .first()
+                )
+            else:
+                empresa_selecionada = (
+                    Empresa.objects
+                    .filter(
+                        nome__iexact="Prefeitura de Contagem"
+                    )
+                    .first()
+                )
+
+            context["empresa_selecionada"] = (
+                empresa_selecionada
+            )
+            context["empresas_disponiveis"] = (
+                Empresa.objects.order_by("nome")
+            )
+        else:
+            context["empresa_selecionada"] = (
+                self.empresa_atual
+            )
+            context["empresas_disponiveis"] = (
+                Empresa.objects.none()
+            )
+
+        return context
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()

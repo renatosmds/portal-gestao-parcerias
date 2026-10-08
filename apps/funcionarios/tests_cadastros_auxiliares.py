@@ -224,6 +224,37 @@ class CadastrosAuxiliaresTests(TestCase):
             403,
         )
 
+    def test_superuser_lista_apenas_empresa_selecionada(self):
+        admin = User.objects.create_superuser(
+            username="admin_cadastros",
+            email="admin@example.com",
+            password="senha-teste-123",
+        )
+
+        self.client.force_login(admin)
+
+        response = self.client.get(
+            reverse("list_cargos"),
+            {
+                "empresa": self.empresa1.pk,
+            },
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200,
+        )
+
+        self.assertContains(
+            response,
+            "Cargo Teste A",
+        )
+
+        self.assertNotContains(
+            response,
+            "Cargo Teste B",
+        )
+
     def test_relacionamento_lotacao(self):
         self.funcionario.departamentos.add(
             self.unidade1

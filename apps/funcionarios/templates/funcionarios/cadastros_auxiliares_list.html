@@ -4,6 +4,32 @@
 {% block page_name %}Gest?o de Pessoas{% endblock %}
 
 {% block main %}
+
+{% if user.is_superuser %}
+<div class="mb-3">
+    <form method="get" class="form-inline">
+        <label for="empresa" class="mr-2">
+            Empresa:
+        </label>
+
+        <select
+            name="empresa"
+            id="empresa"
+            class="form-control mr-2"
+            onchange="this.form.submit()"
+        >
+            {% for empresa in empresas_disponiveis %}
+                <option
+                    value="{{ empresa.pk }}"
+                    {% if empresa_selecionada and empresa.pk == empresa_selecionada.pk %}selected{% endif %}
+                >
+                    {{ empresa.nome }}
+                </option>
+            {% endfor %}
+        </select>
+    </form>
+</div>
+{% endif %}
 <div class="container-fluid py-4">
 
     <div class="d-flex justify-content-between align-items-center mb-4">
