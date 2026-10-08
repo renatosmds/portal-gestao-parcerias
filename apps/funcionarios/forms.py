@@ -160,15 +160,34 @@ class FuncionarioForm(forms.ModelForm):
                 None,
             )
 
-        if (
-            "departamentos" in self.fields
-            and queryset_lotacao_empresa
-        ):
-            self.fields["departamentos"].queryset = (
-                Departamento.objects.filter(
-                    empresa=queryset_lotacao_empresa,
-                ).order_by("nome")
-            )
+        if queryset_lotacao_empresa:
+            if "cargo" in self.fields:
+                self.fields["cargo"].queryset = (
+                    Cargo.objects.filter(
+                        empresa=queryset_lotacao_empresa,
+                    ).order_by("nome")
+                )
+
+            if "nivel" in self.fields:
+                self.fields["nivel"].queryset = (
+                    Nivel.objects.filter(
+                        empresa=queryset_lotacao_empresa,
+                    ).order_by("ordem", "nome")
+                )
+
+            if "equipamento" in self.fields:
+                self.fields["equipamento"].queryset = (
+                    Equipamento.objects.filter(
+                        empresa=queryset_lotacao_empresa,
+                    ).order_by("nome")
+                )
+
+            if "departamentos" in self.fields:
+                self.fields["departamentos"].queryset = (
+                    Departamento.objects.filter(
+                        empresa=queryset_lotacao_empresa,
+                    ).order_by("nome")
+                )
 
         if "departamentos" in self.fields:
             self.fields["departamentos"].label = (
