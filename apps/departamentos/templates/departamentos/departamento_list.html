@@ -104,7 +104,7 @@
                                 href="?empresa={{ empresa_filtro|urlencode }}&q={{ linha.nome|urlencode }}#unidade-{{ linha.pk }}"
                                 class="organization-chart-link"
                                 title="Localizar {{ linha.nome }}"
-                            >{{ linha.nome }}</a>
+                            >{{ linha.nome }} ({{ linha.quantidade_funcionarios }})</a>
                         </div>
                     {% endfor %}
                 </div>

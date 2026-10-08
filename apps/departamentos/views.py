@@ -73,6 +73,11 @@ def _montar_organograma_texto(unidades):
                 "pk": unidade.pk,
                 "nome": unidade.nome,
                 "prefixo": prefixo_visual,
+                "quantidade_funcionarios": getattr(
+                    unidade,
+                    "quantidade_funcionarios",
+                    0,
+                ),
             }
         )
 
@@ -171,6 +176,12 @@ class DepartamentosList(
                 .select_related(
                     "superior",
                     "empresa",
+                )
+                .annotate(
+                    quantidade_funcionarios=Count(
+                        "funcionario",
+                        distinct=True,
+                    ),
                 )
             )
 
