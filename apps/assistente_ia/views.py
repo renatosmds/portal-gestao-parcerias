@@ -13,11 +13,11 @@ from apps.documentos.models import Documento
 
 from .forms import RevisaoProcessamentoForm
 from .models import AchadoAssistido, ProcessamentoAssistido
-from .services import gerar_rascunhos, validar_documento
+from .services import gerar_rascunhos_assistidos, validar_documento
 
 
 def _empresa_usuario(user):
-    if user.is_superuser or user.is_staff:
+    if user.is_superuser:
         return None
     try:
         return user.funcionario.empresa
@@ -30,7 +30,7 @@ def _documentos_no_escopo(user):
         "empresa", "termo", "prestacao", "lancamento"
     )
     empresa = _empresa_usuario(user)
-    if user.is_superuser or user.is_staff:
+    if user.is_superuser:
         return qs
     if empresa:
         return qs.filter(empresa=empresa)
@@ -42,7 +42,7 @@ def _processamentos_no_escopo(user):
         "documento", "empresa", "solicitado_por", "revisado_por"
     ).prefetch_related("achados")
     empresa = _empresa_usuario(user)
-    if user.is_superuser or user.is_staff:
+    if user.is_superuser:
         return qs
     if empresa:
         return qs.filter(empresa=empresa)
@@ -95,7 +95,12 @@ class ExecutarAnaliseLocal(LoginRequiredMixin, View):
     def post(self, request, pk):
         documento = get_object_or_404(_documentos_no_escopo(request.user), pk=pk)
         achados = validar_documento(documento)
-        rascunhos = gerar_rascunhos(documento, achados)
+        rascunhos, usou_ia_externa = (
+            gerar_rascunhos_assistidos(
+                documento,
+                achados,
+            )
+        )
         processamento = ProcessamentoAssistido.objects.create(
             documento=documento,
             empresa=documento.empresa,
@@ -104,7 +109,7 @@ class ExecutarAnaliseLocal(LoginRequiredMixin, View):
             rascunho_inconformidade=rascunhos["inconformidade"],
             rascunho_diligencia=rascunhos["diligencia"],
             rascunho_recomendacao=rascunhos["recomendacao"],
-            ia_externa_utilizada=False,
+            ia_externa_utilizada=usou_ia_externa,
         )
         AchadoAssistido.objects.bulk_create(
             [

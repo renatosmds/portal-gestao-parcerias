@@ -1,8 +1,11 @@
-﻿from datetime import datetime
+import logging
+from datetime import datetime
 
 from django.db.models import Q
 
 from apps.documentos.models import Documento
+
+logger = logging.getLogger(__name__)
 
 
 def _parse_data(valor):
@@ -62,4 +65,37 @@ def gerar_rascunhos(documento, achados):
             "e a compatibilidade com a vigência e o objeto da parceria."
         ),
     }
+
+
+def gerar_rascunhos_assistidos(documento, achados):
+    """
+    Tenta utilizar IA externa quando configurada.
+
+    Em qualquer indisponibilidade, mant?m o funcionamento
+    do PGP utilizando o gerador local determin?stico.
+    """
+    from .services_openai import (
+        gerar_rascunhos_openai,
+        ia_externa_configurada,
+    )
+
+    if ia_externa_configurada():
+        try:
+            resultado = gerar_rascunhos_openai(
+                documento,
+                achados,
+            )
+
+            return resultado, True
+
+        except Exception:
+            logger.exception(
+                "Falha na IA externa. "
+                "Utilizando geracao local."
+            )
+
+    return gerar_rascunhos(
+        documento,
+        achados,
+    ), False
 
