@@ -186,7 +186,7 @@
 
                             <div class="employee-form-grid">
                                 {% for field in form %}
-                                    {% if field.name == "empresa" or field.name == "nome" or field.name == "cargo" or field.name == "nivel" or field.name == "equipamento" or field.name == "tipo_vinculo" or field.name == "data_admissao" or field.name == "data_desligamento" or field.name == "de_ferias" or field.name == "ativo" or field.name == "curso" %}
+                                    {% if field.name == "empresa" or field.name == "nome" or field.name == "cargo" or field.name == "nivel" or field.name == "equipamento" or field.name == "departamentos" or field.name == "tipo_vinculo" or field.name == "data_admissao" or field.name == "data_desligamento" or field.name == "de_ferias" or field.name == "ativo" or field.name == "curso" %}
                                         <div class="employee-form-field">
                                             <label for="{{ field.id_for_label }}">
                                                 {{ field.label }}

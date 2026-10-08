@@ -1,5 +1,7 @@
 from django import forms
 
+from apps.departamentos.models import Departamento
+
 from apps.empresas.models import Empresa
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
@@ -15,6 +17,7 @@ class FuncionarioForm(forms.ModelForm):
             "cargo",
             "nivel",
             "equipamento",
+            "departamentos",
             "tipo_vinculo",
             "data_admissao",
             "data_desligamento",
@@ -93,6 +96,7 @@ class FuncionarioForm(forms.ModelForm):
             "cargo",
             "nivel",
             "equipamento",
+            "departamentos",
             "endereco",
             "bairro",
             "cep",
@@ -139,11 +143,44 @@ class FuncionarioForm(forms.ModelForm):
 
         # Cadastro inicial simplificado:
         # apenas Nome e CPF permanecem obrigatorios.
+        # Lotacao organizacional restrita a empresa do colaborador.
+        queryset_lotacao_empresa = None
+
+        if getattr(self.instance, "empresa_id", None):
+            queryset_lotacao_empresa = self.instance.empresa
+        elif user and not user.is_superuser:
+            funcionario_usuario = getattr(
+                user,
+                "funcionario",
+                None,
+            )
+            queryset_lotacao_empresa = getattr(
+                funcionario_usuario,
+                "empresa",
+                None,
+            )
+
+        if (
+            "departamentos" in self.fields
+            and queryset_lotacao_empresa
+        ):
+            self.fields["departamentos"].queryset = (
+                Departamento.objects.filter(
+                    empresa=queryset_lotacao_empresa,
+                ).order_by("nome")
+            )
+
+        if "departamentos" in self.fields:
+            self.fields["departamentos"].label = (
+                "Unidade(s) organizacional(is)"
+            )
+
         campos_opcionais = [
             "usuario",
             "cargo",
             "nivel",
             "equipamento",
+            "departamentos",
             "tipo_vinculo",
             "data_admissao",
             "data_desligamento",
@@ -256,6 +293,21 @@ class FuncionarioForm(forms.ModelForm):
                     (
                         "O cadastro selecionado pertence "
                         "a outra empresa."
+                    ),
+                )
+
+        departamentos = cleaned_data.get(
+            "departamentos"
+        )
+
+        if empresa and departamentos is not None:
+            if departamentos.exclude(
+                empresa=empresa
+            ).exists():
+                self.add_error(
+                    "departamentos",
+                    (
+                        "Lotacao selecionada pertence a outra empresa."
                     ),
                 )
 

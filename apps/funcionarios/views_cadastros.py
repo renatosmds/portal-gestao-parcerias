@@ -38,6 +38,11 @@ class CadastroAuxiliarMixin(
                 request.user
             )
 
+            if self.empresa_atual is None:
+                raise PermissionDenied(
+                    "Usuario sem empresa vinculada."
+                )
+
         return super().dispatch(
             request,
             *args,

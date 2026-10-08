@@ -75,6 +75,18 @@
             </a>
             {% endif %}
 
+            {% if perms.funcionarios.view_cargo or perms.funcionarios.view_nivel or perms.funcionarios.view_equipamento or user.is_superuser %}
+            <div style="
+                padding: 12px 16px 4px;
+                font-size: .72rem;
+                font-weight: 700;
+                opacity: .65;
+                text-transform: uppercase;
+            ">
+                Cadastros de Colaboradores
+            </div>
+            {% endif %}
+
             {% if perms.funcionarios.view_cargo or user.is_superuser %}
             <a class="sgm-nav-item {% if request.resolver_match.url_name == 'list_cargos' or request.resolver_match.url_name == 'create_cargo' or request.resolver_match.url_name == 'update_cargo' or request.resolver_match.url_name == 'delete_cargo' %}active{% endif %}"
                href="{% url 'list_cargos' %}">
