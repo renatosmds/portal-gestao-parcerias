@@ -10,6 +10,7 @@ from .mixins import AnaliseEscopoMixin, AnalisePermissaoMixin
 from .models import Analise
 
 
+from apps.core.acesso import empresa_do_usuario, usuario_pode_ver_todas_empresas
 class AnaliseList(AnalisePermissaoMixin, AnaliseEscopoMixin, ListView):
     model = Analise
     template_name = "analise/analise_list.html"
@@ -41,7 +42,7 @@ class AnaliseList(AnalisePermissaoMixin, AnaliseEscopoMixin, ListView):
         elif situacao == "andamento":
             queryset = queryset.filter(concluida=False)
 
-        if empresa_id and self.request.user.is_superuser:
+        if empresa_id and usuario_pode_ver_todas_empresas(self.request.user):
             queryset = queryset.filter(empresa_id=empresa_id)
 
         return queryset
@@ -61,7 +62,7 @@ class AnaliseList(AnalisePermissaoMixin, AnaliseEscopoMixin, ListView):
         context["total_concluidas"] = queryset.filter(concluida=True).count()
         context["empresas_disponiveis"] = (
             Empresa.objects.order_by("nome")
-            if self.request.user.is_superuser
+            if usuario_pode_ver_todas_empresas(self.request.user)
             else Empresa.objects.none()
         )
         return context
@@ -81,7 +82,7 @@ class AnaliseCreate(AnalisePermissaoMixin, CreateView):
     permission_required = "analise.add_analise"
 
     def get_empresa_destino(self):
-        if self.request.user.is_superuser:
+        if usuario_pode_ver_todas_empresas(self.request.user):
             empresa_id = (
                 self.request.GET.get("empresa")
                 or self.request.POST.get("empresa")
@@ -92,7 +93,7 @@ class AnaliseCreate(AnalisePermissaoMixin, CreateView):
                 else None
             )
         try:
-            return self.request.user.funcionario.empresa
+            return empresa_do_usuario(self.request.user)
         except Exception:
             return None
 
@@ -106,7 +107,7 @@ class AnaliseCreate(AnalisePermissaoMixin, CreateView):
         context["empresa_destino"] = self.get_empresa_destino()
         context["empresas_disponiveis"] = (
             Empresa.objects.order_by("nome")
-            if self.request.user.is_superuser
+            if usuario_pode_ver_todas_empresas(self.request.user)
             else Empresa.objects.none()
         )
         return context

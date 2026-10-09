@@ -1,6 +1,7 @@
 from datetime import date
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group, Permission
 from django.test import TestCase
 from django.urls import reverse
 
@@ -79,6 +80,13 @@ class AssistenteIAMultiempresaTests(TestCase):
             tipo=Documento.Tipo.NOTA_FISCAL,
         )
 
+        permissoes_ia = Permission.objects.filter(
+            content_type__app_label="assistente_ia",
+        )
+        self.usuario_a.user_permissions.add(
+            *permissoes_ia
+        )
+
         self.documento_b = Documento.objects.create(
             descricao="Documento B",
             arquivo="documentos/b.pdf",
@@ -127,4 +135,86 @@ class AssistenteIAMultiempresaTests(TestCase):
         self.assertEqual(
             response.status_code,
             404,
+        )
+
+
+
+class AssistenteIAGestorMunicipalTests(TestCase):
+
+    def setUp(self):
+        User = get_user_model()
+
+        self.empresa_a = Empresa.objects.create(
+            nome="OSC IA Global A",
+        )
+        self.empresa_b = Empresa.objects.create(
+            nome="OSC IA Global B",
+        )
+
+        self.doc_a = Documento.objects.create(
+            descricao="Documento IA Global A",
+            arquivo="documentos/ia-global-a.pdf",
+            empresa=self.empresa_a,
+        )
+        self.doc_b = Documento.objects.create(
+            descricao="Documento IA Global B",
+            arquivo="documentos/ia-global-b.pdf",
+            empresa=self.empresa_b,
+        )
+
+        self.gestor = User.objects.create_user(
+            username="gestor_ia_global",
+            password="teste12345",
+        )
+
+        permissoes = Permission.objects.filter(
+            content_type__app_label="assistente_ia",
+        )
+        self.gestor.user_permissions.add(*permissoes)
+
+        grupo, _ = Group.objects.get_or_create(
+            name="Gestor Municipal",
+        )
+        self.gestor.groups.add(grupo)
+
+    def test_gestor_municipal_visualiza_documentos_globais(self):
+        self.client.force_login(self.gestor)
+
+        response = self.client.get(
+            reverse("assistente_ia_central")
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200,
+        )
+        self.assertContains(
+            response,
+            "Documento IA Global A",
+        )
+        self.assertContains(
+            response,
+            "Documento IA Global B",
+        )
+
+
+class AssistenteIAPermissaoModuloTests(TestCase):
+
+    def test_usuario_sem_permissao_recebe_403(self):
+        User = get_user_model()
+
+        usuario = User.objects.create_user(
+            username="ia_sem_permissao",
+            password="teste12345",
+        )
+
+        self.client.force_login(usuario)
+
+        response = self.client.get(
+            reverse("assistente_ia_central")
+        )
+
+        self.assertEqual(
+            response.status_code,
+            403,
         )

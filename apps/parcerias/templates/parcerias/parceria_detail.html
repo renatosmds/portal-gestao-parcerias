@@ -322,6 +322,38 @@
             {% endif %}
 
 
+            {% if "assistente_ia" in modulos_liberados %}
+            <div class="col-lg-3 col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <strong>
+                            9. An?lise Assistida
+                        </strong>
+
+                        <div class="display-6">
+                            {{ fluxo_parceria.totais.processamentos }}
+                        </div>
+
+                        {% for item in fluxo_parceria.processamentos|slice:":3" %}
+                            <div>
+                                <a href="{% url 'assistente_ia_detalhe' item.pk %}">
+                                    Processamento #{{ item.pk }}
+                                </a>
+                                <small class="text-muted">
+                                    {{ item.get_decisao_revisor_display }}
+                                </small>
+                            </div>
+                        {% empty %}
+                            <div class="text-muted">
+                                Nenhuma an?lise assistida
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+
             {% if "pareceres" in modulos_liberados %}
             <div class="col-lg-3 col-md-4 mb-3">
                 <div class="card h-100">

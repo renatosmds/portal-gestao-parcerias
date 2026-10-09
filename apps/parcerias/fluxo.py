@@ -1,5 +1,7 @@
 from django.db.models import Q
 
+from apps.assistente_ia.models import ProcessamentoAssistido
+
 from apps.conciliacao.models import Conciliacao
 from apps.core.permissoes_modulos import modulo_liberado
 from apps.diligencias.models import Diligencia
@@ -30,6 +32,7 @@ def montar_fluxo_parceria(parceria, user):
     vazio_conciliacao = Conciliacao.objects.none()
     vazio_diligencia = Diligencia.objects.none()
     vazio_parecer = ParecerTecnico.objects.none()
+    vazio_processamento = ProcessamentoAssistido.objects.none()
 
     resultado = {
         "termo": None,
@@ -40,6 +43,7 @@ def montar_fluxo_parceria(parceria, user):
         "conciliacoes": vazio_conciliacao,
         "diligencias": vazio_diligencia,
         "pareceres": vazio_parecer,
+        "processamentos": vazio_processamento,
         "totais": {
             "planos": 0,
             "prestacoes": 0,
@@ -48,6 +52,7 @@ def montar_fluxo_parceria(parceria, user):
             "conciliacoes": 0,
             "diligencias": 0,
             "pareceres": 0,
+            "processamentos": 0,
         },
     }
 
@@ -168,6 +173,23 @@ def montar_fluxo_parceria(parceria, user):
             )
         )
 
+    if modulo_liberado(user, "assistente_ia"):
+        resultado["processamentos"] = (
+            ProcessamentoAssistido.objects
+            .filter(
+                empresa=empresa,
+                documento__in=documentos_base,
+            )
+            .select_related(
+                "documento",
+                "empresa",
+                "solicitado_por",
+                "revisado_por",
+            )
+            .prefetch_related("achados")
+            .order_by("-criado_em", "-pk")
+        )
+
     if modulo_liberado(user, "pareceres"):
         resultado["pareceres"] = (
             ParecerTecnico.objects
@@ -192,6 +214,7 @@ def montar_fluxo_parceria(parceria, user):
         "conciliacoes",
         "diligencias",
         "pareceres",
+        "processamentos",
     ):
         resultado["totais"][chave] = (
             resultado[chave].count()

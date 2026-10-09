@@ -5,6 +5,7 @@ from django.core.exceptions import PermissionDenied
 from .models import Analise
 
 
+from apps.core.acesso import empresa_do_usuario, usuario_pode_ver_todas_empresas
 class AnalisePermissaoMixin(LoginRequiredMixin, PermissionRequiredMixin):
     def handle_no_permission(self):
         if not self.request.user.is_authenticated:
@@ -21,7 +22,7 @@ class AnalisePermissaoMixin(LoginRequiredMixin, PermissionRequiredMixin):
 class AnaliseEscopoMixin(LoginRequiredMixin):
     def get_empresa_usuario(self):
         try:
-            return self.request.user.funcionario.empresa
+            return empresa_do_usuario(self.request.user)
         except Exception:
             return None
 
@@ -32,7 +33,7 @@ class AnaliseEscopoMixin(LoginRequiredMixin):
             "prestacao",
         )
 
-        if self.request.user.is_superuser:
+        if usuario_pode_ver_todas_empresas(self.request.user):
             return queryset
 
         empresa = self.get_empresa_usuario()

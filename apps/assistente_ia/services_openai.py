@@ -1,4 +1,5 @@
 import json
+import re
 
 from django.conf import settings
 
@@ -13,6 +14,36 @@ def ia_externa_configurada():
         and settings.OPENAI_API_KEY
         and settings.PGP_IA_MODELO
     )
+
+
+def anonimizar_texto(valor):
+    """
+    Mascaramento preventivo de identificadores comuns.
+
+    Nao pretende substituir processo formal de anonimiza??o
+    ou revis?o humana de dados pessoais.
+    """
+    texto = str(valor or "")
+
+    texto = re.sub(
+        r"\b[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}\b",
+        "[EMAIL]",
+        texto,
+    )
+
+    texto = re.sub(
+        r"\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b",
+        "[CPF]",
+        texto,
+    )
+
+    texto = re.sub(
+        r"\b\d{2}\.?\d{3}\.?\d{3}/?\d{4}-?\d{2}\b",
+        "[CNPJ]",
+        texto,
+    )
+
+    return texto
 
 
 def montar_contexto_minimizado(documento, achados):
@@ -70,9 +101,20 @@ def montar_contexto_minimizado(documento, achados):
     }
 
     if settings.PGP_IA_ANONIMIZAR:
-        # Nesta primeira etapa nao enviamos nome da OSC,
-        # CPF, CNPJ, colaborador ou outros identificadores.
-        pass
+        dados["documento"]["numero"] = anonimizar_texto(
+            dados["documento"]["numero"]
+        )
+        dados["documento"]["descricao"] = anonimizar_texto(
+            dados["documento"]["descricao"]
+        )
+
+        for item in dados["achados"]:
+            item["titulo"] = anonimizar_texto(
+                item["titulo"]
+            )
+            item["descricao"] = anonimizar_texto(
+                item["descricao"]
+            )
 
     return dados
 

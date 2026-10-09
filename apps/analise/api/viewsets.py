@@ -6,6 +6,7 @@ from apps.analise.models import Analise
 from .serializers import AnaliseSerializer
 
 
+from apps.core.acesso import empresa_do_usuario, usuario_pode_ver_todas_empresas
 class AnaliseViewSet(ModelViewSet):
     serializer_class = AnaliseSerializer
     permission_classes = [IsAuthenticated]
@@ -17,20 +18,20 @@ class AnaliseViewSet(ModelViewSet):
             "prestacao",
         )
 
-        if self.request.user.is_superuser:
+        if usuario_pode_ver_todas_empresas(self.request.user):
             return queryset
 
         try:
-            empresa = self.request.user.funcionario.empresa
+            empresa = empresa_do_usuario(self.request.user)
         except Exception:
             return queryset.none()
 
         return queryset.filter(empresa=empresa)
 
     def perform_create(self, serializer):
-        if self.request.user.is_superuser:
+        if usuario_pode_ver_todas_empresas(self.request.user):
             empresa_id = self.request.data.get("empresa")
             serializer.save(empresa_id=empresa_id)
             return
 
-        serializer.save(empresa=self.request.user.funcionario.empresa)
+        serializer.save(empresa=empresa_do_usuario(self.request.user))

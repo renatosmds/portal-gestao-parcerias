@@ -181,6 +181,7 @@ class FluxoFuncionalCompletoParceriaTests(TestCase):
                 "conciliacoes": 1,
                 "diligencias": 1,
                 "pareceres": 1,
+                "processamentos": 0,
             },
         )
 

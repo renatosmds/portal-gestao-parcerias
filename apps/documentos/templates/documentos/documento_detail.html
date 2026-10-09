@@ -13,6 +13,21 @@
             <p>{{ documento.get_tipo_display }} · {{ documento.get_status_display }}</p>
         </div>
         <div>
+            {% if "assistente_ia" in modulos_liberados %}
+                <form
+                    method="post"
+                    action="{% url 'assistente_ia_executar' documento.pk %}"
+                    style="display:inline"
+                >
+                    {% csrf_token %}
+                    <button
+                        type="submit"
+                        class="btn btn-outline-primary"
+                    >
+                        Executar an?lise assistida
+                    </button>
+                </form>
+            {% endif %}
             {% if perms.documentos.change_documento %}
                 <a href="{% url 'conferir_documento' documento.pk %}" class="btn btn-primary">Conferir</a>
                 <a href="{% url 'update_documento' documento.pk %}" class="btn btn-outline-primary">Editar</a>

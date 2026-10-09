@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, PermissionRequiredMixin
 from django.db import transaction
 from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404, redirect
@@ -9,6 +9,10 @@ from django.utils import timezone
 from django.views import View
 from django.views.generic import DetailView, ListView
 
+from apps.core.acesso import (
+    empresa_do_usuario,
+    usuario_pode_ver_todas_empresas,
+)
 from apps.documentos.models import Documento
 
 from .forms import RevisaoProcessamentoForm
@@ -17,39 +21,57 @@ from .services import gerar_rascunhos_assistidos, validar_documento
 
 
 def _empresa_usuario(user):
-    if user.is_superuser:
-        return None
-    try:
-        return user.funcionario.empresa
-    except Exception:
-        return None
+    return empresa_do_usuario(user)
 
 
 def _documentos_no_escopo(user):
     qs = Documento.objects.select_related(
-        "empresa", "termo", "prestacao", "lancamento"
+        "empresa",
+        "termo",
+        "prestacao",
+        "lancamento",
     )
-    empresa = _empresa_usuario(user)
-    if user.is_superuser:
+
+    if usuario_pode_ver_todas_empresas(user):
         return qs
+
+    empresa = empresa_do_usuario(user)
+
     if empresa:
         return qs.filter(empresa=empresa)
+
     return qs.none()
 
 
 def _processamentos_no_escopo(user):
-    qs = ProcessamentoAssistido.objects.select_related(
-        "documento", "empresa", "solicitado_por", "revisado_por"
-    ).prefetch_related("achados")
-    empresa = _empresa_usuario(user)
-    if user.is_superuser:
+    qs = (
+        ProcessamentoAssistido.objects
+        .select_related(
+            "documento",
+            "empresa",
+            "solicitado_por",
+            "revisado_por",
+        )
+        .prefetch_related("achados")
+    )
+
+    if usuario_pode_ver_todas_empresas(user):
         return qs
+
+    empresa = empresa_do_usuario(user)
+
     if empresa:
         return qs.filter(empresa=empresa)
+
     return qs.none()
 
 
-class CentralAssistenteIA(LoginRequiredMixin, ListView):
+class CentralAssistenteIA(
+    LoginRequiredMixin,
+    PermissionRequiredMixin,
+    ListView,
+):
+    permission_required = "assistente_ia.view_processamentoassistido"
     template_name = "assistente_ia/central.html"
     context_object_name = "documentos"
     paginate_by = 20
@@ -90,7 +112,12 @@ class CentralAssistenteIA(LoginRequiredMixin, ListView):
         return context
 
 
-class ExecutarAnaliseLocal(LoginRequiredMixin, View):
+class ExecutarAnaliseLocal(
+    LoginRequiredMixin,
+    PermissionRequiredMixin,
+    View,
+):
+    permission_required = "assistente_ia.add_processamentoassistido"
     @transaction.atomic
     def post(self, request, pk):
         documento = get_object_or_404(_documentos_no_escopo(request.user), pk=pk)
@@ -131,7 +158,12 @@ class ExecutarAnaliseLocal(LoginRequiredMixin, View):
         return redirect(processamento.get_absolute_url())
 
 
-class ProcessamentoDetalhe(LoginRequiredMixin, DetailView):
+class ProcessamentoDetalhe(
+    LoginRequiredMixin,
+    PermissionRequiredMixin,
+    DetailView,
+):
+    permission_required = "assistente_ia.view_processamentoassistido"
     model = ProcessamentoAssistido
     template_name = "assistente_ia/detalhe.html"
     context_object_name = "processamento"
@@ -145,7 +177,12 @@ class ProcessamentoDetalhe(LoginRequiredMixin, DetailView):
         return context
 
 
-class RevisarProcessamento(LoginRequiredMixin, View):
+class RevisarProcessamento(
+    LoginRequiredMixin,
+    PermissionRequiredMixin,
+    View,
+):
+    permission_required = "assistente_ia.change_processamentoassistido"
     def post(self, request, pk):
         processamento = get_object_or_404(
             _processamentos_no_escopo(request.user), pk=pk

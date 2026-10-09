@@ -26,6 +26,49 @@ class DocumentoFake:
 
 
 class AssistenteIAOpenAITests(SimpleTestCase):
+
+
+    @override_settings(
+        PGP_IA_ANONIMIZAR=True,
+    )
+    def test_anonimizacao_mascara_identificadores(self):
+        documento = DocumentoFake()
+        documento.descricao = (
+            "Contato teste@example.com CPF 123.456.789-00 "
+            "CNPJ 12.345.678/0001-90"
+        )
+
+        contexto = montar_contexto_minimizado(
+            documento,
+            [
+                {
+                    "codigo": "TESTE",
+                    "severidade": "alerta",
+                    "titulo": "CPF 123.456.789-00",
+                    "descricao": (
+                        "Enviar para teste@example.com"
+                    ),
+                }
+            ],
+        )
+
+        serializado = str(contexto)
+
+        self.assertNotIn(
+            "123.456.789-00",
+            serializado,
+        )
+        self.assertNotIn(
+            "12.345.678/0001-90",
+            serializado,
+        )
+        self.assertNotIn(
+            "teste@example.com",
+            serializado,
+        )
+        self.assertIn("[CPF]", serializado)
+        self.assertIn("[CNPJ]", serializado)
+        self.assertIn("[EMAIL]", serializado)
     @override_settings(
         PGP_IA_ATIVA=False,
         OPENAI_API_KEY="",
@@ -214,4 +257,3 @@ class AssistenteIAOpenAITests(SimpleTestCase):
             resultado["resumo"],
             "Resumo IA",
         )
-
