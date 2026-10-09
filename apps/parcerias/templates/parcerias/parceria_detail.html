@@ -109,4 +109,247 @@
         </aside>
     </div>
 </section>
+
+
+<!-- FLUXO FUNCIONAL DA PARCERIA -->
+<div class="card mt-4 mb-4">
+    <div class="card-header">
+        <strong>
+            Fluxo funcional da parceria
+        </strong>
+    </div>
+
+    <div class="card-body">
+
+        <p class="text-muted mb-4">
+            Vis?o integrada da execu??o e da presta??o de
+            contas vinculadas a esta parceria.
+        </p>
+
+        <div class="row">
+
+            {% if "termos" in modulos_liberados %}
+            <div class="col-lg-3 col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <strong>1. Termo</strong>
+
+                        {% if fluxo_parceria.termo %}
+                            <div class="mt-2">
+                                {{ fluxo_parceria.termo }}
+                            </div>
+
+                            <a
+                                href="{{ fluxo_parceria.termo.get_absolute_url }}"
+                                class="btn btn-sm btn-outline-primary mt-2"
+                            >
+                                Abrir Termo
+                            </a>
+                        {% else %}
+                            <div class="text-muted mt-2">
+                                N?o vinculado
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+
+            {% if "planos_trabalho" in modulos_liberados %}
+            <div class="col-lg-3 col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <strong>2. Plano de Trabalho</strong>
+
+                        <div class="display-6">
+                            {{ fluxo_parceria.totais.planos }}
+                        </div>
+
+                        {% for item in fluxo_parceria.planos|slice:":3" %}
+                            <div>
+                                <a href="{% url 'planos_trabalho:plano_detalhe' item.pk %}">
+                                    {{ item }}
+                                </a>
+                            </div>
+                        {% empty %}
+                            <div class="text-muted">
+                                Nenhum plano
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+
+            {% if "prestacoes" in modulos_liberados %}
+            <div class="col-lg-3 col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <strong>
+                            3. Presta??o de Contas
+                        </strong>
+
+                        <div class="display-6">
+                            {{ fluxo_parceria.totais.prestacoes }}
+                        </div>
+
+                        {% for item in fluxo_parceria.prestacoes|slice:":3" %}
+                            <div>
+                                <a href="{{ item.get_absolute_url }}">
+                                    {{ item }}
+                                </a>
+                            </div>
+                        {% empty %}
+                            <div class="text-muted">
+                                Nenhuma presta??o
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+
+            {% if "lancamentos" in modulos_liberados %}
+            <div class="col-lg-3 col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <strong>4. Lan?amentos</strong>
+
+                        <div class="display-6">
+                            {{ fluxo_parceria.totais.lancamentos }}
+                        </div>
+
+                        {% for item in fluxo_parceria.lancamentos|slice:":3" %}
+                            <div>
+                                <a href="{{ item.get_absolute_url }}">
+                                    {{ item }}
+                                </a>
+                            </div>
+                        {% empty %}
+                            <div class="text-muted">
+                                Nenhum lan?amento
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+
+            {% if "documentos" in modulos_liberados %}
+            <div class="col-lg-3 col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <strong>5. Documentos</strong>
+
+                        <div class="display-6">
+                            {{ fluxo_parceria.totais.documentos }}
+                        </div>
+
+                        {% for item in fluxo_parceria.documentos|slice:":3" %}
+                            <div>
+                                <a href="{{ item.get_absolute_url }}">
+                                    {{ item }}
+                                </a>
+                            </div>
+                        {% empty %}
+                            <div class="text-muted">
+                                Nenhum documento
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+
+            {% if "conciliacao" in modulos_liberados %}
+            <div class="col-lg-3 col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <strong>
+                            6. Concilia??o banc?ria
+                        </strong>
+
+                        <div class="display-6">
+                            {{ fluxo_parceria.totais.conciliacoes }}
+                        </div>
+
+                        {% for item in fluxo_parceria.conciliacoes|slice:":3" %}
+                            <div>
+                                <a href="{{ item.get_absolute_url }}">
+                                    {{ item }}
+                                </a>
+                            </div>
+                        {% empty %}
+                            <div class="text-muted">
+                                Nenhuma concilia??o
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+
+            {% if "diligencias" in modulos_liberados %}
+            <div class="col-lg-3 col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <strong>7. Dilig?ncias</strong>
+
+                        <div class="display-6">
+                            {{ fluxo_parceria.totais.diligencias }}
+                        </div>
+
+                        {% for item in fluxo_parceria.diligencias|slice:":3" %}
+                            <div>
+                                <a href="{{ item.get_absolute_url }}">
+                                    {{ item }}
+                                </a>
+                            </div>
+                        {% empty %}
+                            <div class="text-muted">
+                                Nenhuma dilig?ncia
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+
+            {% if "pareceres" in modulos_liberados %}
+            <div class="col-lg-3 col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <strong>8. Parecer T?cnico</strong>
+
+                        <div class="display-6">
+                            {{ fluxo_parceria.totais.pareceres }}
+                        </div>
+
+                        {% for item in fluxo_parceria.pareceres|slice:":3" %}
+                            <div>
+                                <a href="{% url 'pareceres:parecer_detalhe' item.pk %}">
+                                    {{ item }}
+                                </a>
+                            </div>
+                        {% empty %}
+                            <div class="text-muted">
+                                Nenhum parecer
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+
 {% endblock %}

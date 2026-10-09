@@ -6,6 +6,7 @@ from django.views.generic import CreateView, DeleteView, DetailView, ListView, U
 from apps.empresas.models import Empresa
 from apps.core.acesso import empresa_do_usuario, usuario_pode_ver_todas_empresas
 
+from .fluxo import montar_fluxo_parceria
 from .forms import ParceriasForm
 from .mixins import ParceriaEscopoMixin, ParceriaPermissaoMixin
 from .models import Parcerias
@@ -78,6 +79,21 @@ class ParceriaDetail(
     template_name = "parcerias/parceria_detail.html"
     context_object_name = "parceria"
     permission_required = "parcerias.view_parcerias"
+
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(
+            **kwargs
+        )
+
+        context["fluxo_parceria"] = (
+            montar_fluxo_parceria(
+                self.object,
+                self.request.user,
+            )
+        )
+
+        return context
 
 
 class ParceriaCreate(
