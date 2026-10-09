@@ -256,3 +256,77 @@ class DiligenciasEscopoMultiempresaTests(TestCase):
                 self.diligencia_b.pk,
             },
         )
+
+
+class DiligenciasGestorMunicipalTests(TestCase):
+
+    def setUp(self):
+        from django.contrib.auth.models import Group
+        from apps.diligencias.models import Diligencia
+        from apps.empresas.models import Empresa
+
+        User = get_user_model()
+
+        self.empresa_a = Empresa.objects.create(
+            nome="OSC A Diligencia Gestor",
+        )
+        self.empresa_b = Empresa.objects.create(
+            nome="OSC B Diligencia Gestor",
+        )
+
+        self.criador = User.objects.create_superuser(
+            username="admin_dilig_gestor_fixture",
+            email="admin-dilig-gestor@example.test",
+            password="teste12345",
+        )
+
+        self.diligencia_a = Diligencia.objects.create(
+            assunto="Diligencia Gestor A",
+            descricao="Teste global A",
+            empresa=self.empresa_a,
+            criada_por=self.criador,
+        )
+
+        self.diligencia_b = Diligencia.objects.create(
+            assunto="Diligencia Gestor B",
+            descricao="Teste global B",
+            empresa=self.empresa_b,
+            criada_por=self.criador,
+        )
+
+        self.gestor = User.objects.create_user(
+            username="gestor_diligencias_global",
+            password="teste12345",
+        )
+
+        permissoes = Permission.objects.filter(
+            content_type__app_label="diligencias",
+        )
+        self.gestor.user_permissions.add(*permissoes)
+
+        grupo, _ = Group.objects.get_or_create(
+            name="Gestor Municipal",
+        )
+        self.gestor.groups.add(grupo)
+
+    def test_gestor_municipal_recebe_visao_global(self):
+        self.client.force_login(self.gestor)
+
+        response = self.client.get(
+            reverse("list_diligencias")
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        ids = {
+            item.pk
+            for item in response.context["diligencias"]
+        }
+
+        self.assertEqual(
+            ids,
+            {
+                self.diligencia_a.pk,
+                self.diligencia_b.pk,
+            },
+        )

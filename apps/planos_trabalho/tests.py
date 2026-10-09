@@ -259,3 +259,77 @@ class PlanosTrabalhoEscopoPermissaoTests(TestCase):
                 self.plano_b.pk,
             },
         )
+
+
+class PlanoTrabalhoGestorMunicipalTests(TestCase):
+
+    def setUp(self):
+        from django.contrib.auth.models import Group
+
+        User = get_user_model()
+
+        self.empresa_a = Empresa.objects.create(
+            nome="OSC A Plano Gestor",
+        )
+        self.empresa_b = Empresa.objects.create(
+            nome="OSC B Plano Gestor",
+        )
+
+        self.termo_a = Termos.objects.create(
+            numtermo="GESTOR-PT-A",
+            termo="Termo Gestor A",
+            empresa=self.empresa_a,
+        )
+        self.termo_b = Termos.objects.create(
+            numtermo="GESTOR-PT-B",
+            termo="Termo Gestor B",
+            empresa=self.empresa_b,
+        )
+
+        self.plano_a = PlanoTrabalho.objects.create(
+            termo=self.termo_a,
+            versao=1,
+            titulo="Plano Gestor A",
+        )
+        self.plano_b = PlanoTrabalho.objects.create(
+            termo=self.termo_b,
+            versao=1,
+            titulo="Plano Gestor B",
+        )
+
+        self.gestor = User.objects.create_user(
+            username="gestor_planos_global",
+            password="teste12345",
+        )
+
+        permissoes = Permission.objects.filter(
+            content_type__app_label="planos_trabalho",
+        )
+        self.gestor.user_permissions.add(*permissoes)
+
+        grupo, _ = Group.objects.get_or_create(
+            name="Gestor Municipal",
+        )
+        self.gestor.groups.add(grupo)
+
+    def test_gestor_municipal_recebe_planos_de_todas_empresas(self):
+        self.client.force_login(self.gestor)
+
+        response = self.client.get(
+            reverse("planos_trabalho:plano_lista")
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        ids = {
+            item.pk
+            for item in response.context["planos"]
+        }
+
+        self.assertEqual(
+            ids,
+            {
+                self.plano_a.pk,
+                self.plano_b.pk,
+            },
+        )

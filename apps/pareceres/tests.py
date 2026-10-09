@@ -261,3 +261,87 @@ class PareceresEscopoPermissaoTests(TestCase):
                 self.parecer_b.pk,
             },
         )
+
+
+class ParecerGestorMunicipalTests(TestCase):
+
+    def setUp(self):
+        from django.contrib.auth.models import Group
+
+        User = get_user_model()
+
+        self.empresa_a = Empresa.objects.create(
+            nome="OSC A Parecer Gestor",
+        )
+        self.empresa_b = Empresa.objects.create(
+            nome="OSC B Parecer Gestor",
+        )
+
+        self.prestacao_a = Prestacao.objects.create(
+            tipo="cnpj",
+            numtermo="GESTOR-PA",
+            empresa=self.empresa_a,
+        )
+
+        self.prestacao_b = Prestacao.objects.create(
+            tipo="cnpj",
+            numtermo="GESTOR-PB",
+            empresa=self.empresa_b,
+        )
+
+        self.criador = User.objects.create_superuser(
+            username="admin_parecer_gestor_fixture",
+            email="admin-parecer-gestor@example.test",
+            password="teste12345",
+        )
+
+        self.parecer_a = ParecerTecnico.objects.create(
+            prestacao=self.prestacao_a,
+            empresa=self.empresa_a,
+            numero="GESTOR-PARECER-A",
+            elaborado_por=self.criador,
+        )
+
+        self.parecer_b = ParecerTecnico.objects.create(
+            prestacao=self.prestacao_b,
+            empresa=self.empresa_b,
+            numero="GESTOR-PARECER-B",
+            elaborado_por=self.criador,
+        )
+
+        self.gestor = User.objects.create_user(
+            username="gestor_parecer_global",
+            password="teste12345",
+        )
+
+        permissoes = Permission.objects.filter(
+            content_type__app_label="pareceres",
+        )
+        self.gestor.user_permissions.add(*permissoes)
+
+        grupo, _ = Group.objects.get_or_create(
+            name="Gestor Municipal",
+        )
+        self.gestor.groups.add(grupo)
+
+    def test_gestor_municipal_recebe_visao_global(self):
+        self.client.force_login(self.gestor)
+
+        response = self.client.get(
+            reverse("pareceres:parecer_lista")
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        ids = {
+            item.pk
+            for item in response.context["pareceres"]
+        }
+
+        self.assertEqual(
+            ids,
+            {
+                self.parecer_a.pk,
+                self.parecer_b.pk,
+            },
+        )
