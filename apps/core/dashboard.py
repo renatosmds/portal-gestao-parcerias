@@ -6,6 +6,8 @@ camada de leitura. Nenhuma migração é necessária.
 
 from __future__ import annotations
 
+from apps.core.acesso import usuario_pode_ver_todas_empresas
+
 from apps.core.dashboard_permissoes import modulos_dashboard_usuario
 from apps.core.dashboard_widgets_permissoes import widgets_dashboard_usuario
 
@@ -226,20 +228,25 @@ def montar_contexto_dashboard(request):
     visao = _normalizar_visao(request)
     inicio, fim, periodo_ajustado = _ler_periodo(request)
     empresa_vinculada = empresa_do_usuario(user)
+    acesso_global = usuario_pode_ver_todas_empresas(user)
 
-    if user.is_superuser:
+    if acesso_global:
         empresas_disponiveis = Empresa.objects.all().order_by("nome")
         empresa_selecionada = None
         empresa_id = request.GET.get("empresa", "").strip()
         if empresa_id.isdigit():
-            empresa_selecionada = empresas_disponiveis.filter(pk=empresa_id).first()
+            empresa_selecionada = empresas_disponiveis.filter(
+                pk=empresa_id
+            ).first()
     else:
-        empresas_disponiveis = Empresa.objects.filter(
-            pk=empresa_vinculada.pk
-        ) if empresa_vinculada else Empresa.objects.none()
+        empresas_disponiveis = (
+            Empresa.objects.filter(pk=empresa_vinculada.pk)
+            if empresa_vinculada
+            else Empresa.objects.none()
+        )
         empresa_selecionada = empresa_vinculada
 
-    sem_empresa = not user.is_superuser and empresa_selecionada is None
+    sem_empresa = not acesso_global and empresa_selecionada is None
 
     # SPRINT46_16_PARcerias
     parcerias = Parcerias.objects.select_related(
@@ -250,16 +257,11 @@ def montar_contexto_dashboard(request):
     if "parcerias" not in modulos:
         parcerias = parcerias.none()
 
-    elif user.is_superuser:
+    elif acesso_global:
         if empresa_selecionada is not None:
             parcerias = parcerias.filter(
                 empresa=empresa_selecionada
             )
-
-    elif user.is_staff:
-        # Area interna do orgao: acompanha as parcerias
-        # disponiveis no escopo institucional.
-        pass
 
     elif empresa_vinculada is not None:
         parcerias = parcerias.filter(
@@ -847,8 +849,3 @@ def montar_contexto_dashboard(request):
         ),
     }
     return contexto
-
-
-
-
-

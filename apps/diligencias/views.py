@@ -4,23 +4,42 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
-from django.views.decorators.http import require_POST
+from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_POST
 from django.views.generic import CreateView, DetailView, ListView, UpdateView
 
+from apps.core.acesso import usuario_pode_ver_todas_empresas
 from apps.core.dashboard import empresa_do_usuario, usuario_eh_osc
+from apps.core.permissoes_modulos import exigir_modulo
 from .forms import ComentarioInternoForm, DiligenciaForm, RespostaDiligenciaForm
 from .models import ComentarioInterno, Diligencia, Notificacao, RespostaDiligencia
 
 
 def _qs_usuario(user):
-    qs = Diligencia.objects.select_related("empresa", "prestacao", "lancamento", "documento", "funcionario", "responsavel", "criada_por")
-    if user.is_superuser or not usuario_eh_osc(user):
+    qs = Diligencia.objects.select_related(
+        "empresa",
+        "prestacao",
+        "lancamento",
+        "documento",
+        "funcionario",
+        "responsavel",
+        "criada_por",
+    )
+
+    if usuario_pode_ver_todas_empresas(user):
         return qs
+
     empresa = empresa_do_usuario(user)
-    return qs.filter(empresa=empresa) if empresa else qs.none()
+
+    if empresa is None:
+        return qs.none()
+
+    return qs.filter(
+        empresa=empresa
+    )
 
 
+@method_decorator(exigir_modulo("diligencias"), name="dispatch")
 class DiligenciaList(LoginRequiredMixin, ListView):
     model = Diligencia
     template_name = "diligencias/diligencia_list.html"
@@ -44,6 +63,7 @@ class DiligenciaList(LoginRequiredMixin, ListView):
         return ctx
 
 
+@method_decorator(exigir_modulo("diligencias"), name="dispatch")
 class DiligenciaDetail(LoginRequiredMixin, DetailView):
     model = Diligencia
     template_name = "diligencias/diligencia_detail.html"
@@ -68,6 +88,7 @@ class DiligenciaDetail(LoginRequiredMixin, DetailView):
         return ctx
 
 
+@method_decorator(exigir_modulo("diligencias"), name="dispatch")
 class DiligenciaCreate(LoginRequiredMixin, CreateView):
     model = Diligencia
     form_class = DiligenciaForm
@@ -84,6 +105,7 @@ class DiligenciaCreate(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
+@method_decorator(exigir_modulo("diligencias"), name="dispatch")
 class DiligenciaUpdate(LoginRequiredMixin, UpdateView):
     model = Diligencia
     form_class = DiligenciaForm
@@ -101,6 +123,7 @@ class DiligenciaUpdate(LoginRequiredMixin, UpdateView):
 
 @login_required
 @require_POST
+@exigir_modulo("diligencias")
 def enviar_diligencia(request, pk):
     d = get_object_or_404(_qs_usuario(request.user), pk=pk)
     if usuario_eh_osc(request.user) and not request.user.is_superuser:
@@ -117,6 +140,7 @@ def enviar_diligencia(request, pk):
 
 
 @login_required
+@exigir_modulo("diligencias")
 def responder_diligencia(request, pk):
     d = get_object_or_404(_qs_usuario(request.user), pk=pk)
     if request.method != "POST":
@@ -138,6 +162,7 @@ def responder_diligencia(request, pk):
 
 
 @login_required
+@exigir_modulo("diligencias")
 def comentar_interno(request, pk):
     d = get_object_or_404(_qs_usuario(request.user), pk=pk)
     if usuario_eh_osc(request.user) and not request.user.is_superuser:
@@ -155,6 +180,7 @@ def comentar_interno(request, pk):
 
 @login_required
 @require_POST
+@exigir_modulo("diligencias")
 def alterar_status(request, pk, status):
     d = get_object_or_404(_qs_usuario(request.user), pk=pk)
     permitidos = dict(Diligencia.Status.choices)
@@ -173,12 +199,14 @@ def alterar_status(request, pk, status):
 
 
 @login_required
+@exigir_modulo("diligencias")
 def notificacoes(request):
     itens = request.user.notificacoes_pgp.select_related("diligencia")[:50]
     return render(request, "diligencias/notificacoes.html", {"notificacoes": itens})
 
 
 @login_required
+@exigir_modulo("diligencias")
 def marcar_notificacao_lida(request, pk):
     item = get_object_or_404(request.user.notificacoes_pgp, pk=pk)
     item.lida = True

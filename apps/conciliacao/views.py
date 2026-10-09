@@ -1,3 +1,4 @@
+from apps.core.acesso import usuario_pode_ver_todas_empresas
 from apps.core.permissoes_modulos import exigir_modulo
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -18,11 +19,23 @@ def _empresa_usuario(user):
 
 
 def _qs_usuario(user):
-    qs = Conciliacao.objects.select_related("prestacao", "prestacao__empresa", "criado_por")
-    if user.is_staff or user.is_superuser:
+    qs = Conciliacao.objects.select_related(
+        "prestacao",
+        "prestacao__empresa",
+        "criado_por",
+    )
+
+    if usuario_pode_ver_todas_empresas(user):
         return qs
+
     empresa = _empresa_usuario(user)
-    return qs.filter(prestacao__empresa=empresa) if empresa else qs.none()
+
+    if empresa is None:
+        return qs.none()
+
+    return qs.filter(
+        prestacao__empresa=empresa
+    )
 
 
 @login_required

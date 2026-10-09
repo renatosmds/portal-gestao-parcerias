@@ -3,6 +3,8 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
+from apps.core.permissoes_modulos import exigir_modulo
+
 from .forms import ImportacaoUploadForm
 from .models import Importacao
 from .services import confirmar_importacao, ler_arquivo, validar_linhas
@@ -13,6 +15,7 @@ def pode_importar(user):
 
 
 @login_required
+@exigir_modulo("importacoes")
 def lista(request):
     return render(request, "importacoes/list.html", {"importacoes": Importacao.objects.all()[:100]})
 
@@ -42,6 +45,7 @@ def nova(request):
 
 
 @login_required
+@exigir_modulo("importacoes")
 def detalhe(request, pk):
     obj = get_object_or_404(Importacao, pk=pk)
     return render(request, "importacoes/detail.html", {"importacao": obj, "amostra": obj.linhas[:20]})
@@ -50,6 +54,7 @@ def detalhe(request, pk):
 @login_required
 @user_passes_test(pode_importar)
 @require_POST
+@exigir_modulo("importacoes")
 def confirmar(request, pk):
     obj = get_object_or_404(Importacao, pk=pk, situacao=Importacao.Situacao.VALIDACAO)
     confirmar_importacao(obj)
@@ -60,6 +65,7 @@ def confirmar(request, pk):
 @login_required
 @user_passes_test(pode_importar)
 @require_POST
+@exigir_modulo("importacoes")
 def cancelar(request, pk):
     obj = get_object_or_404(Importacao, pk=pk, situacao=Importacao.Situacao.VALIDACAO)
     obj.situacao = Importacao.Situacao.CANCELADA

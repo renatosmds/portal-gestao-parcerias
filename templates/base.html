@@ -44,7 +44,7 @@
 
             <span class="sgm-nav-label">{% if usuario_area_osc %}GESTÃO DA OSC{% else %}GESTÃO DAS PARCERIAS{% endif %}</span>
 
-            {% if perms.empresas.view_empresa or user.is_superuser %}
+            {% if "empresas" in modulos_liberados %}
             <a class="sgm-nav-item {% if request.resolver_match.url_name == 'list_empresas' or request.resolver_match.url_name == 'detail_empresa' or request.resolver_match.url_name == 'create_empresa' or request.resolver_match.url_name == 'edit_empresa' or request.resolver_match.url_name == 'delete_empresa' %}active{% endif %}"
                href="{% url 'list_empresas' %}">
                 <i class="fa fa-building-o" aria-hidden="true"></i>
@@ -52,7 +52,7 @@
             </a>
             {% endif %}
 
-            {% if perms.departamentos.view_departamento or user.is_superuser %}
+            {% if "departamentos" in modulos_liberados %}
             <a class="sgm-nav-item {% if request.resolver_match.url_name == 'list_departamentos' or request.resolver_match.url_name == 'detail_departamento' or request.resolver_match.url_name == 'create_departamento' or request.resolver_match.url_name == 'update_departamento' or request.resolver_match.url_name == 'delete_departamento' %}active{% endif %}"
                href="{% url 'list_departamentos' %}">
                 <i class="fa fa-sitemap" aria-hidden="true"></i>
@@ -60,7 +60,7 @@
             </a>
             {% endif %}
 
-            {% if perms.fornecedores.view_fornecedores or user.is_superuser %}
+            {% if "fornecedores" in modulos_liberados %}
             <a class="sgm-nav-item {% if request.resolver_match.url_name == 'list_fornecedores' or request.resolver_match.url_name == 'detail_fornecedor' or request.resolver_match.url_name == 'create_fornecedor' or request.resolver_match.url_name == 'update_fornecedor' or request.resolver_match.url_name == 'delete_fornecedor' %}active{% endif %}"
                href="{% url 'list_fornecedores' %}">
                 <i class="fa fa-truck" aria-hidden="true"></i>
@@ -68,7 +68,7 @@
             </a>
             {% endif %}
 
-            {% if perms.funcionarios.view_funcionario or user.is_superuser %}
+            {% if "funcionarios" in modulos_liberados %}
             <a class="sgm-nav-item" href="{% url 'list_funcionarios' %}">
                 <i class="fa fa-users" aria-hidden="true"></i>
                 <span>Colaboradores</span>
@@ -111,10 +111,10 @@
             </a>
             {% endif %}
 
-            {% if perms.funcionarios.view_folhaponto or user.is_superuser %}
+            {% if "folha_ponto" in modulos_liberados %}
             <a class="sgm-nav-item" href="{% url 'folhas_ponto_list' %}"><i class="fa fa-calendar-check-o"></i><span>Folha de Ponto</span></a>
             {% endif %}
-            {% if perms.funcionarios.view_folhapagamento or user.is_superuser %}
+            {% if "folha_pagamento" in modulos_liberados %}
             <a class="sgm-nav-item" href="{% url 'folhas_pagamento_list' %}"><i class="fa fa-file-text-o"></i><span>Contracheques</span></a>
             {% endif %}
 
@@ -147,7 +147,7 @@
             </a>
             {% endif %}
 
-            {% if user.is_staff or user.is_superuser %}
+            {% if "importacoes" in modulos_liberados %}
             <a class="sgm-nav-item {% if 'importacao' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'list_importacoes' %}">
                 <i class="fa fa-upload" aria-hidden="true"></i>
                 <span>Importações</span>
@@ -197,7 +197,7 @@
             </a>
             {% endif %}
 
-            {% if perms.documentos.view_documento or user.is_superuser %}
+            {% if "documentos" in modulos_liberados %}
             <a class="sgm-nav-item {% if request.resolver_match.url_name == 'list_documentos' or request.resolver_match.url_name == 'detail_documento' or request.resolver_match.url_name == 'create_documento' or request.resolver_match.url_name == 'update_documento' or request.resolver_match.url_name == 'conferir_documento' or request.resolver_match.url_name == 'delete_documento' %}active{% endif %}"
                href="{% url 'list_documentos' %}">
                 <i class="fa fa-files-o" aria-hidden="true"></i>
@@ -205,7 +205,7 @@
             </a>
             {% endif %}
 
-            {% if perms.lancamentos.view_lancamento or user.is_superuser %}
+            {% if "lancamentos" in modulos_liberados %}
             <a class="sgm-nav-item {% if request.resolver_match.url_name == 'list_lancamentos' or request.resolver_match.url_name == 'detail_lancamento' or request.resolver_match.url_name == 'create_lancamento' or request.resolver_match.url_name == 'update_lancamento' or request.resolver_match.url_name == 'delete_lancamento' %}active{% endif %}"
                href="{% url 'list_lancamentos' %}">
                 <i class="fa fa-list-alt" aria-hidden="true"></i>
@@ -213,7 +213,7 @@
             </a>
             {% endif %}
 
-            {% if perms.analise.view_analise or user.is_superuser %}
+            {% if "analises" in modulos_liberados %}
             <a class="sgm-nav-item {% if request.resolver_match.url_name == 'list_analise' or request.resolver_match.url_name == 'detail_analise' or request.resolver_match.url_name == 'create_analise' or request.resolver_match.url_name == 'update_analise' or request.resolver_match.url_name == 'delete_analise' %}active{% endif %}"
                href="{% url 'list_analise' %}">
                 <i class="fa fa-search" aria-hidden="true"></i>
@@ -221,7 +221,7 @@
             </a>
             {% endif %}
 
-            {% if perms.prestacao.view_prestacao or user.is_superuser %}
+            {% if "prestacoes" in modulos_liberados %}
             <a class="sgm-nav-item {% if request.resolver_match.url_name == 'list_prestacao' or request.resolver_match.url_name == 'detail_prestacao' or request.resolver_match.url_name == 'create_prestacao' or request.resolver_match.url_name == 'update_prestacao' or request.resolver_match.url_name == 'delete_prestacao' %}active{% endif %}"
                href="{% url 'list_prestacao' %}">
                 <i class="fa fa-folder-open-o" aria-hidden="true"></i>
@@ -229,7 +229,7 @@
             </a>
             {% endif %}
 
-            {% if perms.termos.view_termos or user.is_superuser %}
+            {% if "termos" in modulos_liberados %}
             <a class="sgm-nav-item {% if request.resolver_match.url_name == 'list_termos' or request.resolver_match.url_name == 'detail_termo' or request.resolver_match.url_name == 'create_termos' or request.resolver_match.url_name == 'update_termos' or request.resolver_match.url_name == 'delete_termos' %}active{% endif %}"
                href="{% url 'list_termos' %}">
                 <i class="fa fa-file-text-o" aria-hidden="true"></i>
@@ -237,7 +237,7 @@
             </a>
             {% endif %}
 
-            {% if perms.parcerias.view_parcerias or user.is_superuser %}
+            {% if "parcerias" in modulos_liberados %}
             <a class="sgm-nav-item {% if request.resolver_match.url_name == 'list_parcerias' or request.resolver_match.url_name == 'detail_parceria' or request.resolver_match.url_name == 'create_parceria' or request.resolver_match.url_name == 'update_parceria' or request.resolver_match.url_name == 'delete_parceria' %}active{% endif %}"
                href="{% url 'list_parcerias' %}">
                 <i class="fa fa-handshake-o" aria-hidden="true"></i>
@@ -428,4 +428,3 @@
 {% endblock %}
 </body>
 </html>
-

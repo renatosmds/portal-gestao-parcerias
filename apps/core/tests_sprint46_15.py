@@ -1,4 +1,4 @@
-﻿from apps.core.testes_documentos import cpf_teste
+from apps.core.testes_documentos import cpf_teste
 from django.contrib.auth.models import AnonymousUser, Group, Permission, User
 from django.test import TestCase
 
@@ -573,6 +573,7 @@ class Sprint4616DashboardParceriasTests(TestCase):
     def setUp(self):
         from django.contrib.auth import get_user_model
         from apps.empresas.models import Empresa
+        from apps.funcionarios.models import Funcionario
         from apps.parcerias.models import Parcerias
 
         UserModel = get_user_model()
@@ -587,6 +588,26 @@ class Sprint4616DashboardParceriasTests(TestCase):
             nome="OSC Sprint 46.16",
         )
 
+        self.empresa_outra = Empresa.objects.create(
+            nome="OSC Outra Sprint 46.16",
+        )
+
+        Funcionario.objects.create(
+            cpf=cpf_teste(),
+            nome="Usuario Staff 46.16",
+            usuario="usuario_parcerias_4616",
+            endereco="Endereco ficticio",
+            bairro="Bairro ficticio",
+            cep="00000-000",
+            cidade="Contagem",
+            estado="MG",
+            email="staff_4616@example.test",
+            Telefone="000000000",
+            user=self.usuario,
+            empresa=self.empresa,
+            imagem="funcionarios/teste.jpg",
+        )
+
         self.parceria_andamento = Parcerias.objects.create(
             nomeOSC="Parceria em andamento 46.16",
             empresa=self.empresa,
@@ -599,6 +620,13 @@ class Sprint4616DashboardParceriasTests(TestCase):
             empresa=self.empresa,
             concluido=True,
             numRE="RE-4616",
+        )
+
+        self.parceria_outra_empresa = Parcerias.objects.create(
+            nomeOSC="Parceria outra empresa 46.16",
+            empresa=self.empresa_outra,
+            concluido=False,
+            numRA="RA-OUTRA-4616",
         )
 
         self.client.force_login(self.usuario)
@@ -685,6 +713,108 @@ class Sprint4616DashboardParceriasTests(TestCase):
             resposta.context["parcerias_com_re"],
             1,
         )
+
+
+    def test_staff_sem_empresa_nao_recebe_parcerias(self):
+        from django.contrib.auth import get_user_model
+        from django.contrib.auth.models import Permission
+        from django.urls import reverse
+
+        UserModel = get_user_model()
+
+        usuario_sem_empresa = UserModel.objects.create_user(
+            username="staff_sem_empresa_4616",
+            password="teste4616",
+            is_staff=True,
+        )
+
+        permissao = Permission.objects.get(
+            content_type__app_label="parcerias",
+            codename="view_parcerias",
+        )
+
+        usuario_sem_empresa.user_permissions.add(
+            permissao
+        )
+
+        self.client.force_login(
+            usuario_sem_empresa
+        )
+
+        resposta = self.client.get(
+            reverse("home")
+        )
+
+        self.assertEqual(
+            resposta.status_code,
+            200,
+        )
+
+        self.assertEqual(
+            resposta.context["parcerias_total"],
+            0,
+        )
+
+        self.assertEqual(
+            resposta.context["parcerias_andamento"],
+            0,
+        )
+
+        self.assertEqual(
+            resposta.context["parcerias_concluidas"],
+            0,
+        )
+
+    def test_superusuario_recebe_visao_global_parcerias(self):
+        from django.contrib.auth import get_user_model
+        from django.urls import reverse
+
+        UserModel = get_user_model()
+
+        admin = UserModel.objects.create_superuser(
+            username="admin_global_4616",
+            email="admin-global-4616@example.test",
+            password="teste4616",
+        )
+
+        self.client.force_login(
+            admin
+        )
+
+        resposta = self.client.get(
+            reverse("home")
+        )
+
+        self.assertEqual(
+            resposta.status_code,
+            200,
+        )
+
+        self.assertEqual(
+            resposta.context["parcerias_total"],
+            3,
+        )
+
+        self.assertEqual(
+            resposta.context["parcerias_andamento"],
+            2,
+        )
+
+        self.assertEqual(
+            resposta.context["parcerias_concluidas"],
+            1,
+        )
+
+        self.assertEqual(
+            resposta.context["parcerias_com_ra"],
+            2,
+        )
+
+        self.assertEqual(
+            resposta.context["parcerias_com_re"],
+            1,
+        )
+
 
 class Sprint4616ParceriasEscopoGrupoTests(TestCase):
 

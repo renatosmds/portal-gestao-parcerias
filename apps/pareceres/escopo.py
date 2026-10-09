@@ -1,12 +1,9 @@
+from apps.core.acesso import usuario_pode_ver_todas_empresas
 from apps.pareceres.models import ItemParecer, ParecerTecnico
 
 
 def usuario_acesso_global(user):
-    return bool(
-        user
-        and user.is_authenticated
-        and user.is_superuser
-    )
+    return usuario_pode_ver_todas_empresas(user)
 
 
 def empresa_do_usuario(user):

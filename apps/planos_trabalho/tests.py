@@ -5,68 +5,68 @@ from django.urls import reverse
 
 from apps.empresas.models import Empresa
 from apps.funcionarios.models import Funcionario
-from apps.pareceres.models import ParecerTecnico
-from apps.prestacao.models import Prestacao
+from apps.planos_trabalho.models import PlanoTrabalho
+from apps.termos.models import Termos
 
 
-class PareceresEscopoPermissaoTests(TestCase):
+class PlanosTrabalhoEscopoPermissaoTests(TestCase):
 
     def setUp(self):
         User = get_user_model()
 
         self.empresa_a = Empresa.objects.create(
-            nome="OSC A Pareceres",
+            nome="OSC A Planos",
         )
 
         self.empresa_b = Empresa.objects.create(
-            nome="OSC B Pareceres",
+            nome="OSC B Planos",
         )
 
         self.usuario_a = User.objects.create_user(
-            username="staff_parecer_a",
+            username="staff_plano_a",
             password="teste12345",
             is_staff=True,
         )
 
         self.usuario_b = User.objects.create_user(
-            username="staff_parecer_b",
+            username="staff_plano_b",
             password="teste12345",
             is_staff=True,
         )
 
         self.usuario_sem_empresa = User.objects.create_user(
-            username="staff_parecer_sem_empresa",
+            username="staff_plano_sem_empresa",
             password="teste12345",
             is_staff=True,
         )
 
         self.usuario_inativo = User.objects.create_user(
-            username="staff_parecer_inativo",
+            username="staff_plano_inativo",
             password="teste12345",
             is_staff=True,
         )
 
         self.usuario_sem_permissao = User.objects.create_user(
-            username="usuario_sem_parecer",
+            username="usuario_sem_plano",
             password="teste12345",
         )
 
         self.superusuario = User.objects.create_superuser(
-            username="admin_parecer_global",
-            email="admin-parecer@example.test",
+            username="admin_plano_global",
+            email="admin-plano@example.test",
             password="teste12345",
         )
 
         Funcionario.objects.create(
             cpf="52998224725",
-            nome="Staff Parecer A",
-            usuario="staff_parecer_a",
+            nome="Staff Plano A",
+            usuario="staff_plano_a",
             endereco="Endereco ficticio",
             bairro="Bairro ficticio",
             cep="00000-000",
             cidade="Contagem",
             estado="MG",
-            email="staff_parecer_a@example.test",
+            email="staff_plano_a@example.test",
             Telefone="000000000",
             user=self.usuario_a,
             empresa=self.empresa_a,
@@ -75,14 +75,14 @@ class PareceresEscopoPermissaoTests(TestCase):
 
         Funcionario.objects.create(
             cpf="16899535009",
-            nome="Staff Parecer B",
-            usuario="staff_parecer_b",
+            nome="Staff Plano B",
+            usuario="staff_plano_b",
             endereco="Endereco ficticio",
             bairro="Bairro ficticio",
             cep="00000-000",
             cidade="Contagem",
             estado="MG",
-            email="staff_parecer_b@example.test",
+            email="staff_plano_b@example.test",
             Telefone="000000000",
             user=self.usuario_b,
             empresa=self.empresa_b,
@@ -91,14 +91,14 @@ class PareceresEscopoPermissaoTests(TestCase):
 
         Funcionario.objects.create(
             cpf="11144477735",
-            nome="Staff Parecer Inativo",
-            usuario="staff_parecer_inativo",
+            nome="Staff Plano Inativo",
+            usuario="staff_plano_inativo",
             endereco="Endereco ficticio",
             bairro="Bairro ficticio",
             cep="00000-000",
             cidade="Contagem",
             estado="MG",
-            email="staff_parecer_inativo@example.test",
+            email="staff_plano_inativo@example.test",
             Telefone="000000000",
             user=self.usuario_inativo,
             empresa=self.empresa_a,
@@ -107,8 +107,8 @@ class PareceresEscopoPermissaoTests(TestCase):
         )
 
         self.permissao = Permission.objects.get(
-            content_type__app_label="pareceres",
-            codename="view_parecertecnico",
+            content_type__app_label="planos_trabalho",
+            codename="view_planotrabalho",
         )
 
         for usuario in (
@@ -121,30 +121,28 @@ class PareceresEscopoPermissaoTests(TestCase):
                 self.permissao
             )
 
-        self.prestacao_a = Prestacao.objects.create(
-            tipo="cnpj",
-            numtermo="PA-001",
+        self.termo_a = Termos.objects.create(
+            numtermo="PT-A",
+            termo="Termo A",
             empresa=self.empresa_a,
         )
 
-        self.prestacao_b = Prestacao.objects.create(
-            tipo="cnpj",
-            numtermo="PB-001",
+        self.termo_b = Termos.objects.create(
+            numtermo="PT-B",
+            termo="Termo B",
             empresa=self.empresa_b,
         )
 
-        self.parecer_a = ParecerTecnico.objects.create(
-            prestacao=self.prestacao_a,
-            empresa=self.empresa_a,
-            numero="PARECER-A",
-            elaborado_por=self.superusuario,
+        self.plano_a = PlanoTrabalho.objects.create(
+            termo=self.termo_a,
+            versao=1,
+            titulo="Plano A",
         )
 
-        self.parecer_b = ParecerTecnico.objects.create(
-            prestacao=self.prestacao_b,
-            empresa=self.empresa_b,
-            numero="PARECER-B",
-            elaborado_por=self.superusuario,
+        self.plano_b = PlanoTrabalho.objects.create(
+            termo=self.termo_b,
+            versao=1,
+            titulo="Plano B",
         )
 
     def test_sem_permissao_do_modulo_recebe_403(self):
@@ -153,7 +151,7 @@ class PareceresEscopoPermissaoTests(TestCase):
         )
 
         response = self.client.get(
-            reverse("pareceres:parecer_lista")
+            reverse("planos_trabalho:plano_lista")
         )
 
         self.assertEqual(
@@ -161,13 +159,13 @@ class PareceresEscopoPermissaoTests(TestCase):
             403,
         )
 
-    def test_empresa_a_ve_apenas_parecer_da_empresa_a(self):
+    def test_empresa_a_ve_apenas_plano_da_empresa_a(self):
         self.client.force_login(
             self.usuario_a
         )
 
         response = self.client.get(
-            reverse("pareceres:parecer_lista")
+            reverse("planos_trabalho:plano_lista")
         )
 
         self.assertEqual(
@@ -176,19 +174,19 @@ class PareceresEscopoPermissaoTests(TestCase):
         )
 
         self.assertEqual(
-            list(response.context["pareceres"]),
-            [self.parecer_a],
+            list(response.context["planos"]),
+            [self.plano_a],
         )
 
-    def test_empresa_b_nao_acessa_parecer_da_empresa_a(self):
+    def test_empresa_b_nao_acessa_plano_da_empresa_a(self):
         self.client.force_login(
             self.usuario_b
         )
 
         response = self.client.get(
             reverse(
-                "pareceres:parecer_detalhe",
-                args=[self.parecer_a.pk],
+                "planos_trabalho:plano_detalhe",
+                args=[self.plano_a.pk],
             )
         )
 
@@ -197,13 +195,13 @@ class PareceresEscopoPermissaoTests(TestCase):
             404,
         )
 
-    def test_staff_sem_empresa_nao_recebe_pareceres(self):
+    def test_staff_sem_empresa_nao_recebe_planos(self):
         self.client.force_login(
             self.usuario_sem_empresa
         )
 
         response = self.client.get(
-            reverse("pareceres:parecer_lista")
+            reverse("planos_trabalho:plano_lista")
         )
 
         self.assertEqual(
@@ -212,17 +210,17 @@ class PareceresEscopoPermissaoTests(TestCase):
         )
 
         self.assertEqual(
-            list(response.context["pareceres"]),
+            list(response.context["planos"]),
             [],
         )
 
-    def test_funcionario_inativo_nao_recebe_pareceres(self):
+    def test_funcionario_inativo_nao_recebe_planos(self):
         self.client.force_login(
             self.usuario_inativo
         )
 
         response = self.client.get(
-            reverse("pareceres:parecer_lista")
+            reverse("planos_trabalho:plano_lista")
         )
 
         self.assertEqual(
@@ -231,7 +229,7 @@ class PareceresEscopoPermissaoTests(TestCase):
         )
 
         self.assertEqual(
-            list(response.context["pareceres"]),
+            list(response.context["planos"]),
             [],
         )
 
@@ -241,7 +239,7 @@ class PareceresEscopoPermissaoTests(TestCase):
         )
 
         response = self.client.get(
-            reverse("pareceres:parecer_lista")
+            reverse("planos_trabalho:plano_lista")
         )
 
         self.assertEqual(
@@ -250,14 +248,14 @@ class PareceresEscopoPermissaoTests(TestCase):
         )
 
         ids = {
-            parecer.pk
-            for parecer in response.context["pareceres"]
+            plano.pk
+            for plano in response.context["planos"]
         }
 
         self.assertEqual(
             ids,
             {
-                self.parecer_a.pk,
-                self.parecer_b.pk,
+                self.plano_a.pk,
+                self.plano_b.pk,
             },
         )
