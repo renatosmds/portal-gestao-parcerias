@@ -150,7 +150,7 @@ class LancamentoForm(forms.ModelForm):
                 "termo",
                 (
                     "Selecione o termo correspondente "
-                    "? presta??o de contas informada."
+                    "à prestação de contas informada."
                 ),
             )
 
@@ -162,8 +162,8 @@ class LancamentoForm(forms.ModelForm):
             self.add_error(
                 "prestacao",
                 (
-                    "A presta??o de contas selecionada "
-                    "n?o pertence ao termo informado."
+                    "A prestação de contas selecionada "
+                    "não pertence ao termo informado."
                 ),
             )
 

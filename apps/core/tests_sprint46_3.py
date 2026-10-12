@@ -43,17 +43,17 @@ class Sprint463ConversaoAchadosTests(TestCase):
         return ResultadoRegra(
             codigo="PT_TESTE_001",
             severidade="critica",
-            titulo="Execucao incompat?vel",
-            descricao="Foi identificada uma inconsist?ncia.",
+            titulo="Execucao incompatível",
+            descricao="Foi identificada uma inconsistência.",
             regra="regra_teste",
             categoria="plano_trabalho",
             resultado="achado",
             fato_verificado="Quantidade executada superior.",
             evidencia="Item MAT-001.",
-            fundamentacao="Fundamenta??o normativa de teste.",
+            fundamentacao="Fundamentação normativa de teste.",
             risco_glosa="Risco potencial de glosa.",
             recomendacao="Solicitar esclarecimentos.",
-            origem_normativa="Lei Federal n? 13.019/2014",
+            origem_normativa="Lei Federal nº 13.019/2014",
         )
 
     def test_converte_resultado_em_item_parecer(self):
@@ -106,7 +106,7 @@ class Sprint463ConversaoAchadosTests(TestCase):
 
         self.assertEqual(
             item.dados_origem["origem_normativa"],
-            "Lei Federal n? 13.019/2014",
+            "Lei Federal nº 13.019/2014",
         )
 
     def test_achado_nao_gera_decisao_automatica(self):

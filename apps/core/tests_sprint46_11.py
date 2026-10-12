@@ -55,7 +55,7 @@ class Sprint4611RevisaoHumanaTests(TestCase):
         self.item = ItemParecer.objects.create(
             parecer=self.parecer,
             codigo="REV-001",
-            titulo="Item para revis?o humana",
+            titulo="Item para revisão humana",
             fato_verificado="Fato originalmente identificado.",
             conclusao_item=(
                 ItemParecer.ConclusaoItem.NAO_ANALISADO
@@ -187,16 +187,16 @@ class Sprint4611RevisaoHumanaTests(TestCase):
                     "Resumo revisado pelo analista."
                 ),
                 "fundamentacao_geral": (
-                    "Fundamenta??o revisada."
+                    "Fundamentação revisada."
                 ),
                 "conclusao": (
-                    "Conclus?o humana."
+                    "Conclusão humana."
                 ),
                 "ressalvas": (
                     "Ressalva registrada."
                 ),
                 "recomendacoes_gerais": (
-                    "Recomenda??o registrada."
+                    "Recomendação registrada."
                 ),
             },
         )
@@ -245,16 +245,16 @@ class Sprint4611RevisaoHumanaTests(TestCase):
                     "Documento conferido."
                 ),
                 "fundamentacao": (
-                    "Fundamenta??o conferida."
+                    "Fundamentação conferida."
                 ),
                 "risco_glosa": (
-                    "Risco sujeito a decis?o espec?fica."
+                    "Risco sujeito a decisão específica."
                 ),
                 "recomendacao": (
                     "Registrar ressalva."
                 ),
                 "manifestacao_analista": (
-                    "Ap?s confer?ncia, o item foi classificado "
+                    "Após conferência, o item foi classificado "
                     "com ressalva."
                 ),
                 "conclusao_item": (
@@ -276,6 +276,6 @@ class Sprint4611RevisaoHumanaTests(TestCase):
         )
 
         self.assertIn(
-            "Ap?s confer?ncia",
+            "Após conferência",
             self.item.manifestacao_analista,
         )

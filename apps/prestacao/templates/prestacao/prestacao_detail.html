@@ -14,7 +14,7 @@
                 href="{% url 'pareceres:parecer_novo' %}?prestacao={{ prestacao.pk }}"
                 class="btn btn-outline-primary"
             >
-                Gerar Parecer T?cnico
+                Gerar Parecer Técnico
             </a>
             {% endif %}
             {% if perms.prestacao.change_prestacao %}<a href="{% url 'movimentar_prestacao' prestacao.pk %}" class="btn btn-success">Movimentar</a> <a href="{% url 'update_prestacao' prestacao.pk %}" class="btn btn-primary">Editar</a>{% endif %}

@@ -49,7 +49,7 @@ class LancamentoDependenciasTests(TestCase):
 
         self.termo = Termos.objects.create(
             empresa=self.empresa,
-            termo="Termo de Colabora??o",
+            termo="Termo de Colaboração",
             numtermo="DEP-001/2026",
         )
 
@@ -123,7 +123,7 @@ class LancamentoDependenciasTests(TestCase):
     def test_prestacoes_nao_misturam_termos(self):
         outro_termo = Termos.objects.create(
             empresa=self.empresa,
-            termo="Termo de Colabora??o",
+            termo="Termo de Colaboração",
             numtermo="DEP-002/2026",
         )
 
@@ -187,7 +187,7 @@ class LancamentoDependenciasTests(TestCase):
 
         outro_termo = Termos.objects.create(
             empresa=outra_empresa,
-            termo="Termo de Colabora??o",
+            termo="Termo de Colaboração",
             numtermo="OUT-001/2026",
         )
 
@@ -224,7 +224,7 @@ class LancamentoDependenciasTests(TestCase):
 
         outro_termo = Termos.objects.create(
             empresa=outra_empresa,
-            termo="Termo de Colabora??o",
+            termo="Termo de Colaboração",
             numtermo="OUT-002/2026",
         )
 

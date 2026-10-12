@@ -120,9 +120,9 @@
                         <h2>
                             <a href="{% url 'detail_parceria' parceria.pk %}">
                                 {% if parceria.numtermo %}
-                                    {{ parceria.numtermo.termo|default:"Termo n?o informado" }}
+                                    {{ parceria.numtermo.termo|default:"Termo não informado" }}
                                 {% else %}
-                                    Termo n?o informado
+                                    Termo não informado
                                 {% endif %}
                             </a>
                         </h2>

@@ -370,20 +370,20 @@ class AcessoSistemaForm(UserCreationForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields["username"].label = "Usu?rio"
+        self.fields["username"].label = "Usuário"
         self.fields["password1"].label = "Senha inicial"
         self.fields["password2"].label = "Confirmar senha"
 
         self.fields["username"].help_text = (
-            "Informe o nome que ser? utilizado para entrar no PGP."
+            "Informe o nome que será utilizado para entrar no PGP."
         )
 
         self.fields["password1"].help_text = (
-            "A senha deve atender aos requisitos de seguran?a do sistema."
+            "A senha deve atender aos requisitos de segurança do sistema."
         )
 
         self.fields["password2"].help_text = (
-            "Digite novamente a senha para confirma??o."
+            "Digite novamente a senha para confirmação."
         )
 
 
@@ -456,7 +456,7 @@ class CadastroFuncionarioBaseForm(forms.ModelForm):
 
         if queryset.exists():
             raise forms.ValidationError(
-                "J? existe um cadastro com este nome nesta empresa."
+                "Já existe um cadastro com este nome nesta empresa."
             )
 
         return nome

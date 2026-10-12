@@ -20,8 +20,8 @@ def anonimizar_texto(valor):
     """
     Mascaramento preventivo de identificadores comuns.
 
-    Nao pretende substituir processo formal de anonimiza??o
-    ou revis?o humana de dados pessoais.
+    Nao pretende substituir processo formal de anonimização
+    ou revisão humana de dados pessoais.
     """
     texto = str(valor or "")
 

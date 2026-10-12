@@ -61,7 +61,7 @@ class Sprint46123AuditoriaInterfaceTests(TestCase):
             usuario=self.usuario,
             situacao_anterior="RASCUNHO",
             nova_situacao="EM_REVISAO",
-            observacao="Evento vis?vel na interface.",
+            observacao="Evento visível na interface.",
         )
 
         self.client.force_login(
@@ -82,7 +82,7 @@ class Sprint46123AuditoriaInterfaceTests(TestCase):
 
         self.assertContains(
             resposta,
-            "Evento vis?vel na interface.",
+            "Evento visível na interface.",
         )
 
         self.assertContains(

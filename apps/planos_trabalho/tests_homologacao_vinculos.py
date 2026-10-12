@@ -1,3 +1,4 @@
+import os
 from datetime import date
 from decimal import Decimal
 
@@ -27,7 +28,7 @@ class VinculosPlanoInterfaceTests(TestCase):
         User = get_user_model()
 
         cls.usuario = User.objects.get(
-            username="homologador"
+            username=os.getenv("DEMO_ADMIN_USERNAME", "demo_admin")
         )
 
         cls.lancamento = (
@@ -44,7 +45,7 @@ class VinculosPlanoInterfaceTests(TestCase):
         cls.plano = PlanoTrabalho.objects.create(
             termo=cls.termo,
             versao=1,
-            titulo="Plano teste de v?nculos",
+            titulo="Plano teste de vínculos",
             origem=PlanoTrabalho.Origem.INICIAL,
             situacao=PlanoTrabalho.Situacao.VIGENTE,
             data_eficacia=date(2026, 1, 1),
@@ -106,7 +107,7 @@ class VinculosPlanoInterfaceTests(TestCase):
                     str(self.lancamento.pk)
                 ],
                 "justificativa": (
-                    "V?nculo manual de teste."
+                    "Vínculo manual de teste."
                 ),
             },
         )

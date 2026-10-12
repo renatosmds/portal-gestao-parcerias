@@ -25,29 +25,29 @@ NOMES_MODULOS_DASHBOARD = {
     "empresas": "Empresas",
     "departamentos": "Departamentos",
     "fornecedores": "Fornecedores",
-    "funcionarios": "Funcion?rios",
+    "funcionarios": "Funcionários",
     "folha_ponto": "Folha de Ponto",
     "folha_pagamento": "Folha de Pagamento",
     "banco_horas": "Banco de Horas",
-    "execucao": "Execu??o",
+    "execucao": "Execução",
     "financeiro": "Financeiro",
-    "diligencias": "Dilig?ncias",
-    "importacoes": "Importa??es",
-    "conciliacao": "Concilia??o",
+    "diligencias": "Diligências",
+    "importacoes": "Importações",
+    "conciliacao": "Conciliação",
     "metas": "Metas e Indicadores",
     "pareceres": "Pareceres",
     "planos_trabalho": "Planos de Trabalho",
     "assistente_ia": "Assistente IA",
     "documentos": "Documentos",
-    "lancamentos": "Lan?amentos",
-    "analises": "An?lises",
-    "prestacoes": "Presta??es de Contas",
+    "lancamentos": "Lançamentos",
+    "analises": "Análises",
+    "prestacoes": "Prestações de Contas",
     "termos": "Termos",
     "parcerias": "Parcerias",
     "treinamento": "Treinamento",
     "suporte": "Suporte",
     "cursos": "Cursos",
-    "relatorios": "Relat?rios",
+    "relatorios": "Relatórios",
 }
 
 
@@ -99,7 +99,7 @@ def _configuracoes_grupos_usuario(usuario):
 
 def _estado_grupo_efetivo(valores):
     if not valores:
-        return "Padr?o"
+        return "Padrão"
 
     if any(valores):
         return "Mostrar"
@@ -143,7 +143,7 @@ def _configuracoes_widgets_grupos_usuario(usuario):
 
 def _estado_widget_grupo_efetivo(valores):
     if not valores:
-        return "Padr?o"
+        return "Padrão"
 
     if any(valores):
         return "Mostrar"
@@ -313,7 +313,7 @@ def dashboard_acessos_usuario(request, pk):
 
         messages.success(
             request,
-            "Configura??o do Dashboard do usu?rio atualizada.",
+            "Configuração do Dashboard do usuário atualizada.",
         )
 
         return redirect(
@@ -480,7 +480,7 @@ def dashboard_acessos_grupo(request, pk):
 
         messages.success(
             request,
-            "Configura??o do Dashboard do grupo atualizada.",
+            "Configuração do Dashboard do grupo atualizada.",
         )
 
         return redirect(

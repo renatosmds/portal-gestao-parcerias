@@ -38,17 +38,17 @@ class Sprint465TextoRecomendacaoTests(TestCase):
         dados = {
             "parecer": self.parecer,
             "codigo": "REC-001",
-            "titulo": "Pend?ncia documental",
+            "titulo": "Pendência documental",
             "descricao": "Documento necessita esclarecimento.",
             "fato_verificado": "Documento incompleto.",
             "evidencia": "Arquivo apresentado pela OSC.",
             "fundamentacao": (
-                "Fundamenta??o normativa registrada "
+                "Fundamentação normativa registrada "
                 "no item."
             ),
             "recomendacao": (
-                "Solicitar esclarecimentos e documenta??o "
-                "complementar ? OSC"
+                "Solicitar esclarecimentos e documentação "
+                "complementar à OSC"
             ),
             "criado_por": self.usuario,
         }

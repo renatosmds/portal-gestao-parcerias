@@ -51,7 +51,7 @@ class Sprint469FundamentacaoEvidenciasTests(TestCase):
         evidencia = EvidenciaParecer.objects.create(
             item=self.item,
             tipo=EvidenciaParecer.Tipo.REGISTRO_SISTEMA,
-            descricao="Registro estruturado da an?lise.",
+            descricao="Registro estruturado da análise.",
             dados_snapshot={
                 "origem": "PGP Rules",
                 "codigo_regra": "TESTE-001",
@@ -72,13 +72,13 @@ class Sprint469FundamentacaoEvidenciasTests(TestCase):
     def test_permite_multiplas_evidencias_por_item(self):
         EvidenciaParecer.objects.create(
             item=self.item,
-            descricao="Primeira evid?ncia.",
+            descricao="Primeira evidência.",
             criado_por=self.usuario,
         )
 
         EvidenciaParecer.objects.create(
             item=self.item,
-            descricao="Segunda evid?ncia.",
+            descricao="Segunda evidência.",
             criado_por=self.usuario,
         )
 
@@ -91,10 +91,10 @@ class Sprint469FundamentacaoEvidenciasTests(TestCase):
         fundamento = FundamentacaoParecer.objects.create(
             item=self.item,
             esfera=FundamentacaoParecer.Esfera.FEDERAL,
-            ente="Uni?o",
-            norma="Lei Federal n? 13.019/2014",
-            dispositivo="dispositivo aplic?vel",
-            descricao="Fundamento registrado no momento da an?lise.",
+            ente="União",
+            norma="Lei Federal nº 13.019/2014",
+            dispositivo="dispositivo aplicável",
+            descricao="Fundamento registrado no momento da análise.",
             origem="PGP Rules",
             dados_snapshot={
                 "camada": "nacional",
@@ -116,15 +116,15 @@ class Sprint469FundamentacaoEvidenciasTests(TestCase):
         FundamentacaoParecer.objects.create(
             item=self.item,
             esfera=FundamentacaoParecer.Esfera.FEDERAL,
-            norma="Lei Federal n? 13.019/2014",
+            norma="Lei Federal nº 13.019/2014",
             criado_por=self.usuario,
         )
 
         FundamentacaoParecer.objects.create(
             item=self.item,
             esfera=FundamentacaoParecer.Esfera.MUNICIPAL,
-            ente="Munic?pio de teste",
-            norma="Norma municipal aplic?vel",
+            ente="Município de teste",
+            norma="Norma municipal aplicável",
             criado_por=self.usuario,
         )
 
@@ -151,13 +151,13 @@ class Sprint469FundamentacaoEvidenciasTests(TestCase):
 
         EvidenciaParecer.objects.create(
             item=self.item,
-            descricao="Evid?ncia.",
+            descricao="Evidência.",
             criado_por=self.usuario,
         )
 
         FundamentacaoParecer.objects.create(
             item=self.item,
-            norma="Norma aplic?vel",
+            norma="Norma aplicável",
             criado_por=self.usuario,
         )
 

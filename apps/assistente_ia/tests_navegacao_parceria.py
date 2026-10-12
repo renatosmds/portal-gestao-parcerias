@@ -1,3 +1,4 @@
+import os
 from django.contrib.auth import get_user_model
 from django.core.management import call_command
 from django.test import TestCase
@@ -20,7 +21,7 @@ class NavegacaoParceriaAssistenteIATests(TestCase):
         User = get_user_model()
 
         cls.usuario = User.objects.get(
-            username="homologador"
+            username=os.getenv("DEMO_ADMIN_USERNAME", "demo_admin")
         )
 
         cls.documento = (
@@ -102,5 +103,5 @@ class NavegacaoParceriaAssistenteIATests(TestCase):
 
         self.assertContains(
             response,
-            "Ver an?lise",
+            "Ver análise",
         )

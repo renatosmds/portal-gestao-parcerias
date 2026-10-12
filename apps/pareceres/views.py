@@ -37,7 +37,7 @@ from apps.pareceres.versionamento import criar_nova_versao_parecer
 def _parceria_do_parecer(parecer):
     """
     Localiza a parceria relacionada ao parecer
-    por empresa + Termo da presta??o.
+    por empresa + Termo da prestação.
     """
 
     prestacao = parecer.prestacao
@@ -100,8 +100,8 @@ def _exigir_parecer_aprovavel(parecer):
 
     if not parecer.itens.exists():
         raise PermissionDenied(
-            "O parecer deve possuir ao menos um item de an?lise "
-            "antes da aprova??o e finaliza??o."
+            "O parecer deve possuir ao menos um item de análise "
+            "antes da aprovação e finalização."
         )
 
     if parecer.situacao != ParecerTecnico.Situacao.EM_REVISAO:
@@ -203,8 +203,8 @@ def parecer_novo(request):
             form.add_error(
                 "prestacao",
                 (
-                    "Esta presta??o j? possui "
-                    "Parecer T?cnico."
+                    "Esta prestação já possui "
+                    "Parecer Técnico."
                 ),
             )
         else:
@@ -256,10 +256,10 @@ def parecer_novo(request):
             messages.success(
                 request,
                 (
-                    "Parecer T?cnico criado "
+                    "Parecer Técnico criado "
                     "em rascunho com sucesso. "
                     f"{itens_criados} item(ns) inicial(is) "
-                    "gerado(s) para revis?o humana."
+                    "gerado(s) para revisão humana."
                 ),
             )
 

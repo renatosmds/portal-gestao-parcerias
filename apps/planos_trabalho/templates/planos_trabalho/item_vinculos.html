@@ -6,14 +6,14 @@
 
     <div class="d-flex justify-content-between align-items-start mb-3">
         <div>
-            <h2>Gerenciar lan?amentos do item</h2>
+            <h2>Gerenciar lançamentos do item</h2>
 
             <p class="text-muted mb-0">
-                {{ item.codigo }} ? {{ item.descricao }}
+                {{ item.codigo }} • {{ item.descricao }}
             </p>
 
             <p class="text-muted">
-                {{ plano.termo }} ? vers?o {{ plano.versao }}
+                {{ plano.termo }} • versão {{ plano.versao }}
             </p>
         </div>
 
@@ -21,15 +21,15 @@
             href="{% url 'planos_trabalho:item_analise' item.pk %}"
             class="btn btn-outline-secondary"
         >
-            Voltar ? an?lise
+            Voltar • análise
         </a>
     </div>
 
     <div class="alert alert-info">
-        Somente lan?amentos pertencentes ao mesmo Termo e ? mesma
-        empresa do item s?o apresentados. O v?nculo manual n?o
-        aprova a despesa, n?o altera glosa e n?o substitui a an?lise
-        t?cnica.
+        Somente lançamentos pertencentes ao mesmo Termo e à mesma
+        empresa do item são apresentados. O vínculo manual não
+        aprova a despesa, não altera glosa e não substitui a análise
+        técnica.
     </div>
 
     <form method="post">
@@ -37,7 +37,7 @@
 
         <div class="card mb-3">
             <div class="card-header">
-                <strong>Lan?amentos dispon?veis</strong>
+                <strong>Lançamentos disponíveis</strong>
             </div>
 
             <div class="table-responsive">
@@ -45,11 +45,11 @@
                     <thead>
                         <tr>
                             <th style="width: 55px;">Vincular</th>
-                            <th>Lan?amento</th>
+                            <th>Lançamento</th>
                             <th>Data</th>
-                            <th>Descri??o</th>
+                            <th>Descrição</th>
                             <th class="text-right">Valor</th>
-                            <th>V?nculo atual</th>
+                            <th>Vínculo atual</th>
                         </tr>
                     </thead>
 
@@ -92,7 +92,7 @@
                                     </span>
                                 {% else %}
                                     <span class="text-muted">
-                                        Sem v?nculo
+                                        Sem vínculo
                                     </span>
                                 {% endif %}
                             </td>
@@ -100,7 +100,7 @@
                     {% empty %}
                         <tr>
                             <td colspan="6" class="text-center text-muted py-4">
-                                Nenhum lan?amento dispon?vel para este Termo.
+                                Nenhum lançamento disponível para este Termo.
                             </td>
                         </tr>
                     {% endfor %}
@@ -111,7 +111,7 @@
 
         <div class="form-group">
             <label for="id_justificativa">
-                Justificativa do v?nculo
+                Justificativa do vínculo
             </label>
 
             <textarea
@@ -127,7 +127,7 @@
             type="submit"
             class="btn btn-primary"
         >
-            Salvar v?nculos
+            Salvar vínculos
         </button>
 
         <a

@@ -18,8 +18,8 @@
     </div>
 
     <div class="alert alert-info">
-        A configura??o do grupo ser? herdada pelos usu?rios,
-        salvo quando houver configura??o individual.
+        A configuração do grupo será herdada pelos usuários,
+        salvo quando houver configuração individual.
     </div>
 
     <form method="post">
@@ -29,8 +29,8 @@
             <table class="table table-bordered table-hover">
                 <thead>
                     <tr>
-                        <th>M?dulo</th>
-                        <th>Configura??o do grupo</th>
+                        <th>Módulo</th>
+                        <th>Configuração do grupo</th>
                     </tr>
                 </thead>
 
@@ -46,7 +46,7 @@
                             >
                                 <option value="padrao"
                                     {% if item.estado == "padrao" %}selected{% endif %}>
-                                    Padr?o
+                                    Padrão
                                 </option>
 
                                 <option value="mostrar"
@@ -71,8 +71,8 @@
         <h4>Blocos do Dashboard</h4>
 
         <p class="text-muted">
-            A configura??o abaixo ser? herdada pelos usu?rios
-            do grupo, salvo quando houver configura??o individual.
+            A configuração abaixo será herdada pelos usuários
+            do grupo, salvo quando houver configuração individual.
         </p>
 
         <div class="table-responsive">
@@ -80,7 +80,7 @@
                 <thead>
                     <tr>
                         <th>Bloco</th>
-                        <th>Configura??o do grupo</th>
+                        <th>Configuração do grupo</th>
                     </tr>
                 </thead>
 
@@ -96,7 +96,7 @@
                             >
                                 <option value="padrao"
                                     {% if item.estado == "padrao" %}selected{% endif %}>
-                                    Padr?o
+                                    Padrão
                                 </option>
 
                                 <option value="mostrar"
@@ -118,7 +118,7 @@
 
         <button type="submit"
                 class="btn btn-primary">
-            Salvar configura??o
+            Salvar configuração
         </button>
     </form>
 

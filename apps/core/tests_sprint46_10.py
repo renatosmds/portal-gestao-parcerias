@@ -125,8 +125,8 @@ class Sprint4610ConclusaoExecutivaTests(TestCase):
 
     def test_diligencia_aberta_e_destacada(self):
         diligencia = Diligencia.objects.create(
-            assunto="Dilig?ncia pendente",
-            descricao="Aguardando manifesta??o da OSC.",
+            assunto="Diligência pendente",
+            descricao="Aguardando manifestação da OSC.",
             empresa=self.empresa,
             prestacao=self.prestacao,
             criada_por=self.usuario,

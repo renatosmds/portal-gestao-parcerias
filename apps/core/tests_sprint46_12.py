@@ -47,8 +47,8 @@ class Sprint4612AuditoriaParecerTests(TestCase):
         self.item = ItemParecer.objects.create(
             parecer=self.parecer,
             codigo="AUD-001",
-            titulo="Item audit?vel",
-            fato_verificado="Pend?ncia identificada.",
+            titulo="Item auditável",
+            fato_verificado="Pendência identificada.",
             conclusao_item=(
                 ItemParecer.ConclusaoItem.NAO_ANALISADO
             ),
@@ -69,9 +69,9 @@ class Sprint4612AuditoriaParecerTests(TestCase):
                 ),
                 "resumo_executivo": "Resumo revisado.",
                 "fundamentacao_geral": "Fundamento.",
-                "conclusao": "Conclus?o.",
+                "conclusao": "Conclusão.",
                 "ressalvas": "Ressalva.",
-                "recomendacoes_gerais": "Recomenda??o.",
+                "recomendacoes_gerais": "Recomendação.",
             },
         )
 
@@ -109,7 +109,7 @@ class Sprint4612AuditoriaParecerTests(TestCase):
                 "fundamentacao": "Fundamento.",
                 "risco_glosa": "",
                 "recomendacao": "Registrar ressalva.",
-                "manifestacao_analista": "Revis?o conclu?da.",
+                "manifestacao_analista": "Revisão concluída.",
                 "conclusao_item": (
                     ItemParecer.ConclusaoItem.RESSALVA
                 ),
@@ -202,7 +202,7 @@ class Sprint4612AuditoriaParecerTests(TestCase):
             item=self.item,
             usuario=self.usuario,
             decisao="SANADO",
-            manifestacao="Pend?ncia saneada.",
+            manifestacao="Pendência saneada.",
         )
 
         historico = HistoricoParecer.objects.get(

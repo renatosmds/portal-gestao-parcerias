@@ -9,7 +9,7 @@
         href="{% url 'list_diligencias' %}"
         class="btn btn-sm btn-outline-secondary"
     >
-        &larr; Voltar ?s Dilig?ncias
+        &larr; Voltar às Diligências
     </a>
 
     {% if diligencia.prestacao %}
@@ -17,7 +17,7 @@
         href="{% url 'detail_prestacao' diligencia.prestacao.pk %}"
         class="btn btn-sm btn-outline-primary"
     >
-        Abrir Presta??o
+        Abrir Prestação
     </a>
     {% endif %}
 
@@ -26,7 +26,7 @@
         href="{% url 'detail_lancamento' diligencia.lancamento.pk %}"
         class="btn btn-sm btn-outline-primary"
     >
-        Abrir Lan?amento
+        Abrir Lançamento
     </a>
     {% endif %}
 

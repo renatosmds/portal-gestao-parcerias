@@ -21,7 +21,7 @@ class CriacaoParecerHomologacaoTests(TestCase):
         )
 
         cls.empresa = Empresa.objects.create(
-            nome="OSC Homologa??o Parecer",
+            nome="OSC Homologação Parecer",
         )
 
         cls.prestacao = Prestacao.objects.create(
@@ -166,5 +166,5 @@ class CriacaoParecerHomologacaoTests(TestCase):
 
         self.assertContains(
             response,
-            "Gerar Parecer T?cnico",
+            "Gerar Parecer Técnico",
         )

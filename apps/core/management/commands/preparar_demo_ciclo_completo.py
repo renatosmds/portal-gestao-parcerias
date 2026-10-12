@@ -54,7 +54,7 @@ CENARIOS = (
         "termo": "002/2026",
         "objeto": "Oficinas de inclusão produtiva e fortalecimento de vínculos.",
         "situacao": Prestacao.SituacaoWorkflow.DILIGENCIA,
-        "analise_status": "Em dilig?ncia",
+        "analise_status": "Em diligência",
         "publicada": True,
     },
     {
@@ -64,7 +64,7 @@ CENARIOS = (
         "termo": "003/2026",
         "objeto": "Ações de proteção social, convivência e atendimento comunitário.",
         "situacao": Prestacao.SituacaoWorkflow.DILIGENCIA,
-        "analise_status": "Em dilig?ncia cr?tica",
+        "analise_status": "Em diligência crítica",
         "publicada": True,
     },
 )

@@ -45,7 +45,7 @@ class Sprint4613AprovacaoParecerTests(TestCase):
         self.item = ItemParecer.objects.create(
             parecer=self.parecer,
             codigo="APR-001",
-            titulo="Item para aprova??o",
+            titulo="Item para aprovação",
             fato_verificado="Fato revisado.",
             conclusao_item=(
                 ItemParecer.ConclusaoItem.RESSALVA

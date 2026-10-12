@@ -45,11 +45,11 @@ class Sprint4614VersionamentoParecerTests(TestCase):
             tipo_conclusao=(
                 ParecerTecnico.TipoConclusao.COM_RESSALVAS
             ),
-            resumo_executivo="Resumo da vers?o 1.",
-            fundamentacao_geral="Fundamenta??o da vers?o 1.",
-            conclusao="Conclus?o da vers?o 1.",
-            ressalvas="Ressalvas da vers?o 1.",
-            recomendacoes_gerais="Recomenda??es da vers?o 1.",
+            resumo_executivo="Resumo da versão 1.",
+            fundamentacao_geral="Fundamentação da versão 1.",
+            conclusao="Conclusão da versão 1.",
+            ressalvas="Ressalvas da versão 1.",
+            recomendacoes_gerais="Recomendações da versão 1.",
             elaborado_por=self.usuario,
             revisado_por=self.usuario,
             revisado_em=timezone.now(),
@@ -60,13 +60,13 @@ class Sprint4614VersionamentoParecerTests(TestCase):
         self.item = ItemParecer.objects.create(
             parecer=self.parecer,
             codigo="VER-001",
-            titulo="Item da vers?o original",
-            descricao="Descri??o original",
+            titulo="Item da versão original",
+            descricao="Descrição original",
             fato_verificado="Fato original",
-            evidencia="Evid?ncia original",
-            fundamentacao="Fundamenta??o original",
-            recomendacao="Recomenda??o original",
-            manifestacao_analista="Manifesta??o original",
+            evidencia="Evidência original",
+            fundamentacao="Fundamentação original",
+            recomendacao="Recomendação original",
+            manifestacao_analista="Manifestação original",
             conclusao_item=(
                 ItemParecer.ConclusaoItem.RESSALVA
             ),

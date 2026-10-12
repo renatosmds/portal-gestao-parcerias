@@ -443,7 +443,7 @@ class MovimentacaoFinanceiraCreate(
         if not empresa:
             form.add_error(
                 None,
-                "Selecione uma empresa v?lida.",
+                "Selecione uma empresa válida.",
             )
             return self.form_invalid(form)
 
@@ -844,7 +844,7 @@ def _validar_acesso_ajax_financeiro(request):
         request.user
     ):
         return JsonResponse(
-            {"detail": "Sem permiss?o."},
+            {"detail": "Sem permissão."},
             status=403,
         )
 

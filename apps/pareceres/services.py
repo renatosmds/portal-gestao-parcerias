@@ -304,9 +304,9 @@ def _resultado_relevante(resultado):
         "alerta",
         "warning",
         "critica",
-        "cr?tica",
+        "crítica",
         "critico",
-        "cr?tico",
+        "crítico",
         "critical",
     }
 
@@ -366,7 +366,10 @@ def gerar_itens_iniciais_parecer(
         .filter(
             Q(prestacao=prestacao)
             | (
-                Q(termo=termo)
+                Q(
+                    prestacao__isnull=True,
+                    termo=termo,
+                )
                 if termo is not None
                 else Q(pk__in=[])
             )
@@ -384,7 +387,10 @@ def gerar_itens_iniciais_parecer(
             Q(prestacao=prestacao)
             | Q(lancamento__in=lancamentos)
             | (
-                Q(termo=termo)
+                Q(
+                    prestacao__isnull=True,
+                    termo=termo,
+                )
                 if termo is not None
                 else Q(pk__in=[])
             )

@@ -1,3 +1,4 @@
+import os
 from django.contrib.auth import get_user_model
 from django.core.management import call_command
 from django.test import TestCase
@@ -21,7 +22,7 @@ class NavegacaoDiligenciaTests(TestCase):
         User = get_user_model()
 
         cls.usuario = User.objects.get(
-            username="homologador"
+            username=os.getenv("DEMO_ADMIN_USERNAME", "demo_admin")
         )
 
         cls.prestacao = Prestacao.objects.get(
@@ -48,8 +49,8 @@ class NavegacaoDiligenciaTests(TestCase):
         )
 
         cls.diligencia = Diligencia.objects.create(
-            assunto="Teste de navega??o",
-            descricao="Homologa??o dos atalhos.",
+            assunto="Teste de navegação",
+            descricao="Homologação dos atalhos.",
             empresa=cls.prestacao.empresa,
             prestacao=cls.prestacao,
             lancamento=cls.lancamento,
@@ -76,9 +77,9 @@ class NavegacaoDiligenciaTests(TestCase):
         )
 
         for texto in (
-            "Voltar ?s Dilig?ncias",
-            "Abrir Presta??o",
-            "Abrir Lan?amento",
+            "Voltar às Diligências",
+            "Abrir Prestação",
+            "Abrir Lançamento",
             "Abrir Documento",
             "Abrir Parceria",
         ):

@@ -46,7 +46,7 @@ class LimparDemoLegadoTests(TestCase):
     def test_remove_registros_demonstracao(self):
         prestacao = Prestacao.objects.create(
             numtermo="001/2026",
-            credor="Instituto Caminhos ? Demonstra??o",
+            credor="Instituto Caminhos — Demonstração",
             valorContrato=240000,
         )
 
@@ -56,7 +56,7 @@ class LimparDemoLegadoTests(TestCase):
         )
 
         empresa = Empresa.objects.create(
-            nome="Instituto Caminhos ? Demonstra??o",
+            nome="Instituto Caminhos — Demonstração",
             prestacao=prestacao,
             termos=termo,
         )
@@ -113,20 +113,20 @@ class LimparDemoLegadoTests(TestCase):
         cenarios = (
             (
                 "001/2026",
-                "Prefeitura de Vale Sereno ? Demo",
-                "Instituto Caminhos ? Demo",
+                "Prefeitura de Vale Sereno — Demo",
+                "Instituto Caminhos — Demo",
                 390000,
             ),
             (
                 "002/2026",
-                "Prefeitura de Nova Esperan?a ? Demo",
-                "Associa??o Rede Cidad? ? Demo",
+                "Prefeitura de Nova Esperança — Demo",
+                "Associação Rede Cidadã — Demo",
                 420000,
             ),
             (
                 "003/2026",
-                "Prefeitura de Jardim das ?guas ? Demo",
-                "Funda??o Sementes das ?guas ? Demo",
+                "Prefeitura de Jardim das Águas — Demo",
+                "Fundação Sementes das Águas — Demo",
                 450000,
             ),
         )
@@ -156,15 +156,15 @@ class LimparDemoLegadoTests(TestCase):
         atual_empresa, atual_prestacao, atual_termo = (
             self._criar_cenario_atual(
                 "001/2026",
-                "Prefeitura de Vale Sereno ? Demo",
-                "Instituto Caminhos ? Demo",
+                "Prefeitura de Vale Sereno — Demo",
+                "Instituto Caminhos — Demo",
                 390000,
             )
         )
 
         antiga_prestacao = Prestacao.objects.create(
             numtermo="001/2026",
-            credor="Instituto Caminhos de Vale Sereno ? Demonstra??o",
+            credor="Instituto Caminhos de Vale Sereno — Demonstração",
             valorContrato=390000,
         )
 
@@ -174,7 +174,7 @@ class LimparDemoLegadoTests(TestCase):
         )
 
         antiga_empresa = Empresa.objects.create(
-            nome="Prefeitura Municipal de Vale Sereno ? Demonstra??o",
+            nome="Prefeitura Municipal de Vale Sereno — Demonstração",
             prestacao=antiga_prestacao,
             termos=antigo_termo,
         )
@@ -207,8 +207,8 @@ class LimparDemoLegadoTests(TestCase):
     def test_remove_meta_excedente_do_cenario_atual(self):
         empresa, prestacao, termo = self._criar_cenario_atual(
             "001/2026",
-            "Prefeitura de Vale Sereno ? Demo",
-            "Instituto Caminhos ? Demo",
+            "Prefeitura de Vale Sereno — Demo",
+            "Instituto Caminhos — Demo",
             390000,
         )
 

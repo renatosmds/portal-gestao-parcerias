@@ -36,16 +36,16 @@ class ParecerCriacaoForm(forms.Form):
 
     prestacao = forms.ModelChoiceField(
         queryset=Prestacao.objects.none(),
-        label="Presta??o de contas",
+        label="Prestação de contas",
     )
 
     numero = forms.CharField(
         required=False,
         max_length=50,
-        label="N?mero do parecer",
+        label="Número do parecer",
         help_text=(
-            "Opcional. Se n?o informado, "
-            "o PGP gerar? uma identifica??o."
+            "Opcional. Se não informado, "
+            "o PGP gerará uma identificação."
         ),
     )
 
@@ -80,8 +80,8 @@ class ParecerCriacaoForm(forms.Form):
                     empresa=empresa
                 )
 
-        # A cria??o inicial deve aparecer apenas
-        # para presta??es que ainda n?o possuem parecer.
+        # A criação inicial deve aparecer apenas
+        # para prestações que ainda não possuem parecer.
         qs = qs.filter(
             pareceres_tecnicos__isnull=True
         ).distinct()

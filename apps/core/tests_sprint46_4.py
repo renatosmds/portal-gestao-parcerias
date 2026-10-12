@@ -38,24 +38,24 @@ class Sprint464TextoInconformidadeTests(TestCase):
         dados = {
             "parecer": self.parecer,
             "codigo": "INC-001",
-            "titulo": "Documento incompat?vel",
+            "titulo": "Documento incompatível",
             "descricao": (
-                "Foi identificada diverg?ncia documental"
+                "Foi identificada divergência documental"
             ),
             "fato_verificado": (
-                "O valor informado n?o corresponde "
+                "O valor informado não corresponde "
                 "ao documento analisado"
             ),
             "evidencia": (
-                "Documento fiscal vinculado ao lan?amento"
+                "Documento fiscal vinculado ao lançamento"
             ),
             "fundamentacao": (
-                "Fundamenta??o normativa registrada "
-                "na an?lise"
+                "Fundamentação normativa registrada "
+                "na análise"
             ),
             "risco_glosa": (
-                "A ocorr?ncia poder? exigir saneamento "
-                "e avalia??o quanto ? glosa"
+                "A ocorrência poderá exigir saneamento "
+                "e avaliação quanto à glosa"
             ),
             "criado_por": self.usuario,
         }

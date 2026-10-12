@@ -16,7 +16,7 @@ class LancamentoFormTests(TestCase):
 
         self.termo = Termos.objects.create(
             empresa=self.empresa,
-            termo="Termo de Colabora??o",
+            termo="Termo de Colaboração",
             numtermo="TESTE-001/2026",
         )
 
@@ -123,7 +123,7 @@ class LancamentoFormTests(TestCase):
     def test_prestacao_de_outro_termo_e_rejeitada(self):
         outro_termo = Termos.objects.create(
             empresa=self.empresa,
-            termo="Termo de Colabora??o",
+            termo="Termo de Colaboração",
             numtermo="OUTRO-001/2026",
         )
 

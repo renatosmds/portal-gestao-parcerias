@@ -56,7 +56,7 @@ class Command(BaseCommand):
 
         Fornecedores.objects.all().delete()
 
-        # Remove refer?ncias PROTECT mantidas por Empresa.
+        # Remove referências PROTECT mantidas por Empresa.
         Empresa.objects.update(
             prestacao=None,
             termos=None,

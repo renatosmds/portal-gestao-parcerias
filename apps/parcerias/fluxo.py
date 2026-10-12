@@ -17,7 +17,7 @@ from apps.prestacao.models import Prestacao
 def _resumo_choices(queryset, campo, limite=4):
     """
     Resume os valores de um campo com choices.
-    Ex.: Regular: 31 ? Aprovado com ressalva: 1
+    Ex.: Regular: 31 • Aprovado com ressalva: 1
     """
 
     if not queryset.exists():
@@ -46,23 +46,23 @@ def _resumo_choices(queryset, campo, limite=4):
         valor = linha[campo]
         rotulo = escolhas.get(
             valor,
-            valor or "N?o informado",
+            valor or "Não informado",
         )
 
         partes.append(
             f"{rotulo}: {linha['total']}"
         )
 
-    return " ? ".join(partes)
+    return " • ".join(partes)
 
 
 def _status_objeto(objeto, campos=("status", "situacao")):
     """
-    Obt?m de forma segura o status de um objeto individual.
+    Obtém de forma segura o status de um objeto individual.
     """
 
     if objeto is None:
-        return "N?o vinculado"
+        return "Não vinculado"
 
     nomes_campos = {
         field.name
@@ -414,7 +414,7 @@ def montar_fluxo_parceria(parceria, user):
                 resultado["termo"]
             )
             if resultado["termo"]
-            else "N?o vinculado"
+            else "Não vinculado"
         ),
         "planos": _resumo_choices(
             resultado["planos"],
@@ -448,7 +448,7 @@ def montar_fluxo_parceria(parceria, user):
             (
                 resultado["pareceres"][0]
                 .get_situacao_display()
-                + " ? "
+                + " • "
                 + resultado["pareceres"][0]
                 .get_tipo_conclusao_display()
             )

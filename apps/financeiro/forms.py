@@ -125,7 +125,7 @@ class MovimentacaoFinanceiraForm(forms.ModelForm):
         if termo and termo.empresa_id != self.empresa.pk:
             self.add_error(
                 "termo",
-                "O termo n?o pertence ? empresa selecionada.",
+                "O termo não pertence à empresa selecionada.",
             )
 
         if prestacao:

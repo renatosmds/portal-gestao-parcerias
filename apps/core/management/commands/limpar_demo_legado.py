@@ -34,10 +34,10 @@ class Command(BaseCommand):
 
         empresas_atuais = {}
 
-        # A limpeza roda antes da cria??o dos cen?rios atuais.
-        # Portanto, zero candidatos ? uma situa??o v?lida.
-        # Mais de um candidato "Demo" para o mesmo termo ? que
-        # representa ambiguidade e deve interromper a opera??o.
+        # A limpeza roda antes da criação dos cenários atuais.
+        # Portanto, zero candidatos é uma situação válida.
+        # Mais de um candidato "Demo" para o mesmo termo é que
+        # representa ambiguidade e deve interromper a operação.
         for numero in TERMOS_DEMO:
             candidatos = Empresa.objects.filter(
                 nome__endswith="Demo",
@@ -113,13 +113,13 @@ class Command(BaseCommand):
         )
 
         if prestacoes_ids:
-            # 1. Dilig?ncias devem sair antes de documentos/lancamentos,
-            # pois tamb?m podem proteg?-los.
+            # 1. Diligências devem sair antes de documentos/lancamentos,
+            # pois também podem protegê-los.
             Diligencia.objects.filter(
                 prestacao_id__in=prestacoes_ids
             ).delete()
 
-            # 2. Publica??es de documentos dependentes.
+            # 2. Publicações de documentos dependentes.
             documentos = Documento.objects.filter(
                 prestacao_id__in=prestacoes_ids
             )
@@ -128,10 +128,10 @@ class Command(BaseCommand):
                 documento__in=documentos
             ).delete()
 
-            # 3. Documentos antes dos lan?amentos.
+            # 3. Documentos antes dos lançamentos.
             documentos.delete()
 
-            # 4. V?nculos de concilia??o que apontam para lan?amentos.
+            # 4. Vínculos de conciliação que apontam para lançamentos.
             lancamentos = Lancamento.objects.filter(
                 prestacao_id__in=prestacoes_ids
             )
@@ -140,10 +140,10 @@ class Command(BaseCommand):
                 lancamento__in=lancamentos
             ).delete()
 
-            # 5. Lan?amentos.
+            # 5. Lançamentos.
             lancamentos.delete()
 
-            # 6. An?lises e metas.
+            # 6. Análises e metas.
             Analise.objects.filter(
                 prestacao_id__in=prestacoes_ids
             ).delete()
@@ -152,17 +152,17 @@ class Command(BaseCommand):
                 prestacao_id__in=prestacoes_ids
             ).delete()
 
-            # 7. Concilia??es e suas movimenta??es por cascata.
+            # 7. Conciliações e suas movimentações por cascata.
             Conciliacao.objects.filter(
                 prestacao_id__in=prestacoes_ids
             ).delete()
 
-            # 8. Remove refer?ncias PROTECT mantidas por Empresa.
+            # 8. Remove referências PROTECT mantidas por Empresa.
             Empresa.objects.filter(
                 prestacao_id__in=prestacoes_ids
             ).update(prestacao=None)
 
-            # 9. Finalmente, presta??es antigas.
+            # 9. Finalmente, prestações antigas.
             Prestacao.objects.filter(
                 pk__in=prestacoes_ids
             ).delete()
@@ -179,12 +179,12 @@ class Command(BaseCommand):
             # quando o Termo legado for excluido.
             parcerias_legadas.delete()
 
-            # Remove refer?ncias mantidas por Empresa.
+            # Remove referências mantidas por Empresa.
             Empresa.objects.filter(
                 termos_id__in=termos_ids
             ).update(termos=None)
 
-            # Agora os Termos legados podem ser exclu?dos.
+            # Agora os Termos legados podem ser excluídos.
             Termos.objects.filter(
                 pk__in=termos_ids
             ).delete()
@@ -194,7 +194,7 @@ class Command(BaseCommand):
                 pk__in=empresas_ids
             ).delete()
 
-        # Remove metas excedentes dos tr?s cen?rios atuais.
+        # Remove metas excedentes dos três cenários atuais.
         metas_removidas = 0
 
         for numero, empresa in empresas_atuais.items():

@@ -71,8 +71,8 @@ def gerar_rascunhos_assistidos(documento, achados):
     """
     Tenta utilizar IA externa quando configurada.
 
-    Em qualquer indisponibilidade, mant?m o funcionamento
-    do PGP utilizando o gerador local determin?stico.
+    Em qualquer indisponibilidade, mantém o funcionamento
+    do PGP utilizando o gerador local determinístico.
     """
     from .services_openai import (
         gerar_rascunhos_openai,

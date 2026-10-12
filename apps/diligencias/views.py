@@ -19,8 +19,8 @@ from .models import ComentarioInterno, Diligencia, Notificacao, RespostaDiligenc
 
 def _parceria_da_diligencia(diligencia):
     """
-    Localiza a parceria vinculada ? dilig?ncia
-    a partir da Presta??o, Lan?amento ou Documento.
+    Localiza a parceria vinculada à diligência
+    a partir da Prestação, Lançamento ou Documento.
     """
 
     termo = None
@@ -88,6 +88,41 @@ def _parceria_da_diligencia(diligencia):
         )
         .first()
     )
+
+
+STATUS_TERMINAIS_DILIGENCIA = {
+    Diligencia.Status.ATENDIDA,
+    Diligencia.Status.NAO_ATENDIDA,
+    Diligencia.Status.CANCELADA,
+}
+
+
+def _diligencia_encerrada(diligencia):
+    return (
+        diligencia.status
+        in STATUS_TERMINAIS_DILIGENCIA
+    )
+
+
+def _bloquear_se_encerrada(
+    request,
+    diligencia,
+):
+    if not _diligencia_encerrada(
+        diligencia
+    ):
+        return False
+
+    messages.error(
+        request,
+        (
+            "A dilig?ncia j? est? encerrada "
+            "e n?o pode ser reaberta."
+        ),
+    )
+
+    return True
+
 
 def _qs_usuario(user):
     qs = Diligencia.objects.select_related(
@@ -203,6 +238,12 @@ class DiligenciaUpdate(LoginRequiredMixin, UpdateView):
 @exigir_modulo("diligencias")
 def enviar_diligencia(request, pk):
     d = get_object_or_404(_qs_usuario(request.user), pk=pk)
+
+    if _bloquear_se_encerrada(
+        request,
+        d,
+    ):
+        return redirect(d)
     if usuario_eh_osc(request.user) and not request.user.is_superuser:
         messages.error(request, "Operação exclusiva do órgão público.")
         return redirect(d)
@@ -220,6 +261,12 @@ def enviar_diligencia(request, pk):
 @exigir_modulo("diligencias")
 def responder_diligencia(request, pk):
     d = get_object_or_404(_qs_usuario(request.user), pk=pk)
+
+    if _bloquear_se_encerrada(
+        request,
+        d,
+    ):
+        return redirect(d)
     if request.method != "POST":
         return redirect(d)
     form = RespostaDiligenciaForm(request.POST, request.FILES)
@@ -263,6 +310,12 @@ def alterar_status(request, pk, status):
     permitidos = dict(Diligencia.Status.choices)
     if status not in permitidos:
         messages.error(request, "Situação inválida.")
+        return redirect(d)
+
+    if _bloquear_se_encerrada(
+        request,
+        d,
+    ):
         return redirect(d)
     if usuario_eh_osc(request.user) and status not in {Diligencia.Status.EM_RESPOSTA, Diligencia.Status.RESPONDIDA}:
         messages.error(request, "Esta movimentação é exclusiva do órgão público.")

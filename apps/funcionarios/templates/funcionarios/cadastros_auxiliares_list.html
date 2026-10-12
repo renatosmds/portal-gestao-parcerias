@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}{{ titulo }} | PGP{% endblock %}
-{% block page_name %}Gest?o de Pessoas{% endblock %}
+{% block page_name %}Gestão de Pessoas{% endblock %}
 
 {% block main %}
 
@@ -49,7 +49,7 @@
         {% elif tipo == "nivel" %}
             {% if perms.funcionarios.add_nivel or user.is_superuser %}
                 <a href="{% url 'create_nivel' %}" class="btn btn-primary">
-                    Novo n?vel
+                    Novo nível
                 </a>
             {% endif %}
         {% else %}
@@ -75,7 +75,7 @@
                                 <th>Empresa</th>
                             {% endif %}
                             <th>Status</th>
-                            <th class="text-right">A??es</th>
+                            <th class="text-right">Ações</th>
                         </tr>
                     </thead>
 

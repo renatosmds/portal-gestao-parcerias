@@ -7,12 +7,12 @@ from apps.core.permissoes_modulos import modulos_liberados
 
 def modulos_dashboard_usuario(user):
     """
-    Retorna o conjunto de m?dulos que podem ser exibidos
-    no Dashboard do usu?rio.
+    Retorna o conjunto de módulos que podem ser exibidos
+    no Dashboard do usuário.
 
-    A configura??o do Dashboard nunca concede acesso.
-    Ela apenas filtra m?dulos j? autorizados pela
-    matriz de permiss?es do PGP.
+    A configuração do Dashboard nunca concede acesso.
+    Ela apenas filtra módulos já autorizados pela
+    matriz de permissões do PGP.
     """
 
     modulos_acesso = set(modulos_liberados(user))
@@ -89,8 +89,8 @@ def modulos_dashboard_usuario(user):
 
             continue
 
-        # Fallback compat?vel:
-        # sem configura??o espec?fica, preserva o
+        # Fallback compatível:
+        # sem configuração específica, preserva o
         # comportamento atual do Dashboard.
         resultado.add(modulo)
 

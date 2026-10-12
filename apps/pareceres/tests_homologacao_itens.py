@@ -24,7 +24,7 @@ class ParecerExigeItensTests(TestCase):
         )
 
         self.empresa = Empresa.objects.create(
-            nome="OSC Homologa??o Parecer Itens",
+            nome="OSC Homologação Parecer Itens",
         )
 
         self.prestacao = Prestacao.objects.create(
@@ -81,10 +81,10 @@ class ParecerExigeItensTests(TestCase):
         ItemParecer.objects.create(
             parecer=self.parecer,
             codigo="HOM-001",
-            titulo="Item de homologa??o",
+            titulo="Item de homologação",
             descricao=(
-                "Item criado para validar a exig?ncia "
-                "m?nima do parecer."
+                "Item criado para validar a exigência "
+                "mínima do parecer."
             ),
             origem=ItemParecer.Origem.MANUAL,
             conclusao_item=(

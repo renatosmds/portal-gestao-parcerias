@@ -252,8 +252,8 @@ class NivelList(
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update({
-            "titulo": "N?veis",
-            "singular": "N?vel",
+            "titulo": "Níveis",
+            "singular": "Nível",
             "tipo": "nivel",
             "url_novo": "create_nivel",
             "url_editar": "update_nivel",
@@ -279,7 +279,7 @@ class NivelCreate(
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update({
-            "titulo": "Novo n?vel",
+            "titulo": "Novo nível",
             "voltar_url": "list_niveis",
         })
         return context
@@ -302,7 +302,7 @@ class NivelUpdate(
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update({
-            "titulo": "Editar n?vel",
+            "titulo": "Editar nível",
             "voltar_url": "list_niveis",
         })
         return context
