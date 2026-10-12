@@ -122,8 +122,7 @@
     <div class="card-body">
 
         <p class="text-muted mb-4">
-            Vis?o integrada da execu??o e da presta??o de
-            contas vinculadas a esta parceria.
+            Visão integrada da execução e da prestação de contas vinculadas a esta parceria.
         </p>
 
         <div class="row">
@@ -133,6 +132,9 @@
                 <div class="card h-100">
                     <div class="card-body">
                         <strong>1. Termo</strong>
+                        <div class="mt-2 mb-2">
+                            <span class="badge {{ fluxo_parceria.classes_status.termo }} border" style="white-space: normal; text-align: left; line-height: 1.35;">{{ fluxo_parceria.resumos.termo }}</span>
+                        </div>
 
                         {% if fluxo_parceria.termo %}
                             <div class="mt-2">
@@ -147,7 +149,7 @@
                             </a>
                         {% else %}
                             <div class="text-muted mt-2">
-                                N?o vinculado
+                                Não vinculado
                             </div>
                         {% endif %}
                     </div>
@@ -161,6 +163,9 @@
                 <div class="card h-100">
                     <div class="card-body">
                         <strong>2. Plano de Trabalho</strong>
+                        <div class="mt-2 mb-2">
+                            <span class="badge {{ fluxo_parceria.classes_status.planos }} border" style="white-space: normal; text-align: left; line-height: 1.35;">{{ fluxo_parceria.resumos.planos }}</span>
+                        </div>
 
                         <div class="display-6">
                             {{ fluxo_parceria.totais.planos }}
@@ -187,9 +192,10 @@
             <div class="col-lg-3 col-md-4 mb-3">
                 <div class="card h-100">
                     <div class="card-body">
-                        <strong>
-                            3. Presta??o de Contas
-                        </strong>
+                        <strong>3. Prestação de Contas</strong>
+                        <div class="mt-2 mb-2">
+                            <span class="badge {{ fluxo_parceria.classes_status.prestacoes }} border" style="white-space: normal; text-align: left; line-height: 1.35;">{{ fluxo_parceria.resumos.prestacoes }}</span>
+                        </div>
 
                         <div class="display-6">
                             {{ fluxo_parceria.totais.prestacoes }}
@@ -203,7 +209,7 @@
                             </div>
                         {% empty %}
                             <div class="text-muted">
-                                Nenhuma presta??o
+                                Nenhuma prestação
                             </div>
                         {% endfor %}
                     </div>
@@ -216,7 +222,10 @@
             <div class="col-lg-3 col-md-4 mb-3">
                 <div class="card h-100">
                     <div class="card-body">
-                        <strong>4. Lan?amentos</strong>
+                        <strong>4. Lançamentos</strong>
+                        <div class="mt-2 mb-2">
+                            <span class="badge {{ fluxo_parceria.classes_status.lancamentos }} border" style="white-space: normal; text-align: left; line-height: 1.35;">{{ fluxo_parceria.resumos.lancamentos }}</span>
+                        </div>
 
                         <div class="display-6">
                             {{ fluxo_parceria.totais.lancamentos }}
@@ -244,6 +253,9 @@
                 <div class="card h-100">
                     <div class="card-body">
                         <strong>5. Documentos</strong>
+                        <div class="mt-2 mb-2">
+                            <span class="badge {{ fluxo_parceria.classes_status.documentos }} border" style="white-space: normal; text-align: left; line-height: 1.35;">{{ fluxo_parceria.resumos.documentos }}</span>
+                        </div>
 
                         <div class="display-6">
                             {{ fluxo_parceria.totais.documentos }}
@@ -270,9 +282,10 @@
             <div class="col-lg-3 col-md-4 mb-3">
                 <div class="card h-100">
                     <div class="card-body">
-                        <strong>
-                            6. Concilia??o banc?ria
-                        </strong>
+                        <strong>6. Conciliação bancária</strong>
+                        <div class="mt-2 mb-2">
+                            <span class="badge {{ fluxo_parceria.classes_status.conciliacoes }} border" style="white-space: normal; text-align: left; line-height: 1.35;">{{ fluxo_parceria.resumos.conciliacoes }}</span>
+                        </div>
 
                         <div class="display-6">
                             {{ fluxo_parceria.totais.conciliacoes }}
@@ -286,7 +299,7 @@
                             </div>
                         {% empty %}
                             <div class="text-muted">
-                                Nenhuma concilia??o
+                                Nenhuma conciliação
                             </div>
                         {% endfor %}
                     </div>
@@ -299,7 +312,10 @@
             <div class="col-lg-3 col-md-4 mb-3">
                 <div class="card h-100">
                     <div class="card-body">
-                        <strong>7. Dilig?ncias</strong>
+                        <strong>7. Diligências</strong>
+                        <div class="mt-2 mb-2">
+                            <span class="badge {{ fluxo_parceria.classes_status.diligencias }} border" style="white-space: normal; text-align: left; line-height: 1.35;">{{ fluxo_parceria.resumos.diligencias }}</span>
+                        </div>
 
                         <div class="display-6">
                             {{ fluxo_parceria.totais.diligencias }}
@@ -313,7 +329,7 @@
                             </div>
                         {% empty %}
                             <div class="text-muted">
-                                Nenhuma dilig?ncia
+                                Nenhuma diligência
                             </div>
                         {% endfor %}
                     </div>
@@ -326,9 +342,10 @@
             <div class="col-lg-3 col-md-4 mb-3">
                 <div class="card h-100">
                     <div class="card-body">
-                        <strong>
-                            9. An?lise Assistida
-                        </strong>
+                        <strong>8. Análise Assistida</strong>
+                        <div class="mt-2 mb-2">
+                            <span class="badge {{ fluxo_parceria.classes_status.processamentos }} border" style="white-space: normal; text-align: left; line-height: 1.35;">{{ fluxo_parceria.resumos.processamentos }}</span>
+                        </div>
 
                         <div class="display-6">
                             {{ fluxo_parceria.totais.processamentos }}
@@ -345,7 +362,7 @@
                             </div>
                         {% empty %}
                             <div class="text-muted">
-                                Nenhuma an?lise assistida
+                                Nenhuma análise assistida
                             </div>
                         {% endfor %}
                     </div>
@@ -358,7 +375,10 @@
             <div class="col-lg-3 col-md-4 mb-3">
                 <div class="card h-100">
                     <div class="card-body">
-                        <strong>8. Parecer T?cnico</strong>
+                        <strong>9. Parecer Técnico</strong>
+                        <div class="mt-2 mb-2">
+                            <span class="badge {{ fluxo_parceria.classes_status.pareceres }} border" style="white-space: normal; text-align: left; line-height: 1.35;">{{ fluxo_parceria.resumos.pareceres }}</span>
+                        </div>
 
                         <div class="display-6">
                             {{ fluxo_parceria.totais.pareceres }}

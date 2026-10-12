@@ -1,6 +1,11 @@
 from django import forms
 
 from apps.pareceres.models import ItemParecer, ParecerTecnico
+from apps.prestacao.models import Prestacao
+from apps.pareceres.escopo import (
+    empresa_do_usuario,
+    usuario_acesso_global,
+)
 
 
 def _aplicar_classes_bootstrap(form):
@@ -23,6 +28,69 @@ def _aplicar_classes_bootstrap(form):
         widget.attrs["class"] = (
             f"{classe} {nova_classe}".strip()
         )
+
+
+
+
+class ParecerCriacaoForm(forms.Form):
+
+    prestacao = forms.ModelChoiceField(
+        queryset=Prestacao.objects.none(),
+        label="Presta??o de contas",
+    )
+
+    numero = forms.CharField(
+        required=False,
+        max_length=50,
+        label="N?mero do parecer",
+        help_text=(
+            "Opcional. Se n?o informado, "
+            "o PGP gerar? uma identifica??o."
+        ),
+    )
+
+    def __init__(
+        self,
+        *args,
+        user=None,
+        **kwargs,
+    ):
+        super().__init__(*args, **kwargs)
+
+        qs = (
+            Prestacao.objects
+            .select_related(
+                "empresa",
+                "termo",
+            )
+            .order_by(
+                "empresa__nome",
+                "numtermo",
+                "pk",
+            )
+        )
+
+        if not usuario_acesso_global(user):
+            empresa = empresa_do_usuario(user)
+
+            if empresa is None:
+                qs = qs.none()
+            else:
+                qs = qs.filter(
+                    empresa=empresa
+                )
+
+        # A cria??o inicial deve aparecer apenas
+        # para presta??es que ainda n?o possuem parecer.
+        qs = qs.filter(
+            pareceres_tecnicos__isnull=True
+        ).distinct()
+
+        self.fields[
+            "prestacao"
+        ].queryset = qs
+
+        _aplicar_classes_bootstrap(self)
 
 
 class ParecerRevisaoForm(forms.ModelForm):

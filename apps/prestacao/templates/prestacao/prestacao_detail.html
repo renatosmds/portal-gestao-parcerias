@@ -9,6 +9,14 @@
     <header class="accounts-header">
         <div><span class="sgm-eyebrow">PRESTAÇÃO DE CONTAS</span><h1>{{ prestacao }}</h1><p>{{ prestacao.credor|default:"Credor não informado" }}</p></div>
         <div>
+            {% if perms.pareceres.add_parecertecnico %}
+            <a
+                href="{% url 'pareceres:parecer_novo' %}?prestacao={{ prestacao.pk }}"
+                class="btn btn-outline-primary"
+            >
+                Gerar Parecer T?cnico
+            </a>
+            {% endif %}
             {% if perms.prestacao.change_prestacao %}<a href="{% url 'movimentar_prestacao' prestacao.pk %}" class="btn btn-success">Movimentar</a> <a href="{% url 'update_prestacao' prestacao.pk %}" class="btn btn-primary">Editar</a>{% endif %}
             {% if perms.prestacao.delete_prestacao %}<a href="{% url 'delete_prestacao' prestacao.pk %}" class="btn btn-outline-danger">Excluir</a>{% endif %}
         </div>

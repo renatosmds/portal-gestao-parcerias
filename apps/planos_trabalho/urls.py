@@ -1,4 +1,4 @@
-﻿from django.urls import path
+from django.urls import path
 
 from . import views
 
@@ -54,4 +54,11 @@ urlpatterns = [
         views.item_analise,
         name="item_analise",
     ),
+
+    path(
+        "itens/<int:pk>/vinculos/",
+        views.item_vinculos,
+        name="item_vinculos",
+    ),
+
 ]

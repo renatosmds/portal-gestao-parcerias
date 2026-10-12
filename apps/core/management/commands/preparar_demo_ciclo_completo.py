@@ -222,6 +222,7 @@ class Command(BaseCommand):
             empresa=prefeitura,
             numtermo=dados["termo"],
             defaults={
+                "termo": termo,
                 "tipo": "cnpj",
                 "tipoTermo": "TC",
                 "credor": self._limitar(Prestacao, "credor", dados["osc"]),
@@ -241,6 +242,7 @@ class Command(BaseCommand):
             },
         )
 
+        prestacao.termo = termo
         prestacao.situacao_workflow = dados["situacao"]
         prestacao.concluida = dados["situacao"] in {
             Prestacao.SituacaoWorkflow.APROVADA,
@@ -251,6 +253,7 @@ class Command(BaseCommand):
         prestacao.analista_responsavel = usuario
         prestacao.save(
             update_fields=[
+                "termo",
                 "situacao_workflow",
                 "concluida",
                 "analista_responsavel",

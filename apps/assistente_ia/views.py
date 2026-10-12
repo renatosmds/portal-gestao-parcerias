@@ -14,11 +14,78 @@ from apps.core.acesso import (
     usuario_pode_ver_todas_empresas,
 )
 from apps.documentos.models import Documento
+from apps.parcerias.models import Parcerias
 
 from .forms import RevisaoProcessamentoForm
 from .models import AchadoAssistido, ProcessamentoAssistido
 from .services import gerar_rascunhos_assistidos, validar_documento
 
+
+
+def _parceria_do_processamento(processamento):
+    """
+    Localiza a parceria vinculada ao documento analisado.
+
+    A prioridade e o FK direto Documento -> Termo.
+    Os fallbacks cobrem documentos antigos vinculados
+    somente via Prestacao ou Lancamento.
+    """
+    documento = processamento.documento
+
+    termo_id = getattr(
+        documento,
+        "termo_id",
+        None,
+    )
+
+    if (
+        not termo_id
+        and getattr(
+            documento,
+            "prestacao_id",
+            None,
+        )
+    ):
+        termo_id = getattr(
+            documento.prestacao,
+            "termo_id",
+            None,
+        )
+
+    if (
+        not termo_id
+        and getattr(
+            documento,
+            "lancamento_id",
+            None,
+        )
+    ):
+        termo_id = getattr(
+            documento.lancamento,
+            "termo_id",
+            None,
+        )
+
+    empresa_id = (
+        processamento.empresa_id
+        or getattr(
+            documento,
+            "empresa_id",
+            None,
+        )
+    )
+
+    if not termo_id or not empresa_id:
+        return None
+
+    return (
+        Parcerias.objects
+        .filter(
+            numtermo_id=termo_id,
+            empresa_id=empresa_id,
+        )
+        .first()
+    )
 
 def _empresa_usuario(user):
     return empresa_do_usuario(user)
@@ -98,6 +165,15 @@ class CentralAssistenteIA(
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         processamentos = _processamentos_no_escopo(self.request.user)
+
+        processamentos_recentes = list(
+            processamentos[:8]
+        )
+
+        for item in processamentos_recentes:
+            item.parceria = (
+                _parceria_do_processamento(item)
+            )
         context.update(
             {
                 "total_documentos": _documentos_no_escopo(self.request.user).count(),
@@ -106,7 +182,7 @@ class CentralAssistenteIA(
                     decisao_revisor=ProcessamentoAssistido.DecisaoRevisor.PENDENTE
                 ).count(),
                 "ia_externa_ativa": bool(settings.PGP_IA_ATIVA and settings.OPENAI_API_KEY),
-                "processamentos_recentes": processamentos[:8],
+                "processamentos_recentes": processamentos_recentes,
             }
         )
         return context
@@ -174,6 +250,11 @@ class ProcessamentoDetalhe(
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["form_revisao"] = RevisaoProcessamentoForm(instance=self.object)
+        context["parceria"] = (
+            _parceria_do_processamento(
+                self.object
+            )
+        )
         return context
 
 

@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block main %}
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-start mb-3">
+        <div>
+            <h2>Gerenciar lan?amentos do item</h2>
+
+            <p class="text-muted mb-0">
+                {{ item.codigo }} ? {{ item.descricao }}
+            </p>
+
+            <p class="text-muted">
+                {{ plano.termo }} ? vers?o {{ plano.versao }}
+            </p>
+        </div>
+
+        <a
+            href="{% url 'planos_trabalho:item_analise' item.pk %}"
+            class="btn btn-outline-secondary"
+        >
+            Voltar ? an?lise
+        </a>
+    </div>
+
+    <div class="alert alert-info">
+        Somente lan?amentos pertencentes ao mesmo Termo e ? mesma
+        empresa do item s?o apresentados. O v?nculo manual n?o
+        aprova a despesa, n?o altera glosa e n?o substitui a an?lise
+        t?cnica.
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="card mb-3">
+            <div class="card-header">
+                <strong>Lan?amentos dispon?veis</strong>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-sm table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th style="width: 55px;">Vincular</th>
+                            <th>Lan?amento</th>
+                            <th>Data</th>
+                            <th>Descri??o</th>
+                            <th class="text-right">Valor</th>
+                            <th>V?nculo atual</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                    {% for linha in linhas %}
+                        <tr>
+                            <td class="text-center">
+                                <input
+                                    type="checkbox"
+                                    name="lancamentos"
+                                    value="{{ linha.lancamento.pk }}"
+                                    {% if linha.selecionado %}checked{% endif %}
+                                >
+                            </td>
+
+                            <td>
+                                {{ linha.lancamento.numero_lancamento }}
+                            </td>
+
+                            <td>
+                                {{ linha.lancamento.data_documento|date:"d/m/Y" }}
+                            </td>
+
+                            <td>
+                                {{ linha.lancamento.descricao }}
+                            </td>
+
+                            <td class="text-right">
+                                R$ {{ linha.lancamento.valor_documento|floatformat:2 }}
+                            </td>
+
+                            <td>
+                                {% if linha.selecionado %}
+                                    <span class="badge badge-success">
+                                        Este item
+                                    </span>
+                                {% elif linha.vinculado_outro %}
+                                    <span class="badge badge-warning">
+                                        {{ linha.item_atual.codigo }}
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted">
+                                        Sem v?nculo
+                                    </span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">
+                                Nenhum lan?amento dispon?vel para este Termo.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="id_justificativa">
+                Justificativa do v?nculo
+            </label>
+
+            <textarea
+                name="justificativa"
+                id="id_justificativa"
+                class="form-control"
+                rows="3"
+                placeholder="Opcional"
+            ></textarea>
+        </div>
+
+        <button
+            type="submit"
+            class="btn btn-primary"
+        >
+            Salvar v?nculos
+        </button>
+
+        <a
+            href="{% url 'planos_trabalho:item_analise' item.pk %}"
+            class="btn btn-outline-secondary"
+        >
+            Cancelar
+        </a>
+    </form>
+
+</div>
+
+{% endblock %}

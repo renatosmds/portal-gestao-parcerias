@@ -5,7 +5,24 @@
 {% block staticcss %}<link rel="stylesheet" href="{% static 'assistente_ia/assistente-ia.css' %}?v=23.0">{% endblock %}
 {% block main %}
 <div class="container-fluid py-4 ai-page">
-  <div class="d-flex justify-content-between align-items-start mb-4"><div><a href="{% url 'assistente_ia_central' %}" class="small">← Voltar à central</a><h1 class="h3 mt-2 mb-1">Processamento #{{ processamento.pk }}</h1><p class="text-muted mb-0">{{ processamento.documento }} · {{ processamento.empresa|default:"Sem OSC" }}</p></div><span class="badge badge-info p-2">{{ processamento.get_decisao_revisor_display }}</span></div>
+  <div class="d-flex justify-content-between align-items-start mb-4"><div><div class="d-flex align-items-center mb-2">
+  <a
+    href="{% url 'assistente_ia_central' %}"
+    class="small"
+  >
+    &larr; Voltar ? central
+  </a>
+
+  {% if parceria %}
+  <a
+    href="{% url 'detail_parceria' parceria.pk %}"
+    class="btn btn-sm btn-outline-primary ml-3"
+  >
+    <i class="fa fa-handshake-o"></i>
+    Abrir parceria
+  </a>
+  {% endif %}
+</div><h1 class="h3 mt-2 mb-1">Processamento #{{ processamento.pk }}</h1><p class="text-muted mb-0">{{ processamento.documento }} · {{ processamento.empresa|default:"Sem OSC" }}</p></div><span class="badge badge-info p-2">{{ processamento.get_decisao_revisor_display }}</span></div>
   <div class="alert alert-warning"><strong>Aviso:</strong> este resultado é assistivo. A decisão final cabe exclusivamente ao servidor responsável.</div>
   <div class="card shadow-sm border-0 mb-4"><div class="card-header bg-white"><strong>Resumo</strong></div><div class="card-body">{{ processamento.resumo|linebreaks }}</div></div>
   <h2 class="h5 mb-3">Achados</h2>

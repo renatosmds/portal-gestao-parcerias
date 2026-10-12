@@ -1,4 +1,4 @@
-﻿
+
 from apps.analise.api.viewsets import AnaliseViewSet
 from apps.clientes.api.viewsets import ClientesViewSet
 from apps.core import views
@@ -156,12 +156,12 @@ urlpatterns = [
 
 if getattr(settings, 'DEBUG_TOOLBAR_AVAILABLE', False):
     import debug_toolbar
+
     urlpatterns = [
-    path(
-        "planos-trabalho/",
-        include("apps.planos_trabalho.urls"),
-    ),
-        path('__debug__/', include(debug_toolbar.urls)),
+        path(
+            '__debug__/',
+            include(debug_toolbar.urls),
+        ),
     ] + urlpatterns
 
 admin.site.site_header = "Portal de Gestão de Parcerias"

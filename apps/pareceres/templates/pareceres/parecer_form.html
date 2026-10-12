@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}
+Novo Parecer T?cnico | PGP
+{% endblock %}
+
+{% block page_name %}
+Pareceres T?cnicos
+{% endblock %}
+
+{% block main %}
+
+<div class="container-fluid py-4">
+
+    <div class="d-flex justify-content-between align-items-start mb-4">
+
+        <div>
+            <h1 class="h3 mb-1">
+                Novo Parecer T?cnico
+            </h1>
+
+            <p class="text-muted mb-0">
+                Selecione a presta??o de contas que ser?
+                submetida ? revis?o t?cnica humana.
+            </p>
+        </div>
+
+        <a
+            href="{% url 'pareceres:parecer_lista' %}"
+            class="btn btn-outline-secondary"
+        >
+            Voltar
+        </a>
+
+    </div>
+
+    <div class="alert alert-info">
+        O novo parecer ser? criado como
+        <strong>Rascunho</strong> e
+        <strong>Em an?lise</strong>.
+        Nenhuma aprova??o, irregularidade ou glosa
+        ser? aplicada automaticamente.
+    </div>
+
+    <div class="card shadow-sm">
+
+        <div class="card-body">
+
+            <form method="post">
+
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {{ form.non_field_errors }}
+                </div>
+                {% endif %}
+
+                <div class="form-group">
+                    <label for="{{ form.prestacao.id_for_label }}">
+                        {{ form.prestacao.label }}
+                    </label>
+
+                    {{ form.prestacao }}
+
+                    {% for erro in form.prestacao.errors %}
+                    <div class="text-danger small mt-1">
+                        {{ erro }}
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.numero.id_for_label }}">
+                        {{ form.numero.label }}
+                    </label>
+
+                    {{ form.numero }}
+
+                    {% if form.numero.help_text %}
+                    <small class="form-text text-muted">
+                        {{ form.numero.help_text }}
+                    </small>
+                    {% endif %}
+
+                    {% for erro in form.numero.errors %}
+                    <div class="text-danger small mt-1">
+                        {{ erro }}
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                >
+                    Criar Parecer T?cnico
+                </button>
+
+                <a
+                    href="{% url 'pareceres:parecer_lista' %}"
+                    class="btn btn-outline-secondary"
+                >
+                    Cancelar
+                </a>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

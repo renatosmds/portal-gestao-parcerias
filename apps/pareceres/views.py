@@ -1,6 +1,6 @@
 from apps.core.permissoes_modulos import exigir_modulo
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
@@ -23,12 +23,61 @@ from apps.pareceres.escopo import (
     pareceres_permitidos,
 )
 from apps.pareceres.forms import (
+    ParecerCriacaoForm,
     ItemParecerRevisaoForm,
     ParecerRevisaoForm,
 )
 from apps.pareceres.models import ParecerTecnico
+from apps.pareceres.services import gerar_itens_iniciais_parecer
+from apps.parcerias.models import Parcerias
 from apps.pareceres.versionamento import criar_nova_versao_parecer
 
+
+
+def _parceria_do_parecer(parecer):
+    """
+    Localiza a parceria relacionada ao parecer
+    por empresa + Termo da presta??o.
+    """
+
+    prestacao = parecer.prestacao
+
+    termo_id = getattr(
+        prestacao,
+        "termo_id",
+        None,
+    )
+
+    if termo_id:
+        return (
+            Parcerias.objects
+            .filter(
+                empresa_id=parecer.empresa_id,
+                numtermo_id=termo_id,
+            )
+            .first()
+        )
+
+    numero = (
+        getattr(
+            prestacao,
+            "numtermo",
+            "",
+        )
+        or ""
+    ).strip()
+
+    if not numero:
+        return None
+
+    return (
+        Parcerias.objects
+        .filter(
+            empresa_id=parecer.empresa_id,
+            numtermo__numtermo=numero,
+        )
+        .first()
+    )
 
 def _exigir_parecer_editavel(parecer):
     permitidas = {
@@ -48,6 +97,12 @@ def _exigir_parecer_aprovavel(parecer):
     Garante que somente um parecer efetivamente revisado
     possa ser aprovado/finalizado.
     """
+
+    if not parecer.itens.exists():
+        raise PermissionDenied(
+            "O parecer deve possuir ao menos um item de an?lise "
+            "antes da aprova??o e finaliza??o."
+        )
 
     if parecer.situacao != ParecerTecnico.Situacao.EM_REVISAO:
         raise PermissionDenied(
@@ -108,6 +163,122 @@ def parecer_lista(request):
 
 @login_required
 @exigir_modulo("pareceres")
+@permission_required(
+    "pareceres.add_parecertecnico",
+    raise_exception=True,
+)
+@transaction.atomic
+def parecer_novo(request):
+    dados_iniciais = {}
+
+    prestacao_id = (
+        request.GET.get("prestacao")
+        or ""
+    ).strip()
+
+    if prestacao_id.isdigit():
+        dados_iniciais[
+            "prestacao"
+        ] = int(prestacao_id)
+
+    if request.method == "POST":
+        form = ParecerCriacaoForm(
+            request.POST,
+            user=request.user,
+        )
+    else:
+        form = ParecerCriacaoForm(
+            user=request.user,
+            initial=dados_iniciais,
+        )
+
+    if request.method == "POST" and form.is_valid():
+        prestacao = form.cleaned_data[
+            "prestacao"
+        ]
+
+        if ParecerTecnico.objects.filter(
+            prestacao=prestacao
+        ).exists():
+            form.add_error(
+                "prestacao",
+                (
+                    "Esta presta??o j? possui "
+                    "Parecer T?cnico."
+                ),
+            )
+        else:
+            numero = (
+                form.cleaned_data.get(
+                    "numero"
+                )
+                or ""
+            ).strip()
+
+            if not numero:
+                referencia = (
+                    prestacao.numtermo
+                    or str(prestacao.pk)
+                )
+
+                numero = (
+                    f"PT-{referencia}"
+                )
+
+            parecer = ParecerTecnico(
+                prestacao=prestacao,
+                empresa=prestacao.empresa,
+                numero=numero,
+                versao=1,
+                situacao=(
+                    ParecerTecnico
+                    .Situacao
+                    .RASCUNHO
+                ),
+                tipo_conclusao=(
+                    ParecerTecnico
+                    .TipoConclusao
+                    .EM_ANALISE
+                ),
+                elaborado_por=request.user,
+            )
+
+            parecer.full_clean()
+            parecer.save()
+
+            itens_criados = (
+                gerar_itens_iniciais_parecer(
+                    parecer=parecer,
+                    usuario=request.user,
+                )
+            )
+
+            messages.success(
+                request,
+                (
+                    "Parecer T?cnico criado "
+                    "em rascunho com sucesso. "
+                    f"{itens_criados} item(ns) inicial(is) "
+                    "gerado(s) para revis?o humana."
+                ),
+            )
+
+            return redirect(
+                "pareceres:parecer_detalhe",
+                pk=parecer.pk,
+            )
+
+    return render(
+        request,
+        "pareceres/parecer_form.html",
+        {
+            "form": form,
+        },
+    )
+
+
+@login_required
+@exigir_modulo("pareceres")
 def parecer_detalhe(request, pk):
     parecer = get_object_or_404(
         pareceres_permitidos(request.user),
@@ -144,6 +315,7 @@ def parecer_detalhe(request, pk):
         "itens": itens,
         "historico": historico,
         "versao_posterior": versao_posterior,
+        "parceria": _parceria_do_parecer(parecer),
     }
 
     contexto.update(
@@ -216,6 +388,7 @@ def parecer_revisar(request, pk):
     contexto = {
         "parecer": parecer,
         "form": form,
+        "parceria": _parceria_do_parecer(parecer),
     }
 
     contexto.update(

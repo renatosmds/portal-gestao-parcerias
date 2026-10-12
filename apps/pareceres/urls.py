@@ -13,6 +13,11 @@ urlpatterns = [
         name="parecer_lista",
     ),
     path(
+        "novo/",
+        views.parecer_novo,
+        name="parecer_novo",
+    ),
+    path(
         "<int:pk>/",
         views.parecer_detalhe,
         name="parecer_detalhe",

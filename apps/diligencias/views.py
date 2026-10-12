@@ -11,9 +11,83 @@ from django.views.generic import CreateView, DetailView, ListView, UpdateView
 from apps.core.acesso import usuario_pode_ver_todas_empresas
 from apps.core.dashboard import empresa_do_usuario, usuario_eh_osc
 from apps.core.permissoes_modulos import exigir_modulo
+from apps.parcerias.models import Parcerias
 from .forms import ComentarioInternoForm, DiligenciaForm, RespostaDiligenciaForm
 from .models import ComentarioInterno, Diligencia, Notificacao, RespostaDiligencia
 
+
+
+def _parceria_da_diligencia(diligencia):
+    """
+    Localiza a parceria vinculada ? dilig?ncia
+    a partir da Presta??o, Lan?amento ou Documento.
+    """
+
+    termo = None
+
+    if (
+        diligencia.prestacao_id
+        and getattr(
+            diligencia.prestacao,
+            "termo_id",
+            None,
+        )
+    ):
+        termo = diligencia.prestacao.termo
+
+    elif (
+        diligencia.lancamento_id
+        and getattr(
+            diligencia.lancamento,
+            "termo_id",
+            None,
+        )
+    ):
+        termo = diligencia.lancamento.termo
+
+    elif (
+        diligencia.documento_id
+        and getattr(
+            diligencia.documento,
+            "termo_id",
+            None,
+        )
+    ):
+        termo = diligencia.documento.termo
+
+    if termo is not None:
+        return (
+            Parcerias.objects
+            .filter(
+                empresa_id=diligencia.empresa_id,
+                numtermo=termo,
+            )
+            .first()
+        )
+
+    numero = ""
+
+    if diligencia.prestacao_id:
+        numero = (
+            getattr(
+                diligencia.prestacao,
+                "numtermo",
+                "",
+            )
+            or ""
+        ).strip()
+
+    if not numero:
+        return None
+
+    return (
+        Parcerias.objects
+        .filter(
+            empresa_id=diligencia.empresa_id,
+            numtermo__numtermo=numero,
+        )
+        .first()
+    )
 
 def _qs_usuario(user):
     qs = Diligencia.objects.select_related(
@@ -85,6 +159,9 @@ class DiligenciaDetail(LoginRequiredMixin, DetailView):
         ctx["resposta_form"] = RespostaDiligenciaForm()
         ctx["comentario_form"] = ComentarioInternoForm()
         ctx["usuario_osc"] = usuario_eh_osc(self.request.user)
+        ctx["parceria"] = _parceria_da_diligencia(
+            self.object
+        )
         return ctx
 
 

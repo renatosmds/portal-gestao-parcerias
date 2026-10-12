@@ -4,6 +4,35 @@
 {% block page_name %}Parecer Técnico{% endblock %}
 
 {% block main %}
+
+<div class="d-flex flex-wrap align-items-center mb-3"
+     style="gap: .5rem;">
+
+    <a
+        href="{% url 'pareceres:parecer_lista' %}"
+        class="btn btn-sm btn-outline-secondary"
+    >
+        &larr; Voltar aos Pareceres
+    </a>
+
+    <a
+        href="{% url 'detail_prestacao' parecer.prestacao.pk %}"
+        class="btn btn-sm btn-outline-primary"
+    >
+        Abrir Presta??o
+    </a>
+
+    {% if parceria %}
+    <a
+        href="{% url 'detail_parceria' parceria.pk %}"
+        class="btn btn-sm btn-outline-primary"
+    >
+        Abrir Parceria
+    </a>
+    {% endif %}
+
+</div>
+
 <div class="container-fluid py-4">
 
     <div class="d-flex flex-wrap justify-content-between align-items-start mb-4">

@@ -195,15 +195,15 @@ class FluxoFuncionalCompletoParceriaTests(TestCase):
         )
         self.assertContains(
             response,
-            "Presta??o de Contas",
+            "Presta\u00e7\u00e3o de Contas",
         )
         self.assertContains(
             response,
-            "Concilia??o banc?ria",
+            "Concilia\u00e7\u00e3o banc\u00e1ria",
         )
         self.assertContains(
             response,
-            "Parecer T?cnico",
+            "Parecer T\u00e9cnico",
         )
 
     def test_fluxo_nao_expoe_modulo_sem_permissao(self):

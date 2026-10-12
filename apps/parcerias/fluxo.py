@@ -1,4 +1,5 @@
-from django.db.models import Q
+import unicodedata
+from django.db.models import Count, Q
 
 from apps.assistente_ia.models import ProcessamentoAssistido
 
@@ -11,6 +12,192 @@ from apps.pareceres.models import ParecerTecnico
 from apps.planos_trabalho.models import PlanoTrabalho
 from apps.prestacao.models import Prestacao
 
+
+
+def _resumo_choices(queryset, campo, limite=4):
+    """
+    Resume os valores de um campo com choices.
+    Ex.: Regular: 31 ? Aprovado com ressalva: 1
+    """
+
+    if not queryset.exists():
+        return "Sem registros"
+
+    field = queryset.model._meta.get_field(campo)
+
+    escolhas = dict(
+        getattr(
+            field,
+            "flatchoices",
+            [],
+        )
+    )
+
+    contagens = (
+        queryset
+        .values(campo)
+        .annotate(total=Count("pk"))
+        .order_by("-total", campo)
+    )
+
+    partes = []
+
+    for linha in contagens[:limite]:
+        valor = linha[campo]
+        rotulo = escolhas.get(
+            valor,
+            valor or "N?o informado",
+        )
+
+        partes.append(
+            f"{rotulo}: {linha['total']}"
+        )
+
+    return " ? ".join(partes)
+
+
+def _status_objeto(objeto, campos=("status", "situacao")):
+    """
+    Obt?m de forma segura o status de um objeto individual.
+    """
+
+    if objeto is None:
+        return "N?o vinculado"
+
+    nomes_campos = {
+        field.name
+        for field in objeto._meta.fields
+    }
+
+    for campo in campos:
+        if campo not in nomes_campos:
+            continue
+
+        metodo = getattr(
+            objeto,
+            f"get_{campo}_display",
+            None,
+        )
+
+        if callable(metodo):
+            return metodo()
+
+        valor = getattr(
+            objeto,
+            campo,
+            None,
+        )
+
+        if valor:
+            return str(valor)
+
+    return "Vinculado"
+
+
+def _classe_status(resumo):
+    """
+    Define apenas a apresentacao visual do resumo.
+
+    A comparacao ignora acentos para evitar dependencia
+    de codificacao na classificacao visual.
+
+    Nao altera situacao, conclusao ou regra de negocio.
+    """
+
+    valor_original = str(
+        resumo or ""
+    ).strip().lower()
+
+    valor = "".join(
+        caractere
+        for caractere in unicodedata.normalize(
+            "NFKD",
+            valor_original,
+        )
+        if not unicodedata.combining(
+            caractere
+        )
+    )
+
+    criticos = (
+        "reprov",
+        "irregular",
+        "glosa",
+        "nao atend",
+        "com erro",
+        "critic",
+    )
+
+    alertas = (
+        "ressalva",
+        "pendencia",
+        "em diligencia",
+        "em revisao",
+        "reanalise",
+        "aguardando",
+        "inconclusivo",
+    )
+
+    positivos = (
+        "vigente",
+        "aprovad",
+        "regular",
+        "conferido",
+        "fechada",
+        "atendida",
+        "sugestao aceita",
+        "finalizado",
+        "sem pendencias relevantes",
+        "concluid",
+    )
+
+    andamento = (
+        "rascunho",
+        "em analise",
+        "em elaboracao",
+        "respondida",
+        "enviada",
+        "visualizada",
+    )
+
+    neutros = (
+        "sem registros",
+        "nao vinculado",
+        "nao informado",
+        "encerrado para demonstracao",
+    )
+
+    if any(
+        termo in valor
+        for termo in criticos
+    ):
+        return "badge-danger"
+
+    if any(
+        termo in valor
+        for termo in alertas
+    ):
+        return "badge-warning"
+
+    if any(
+        termo in valor
+        for termo in positivos
+    ):
+        return "badge-success"
+
+    if any(
+        termo in valor
+        for termo in andamento
+    ):
+        return "badge-info"
+
+    if any(
+        termo in valor
+        for termo in neutros
+    ):
+        return "badge-secondary"
+
+    return "badge-light"
 
 def montar_fluxo_parceria(parceria, user):
     """
@@ -219,5 +406,62 @@ def montar_fluxo_parceria(parceria, user):
         resultado["totais"][chave] = (
             resultado[chave].count()
         )
+
+
+    resultado["resumos"] = {
+        "termo": (
+            _status_objeto(
+                resultado["termo"]
+            )
+            if resultado["termo"]
+            else "N?o vinculado"
+        ),
+        "planos": _resumo_choices(
+            resultado["planos"],
+            "situacao",
+        ),
+        "prestacoes": _resumo_choices(
+            resultado["prestacoes"],
+            "situacao_workflow",
+        ),
+        "lancamentos": _resumo_choices(
+            resultado["lancamentos"],
+            "situacao",
+        ),
+        "documentos": _resumo_choices(
+            resultado["documentos"],
+            "status",
+        ),
+        "conciliacoes": _resumo_choices(
+            resultado["conciliacoes"],
+            "situacao",
+        ),
+        "diligencias": _resumo_choices(
+            resultado["diligencias"],
+            "status",
+        ),
+        "processamentos": _resumo_choices(
+            resultado["processamentos"],
+            "decisao_revisor",
+        ),
+        "pareceres": (
+            (
+                resultado["pareceres"][0]
+                .get_situacao_display()
+                + " ? "
+                + resultado["pareceres"][0]
+                .get_tipo_conclusao_display()
+            )
+            if resultado["pareceres"].exists()
+            else "Sem registros"
+        ),
+    }
+
+
+    resultado["classes_status"] = {
+        chave: _classe_status(valor)
+        for chave, valor
+        in resultado["resumos"].items()
+    }
 
     return resultado

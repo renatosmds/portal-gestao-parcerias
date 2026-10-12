@@ -1,6 +1,16 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 
 {% block main %}
+
+<div class="container mt-3 mb-2 text-right">
+    <a
+        href="{% url 'planos_trabalho:item_vinculos' item.pk %}"
+        class="btn btn-primary"
+    >
+        Gerenciar lan?amentos
+    </a>
+</div>
+
 
 <div class="container mt-4">
 
