@@ -1,0 +1,1126 @@
+[
+{
+  "model": "empresas.empresa",
+  "pk": 16,
+  "fields": {
+    "nome": "Prefeitura de Contagem",
+    "receitas": null,
+    "curso": null,
+    "termos": null,
+    "prestacao": null,
+    "parcerias": null
+  }
+},
+{
+  "model": "departamentos.departamento",
+  "pk": 33,
+  "fields": {
+    "nome": "Secretaria Municipal de Desenvolvimento Social e Segurança Alimentar",
+    "empresa": 16,
+    "tipo": "departamento",
+    "superior": null
+  }
+},
+{
+  "model": "departamentos.departamento",
+  "pk": 34,
+  "fields": {
+    "nome": "Gabinete do Secretário",
+    "empresa": 16,
+    "tipo": "gabinete",
+    "superior": 33
+  }
+},
+{
+  "model": "departamentos.departamento",
+  "pk": 35,
+  "fields": {
+    "nome": "Assessoria de Gestão e Inovação",
+    "empresa": 16,
+    "tipo": "assessoria",
+    "superior": 33
+  }
+},
+{
+  "model": "departamentos.departamento",
+  "pk": 36,
+  "fields": {
+    "nome": "Superintendência de Operação Institucional",
+    "empresa": 16,
+    "tipo": "superintendencia",
+    "superior": 33
+  }
+},
+{
+  "model": "departamentos.departamento",
+  "pk": 37,
+  "fields": {
+    "nome": "Diretoria de Processos Operacionais",
+    "empresa": 16,
+    "tipo": "diretoria",
+    "superior": 36
+  }
+},
+{
+  "model": "departamentos.departamento",
+  "pk": 38,
+  "fields": {
+    "nome": "Gerência de Apoio a Compras e Licitação",
+    "empresa": 16,
+    "tipo": "gerencia",
+    "superior": 37
+  }
+},
+{
+  "model": "departamentos.departamento",
+  "pk": 39,
+  "fields": {
+    "nome": "Gerência de Patrimônio e Manutenção",
+    "empresa": 16,
+    "tipo": "gerencia",
+    "superior": 37
+  }
+},
+{
+  "model": "departamentos.departamento",
+  "pk": 40,
+  "fields": {
+    "nome": "Gerência de Gestão de Pessoas e Apoio Logístico",
+    "empresa": 16,
+    "tipo": "gerencia",
+    "superior": 37
+  }
+},
+{
+  "model": "departamentos.departamento",
+  "pk": 41,
+  "fields": {
+    "nome": "Diretoria de Orçamento e Finanças",
+    "empresa": 16,
+    "tipo": "diretoria",
+    "superior": 36
+  }
+},
+{
+  "model": "departamentos.departamento",
+  "pk": 42,
+  "fields": {
+    "nome": "Superintendência de Parcerias",
+    "empresa": 16,
+    "tipo": "superintendencia",
+    "superior": 33
+  }
+},
+{
+  "model": "departamentos.departamento",
+  "pk": 43,
+  "fields": {
+    "nome": "Diretoria de Parceira e Prestação de Contas",
+    "empresa": 16,
+    "tipo": "diretoria",
+    "superior": 42
+  }
+},
+{
+  "model": "departamentos.departamento",
+  "pk": 44,
+  "fields": {
+    "nome": "Gerência de Convênios",
+    "empresa": 16,
+    "tipo": "gerencia",
+    "superior": 43
+  }
+},
+{
+  "model": "departamentos.departamento",
+  "pk": 45,
+  "fields": {
+    "nome": "Gerência de Prestação de Contas",
+    "empresa": 16,
+    "tipo": "gerencia",
+    "superior": 43
+  }
+},
+{
+  "model": "departamentos.departamento",
+  "pk": 46,
+  "fields": {
+    "nome": "Subsecretaria de Assistência Social",
+    "empresa": 16,
+    "tipo": "subsecretaria",
+    "superior": 33
+  }
+},
+{
+  "model": "departamentos.departamento",
+  "pk": 47,
+  "fields": {
+    "nome": "Superintendência de Assistência Social",
+    "empresa": 16,
+    "tipo": "superintendencia",
+    "superior": 46
+  }
+},
+{
+  "model": "departamentos.departamento",
+  "pk": 48,
+  "fields": {
+    "nome": "Diretoria de Programas e Benefício",
+    "empresa": 16,
+    "tipo": "diretoria",
+    "superior": 47
+  }
+},
+{
+  "model": "departamentos.departamento",
+  "pk": 49,
+  "fields": {
+    "nome": "Gerência de Cadastro e Atendimento",
+    "empresa": 16,
+    "tipo": "gerencia",
+    "superior": 48
+  }
+},
+{
+  "model": "departamentos.departamento",
+  "pk": 50,
+  "fields": {
+    "nome": "Diretoria de Proteção Social Básica",
+    "empresa": 16,
+    "tipo": "diretoria",
+    "superior": 47
+  }
+},
+{
+  "model": "departamentos.departamento",
+  "pk": 51,
+  "fields": {
+    "nome": "Diretoria de Proteção Social Especial de Média Complexidade",
+    "empresa": 16,
+    "tipo": "diretoria",
+    "superior": 47
+  }
+},
+{
+  "model": "departamentos.departamento",
+  "pk": 52,
+  "fields": {
+    "nome": "Diretoria de Proteção Social Especial de Alta Complexidade",
+    "empresa": 16,
+    "tipo": "diretoria",
+    "superior": 47
+  }
+},
+{
+  "model": "departamentos.departamento",
+  "pk": 53,
+  "fields": {
+    "nome": "Diretoria de Gestão do Sistema Único da Assistência Social – SUAS",
+    "empresa": 16,
+    "tipo": "diretoria",
+    "superior": 47
+  }
+},
+{
+  "model": "departamentos.departamento",
+  "pk": 54,
+  "fields": {
+    "nome": "Gerência de Gestão de Trabalho e Educação Permanente",
+    "empresa": 16,
+    "tipo": "gerencia",
+    "superior": 53
+  }
+},
+{
+  "model": "departamentos.departamento",
+  "pk": 55,
+  "fields": {
+    "nome": "Gerência da Vigilância Socioassistencial",
+    "empresa": 16,
+    "tipo": "gerencia",
+    "superior": 53
+  }
+},
+{
+  "model": "departamentos.departamento",
+  "pk": 56,
+  "fields": {
+    "nome": "Gerência de Regulamentação do SUAS",
+    "empresa": 16,
+    "tipo": "gerencia",
+    "superior": 53
+  }
+},
+{
+  "model": "departamentos.departamento",
+  "pk": 57,
+  "fields": {
+    "nome": "Subsecretaria de Segurança Alimentar, Nutricional e Agroecologia",
+    "empresa": 16,
+    "tipo": "subsecretaria",
+    "superior": 33
+  }
+},
+{
+  "model": "departamentos.departamento",
+  "pk": 58,
+  "fields": {
+    "nome": "Superintendência de Segurança Alimentar, Nutricional e Agroecologia",
+    "empresa": 16,
+    "tipo": "superintendencia",
+    "superior": 57
+  }
+},
+{
+  "model": "departamentos.departamento",
+  "pk": 59,
+  "fields": {
+    "nome": "Diretoria de Produção e Comercialização da Agricultura Urbana e Familiar Agroecológica",
+    "empresa": 16,
+    "tipo": "diretoria",
+    "superior": 58
+  }
+},
+{
+  "model": "departamentos.departamento",
+  "pk": 60,
+  "fields": {
+    "nome": "Gerência de Apoio à Comercialização",
+    "empresa": 16,
+    "tipo": "gerencia",
+    "superior": 59
+  }
+},
+{
+  "model": "departamentos.departamento",
+  "pk": 61,
+  "fields": {
+    "nome": "Gerência de Apoio à Produção Agroecológica",
+    "empresa": 16,
+    "tipo": "gerencia",
+    "superior": 59
+  }
+},
+{
+  "model": "departamentos.departamento",
+  "pk": 62,
+  "fields": {
+    "nome": "Diretoria de Assistência e Educação Alimentar",
+    "empresa": 16,
+    "tipo": "diretoria",
+    "superior": 58
+  }
+},
+{
+  "model": "departamentos.departamento",
+  "pk": 63,
+  "fields": {
+    "nome": "Gerência do Banco de Alimentos e Ações Emergenciais",
+    "empresa": 16,
+    "tipo": "gerencia",
+    "superior": 62
+  }
+},
+{
+  "model": "departamentos.departamento",
+  "pk": 64,
+  "fields": {
+    "nome": "Gerência de Restaurantes Populares e Cozinhas Comunitárias",
+    "empresa": 16,
+    "tipo": "gerencia",
+    "superior": 62
+  }
+},
+{
+  "model": "funcionarios.cargo",
+  "pk": 1,
+  "fields": {
+    "empresa": 16,
+    "nome": "Almoxarife",
+    "descricao": "",
+    "ativo": true
+  }
+},
+{
+  "model": "funcionarios.cargo",
+  "pk": 119,
+  "fields": {
+    "empresa": 16,
+    "nome": "Administrador(a)",
+    "descricao": "",
+    "ativo": true
+  }
+},
+{
+  "model": "funcionarios.cargo",
+  "pk": 120,
+  "fields": {
+    "empresa": 16,
+    "nome": "Administrador(a) do Sistema",
+    "descricao": "",
+    "ativo": true
+  }
+},
+{
+  "model": "funcionarios.cargo",
+  "pk": 121,
+  "fields": {
+    "empresa": 16,
+    "nome": "Analista de Comunicação",
+    "descricao": "",
+    "ativo": true
+  }
+},
+{
+  "model": "funcionarios.cargo",
+  "pk": 122,
+  "fields": {
+    "empresa": 16,
+    "nome": "Analista de Processos",
+    "descricao": "",
+    "ativo": true
+  }
+},
+{
+  "model": "funcionarios.cargo",
+  "pk": 123,
+  "fields": {
+    "empresa": 16,
+    "nome": "Assistente Administrativo",
+    "descricao": "",
+    "ativo": true
+  }
+},
+{
+  "model": "funcionarios.cargo",
+  "pk": 124,
+  "fields": {
+    "empresa": 16,
+    "nome": "Assistente de RH",
+    "descricao": "",
+    "ativo": true
+  }
+},
+{
+  "model": "funcionarios.cargo",
+  "pk": 125,
+  "fields": {
+    "empresa": 16,
+    "nome": "Atendente de Restaurante",
+    "descricao": "",
+    "ativo": true
+  }
+},
+{
+  "model": "funcionarios.cargo",
+  "pk": 126,
+  "fields": {
+    "empresa": 16,
+    "nome": "Auxiliar de Coordenação",
+    "descricao": "",
+    "ativo": true
+  }
+},
+{
+  "model": "funcionarios.cargo",
+  "pk": 127,
+  "fields": {
+    "empresa": 16,
+    "nome": "Auxiliar de Cozinha",
+    "descricao": "",
+    "ativo": true
+  }
+},
+{
+  "model": "funcionarios.cargo",
+  "pk": 128,
+  "fields": {
+    "empresa": 16,
+    "nome": "Auxiliar de Escritório",
+    "descricao": "",
+    "ativo": true
+  }
+},
+{
+  "model": "funcionarios.cargo",
+  "pk": 129,
+  "fields": {
+    "empresa": 16,
+    "nome": "Auxiliar de Servi?os Gerais",
+    "descricao": "",
+    "ativo": true
+  }
+},
+{
+  "model": "funcionarios.cargo",
+  "pk": 130,
+  "fields": {
+    "empresa": 16,
+    "nome": "Caixa",
+    "descricao": "",
+    "ativo": true
+  }
+},
+{
+  "model": "funcionarios.cargo",
+  "pk": 131,
+  "fields": {
+    "empresa": 16,
+    "nome": "Chefe de Cozinha",
+    "descricao": "",
+    "ativo": true
+  }
+},
+{
+  "model": "funcionarios.cargo",
+  "pk": 132,
+  "fields": {
+    "empresa": 16,
+    "nome": "Comissionado(a)",
+    "descricao": "",
+    "ativo": true
+  }
+},
+{
+  "model": "funcionarios.cargo",
+  "pk": 133,
+  "fields": {
+    "empresa": 16,
+    "nome": "Contratado(a)",
+    "descricao": "",
+    "ativo": true
+  }
+},
+{
+  "model": "funcionarios.cargo",
+  "pk": 134,
+  "fields": {
+    "empresa": 16,
+    "nome": "Coordenador(a)",
+    "descricao": "",
+    "ativo": true
+  }
+},
+{
+  "model": "funcionarios.cargo",
+  "pk": 135,
+  "fields": {
+    "empresa": 16,
+    "nome": "Coordenador(a) Administrativo Financeiro",
+    "descricao": "",
+    "ativo": true
+  }
+},
+{
+  "model": "funcionarios.cargo",
+  "pk": 136,
+  "fields": {
+    "empresa": 16,
+    "nome": "Coordenador(a) de Eventos",
+    "descricao": "",
+    "ativo": true
+  }
+},
+{
+  "model": "funcionarios.cargo",
+  "pk": 137,
+  "fields": {
+    "empresa": 16,
+    "nome": "Coordenador(a) de log?stica",
+    "descricao": "",
+    "ativo": true
+  }
+},
+{
+  "model": "funcionarios.cargo",
+  "pk": 138,
+  "fields": {
+    "empresa": 16,
+    "nome": "Coordenador(a) de Projetos",
+    "descricao": "",
+    "ativo": true
+  }
+},
+{
+  "model": "funcionarios.cargo",
+  "pk": 139,
+  "fields": {
+    "empresa": 16,
+    "nome": "Cozinheiro(a)",
+    "descricao": "",
+    "ativo": true
+  }
+},
+{
+  "model": "funcionarios.cargo",
+  "pk": 140,
+  "fields": {
+    "empresa": 16,
+    "nome": "Diretor(a) de Abastecimento",
+    "descricao": "",
+    "ativo": true
+  }
+},
+{
+  "model": "funcionarios.cargo",
+  "pk": 141,
+  "fields": {
+    "empresa": 16,
+    "nome": "Efetivo(a)",
+    "descricao": "",
+    "ativo": true
+  }
+},
+{
+  "model": "funcionarios.cargo",
+  "pk": 142,
+  "fields": {
+    "empresa": 16,
+    "nome": "Encarregado(a) de Manutenção",
+    "descricao": "",
+    "ativo": true
+  }
+},
+{
+  "model": "funcionarios.cargo",
+  "pk": 143,
+  "fields": {
+    "empresa": 16,
+    "nome": "Gerente Administrativo",
+    "descricao": "",
+    "ativo": true
+  }
+},
+{
+  "model": "funcionarios.cargo",
+  "pk": 144,
+  "fields": {
+    "empresa": 16,
+    "nome": "Gerente Administrativo Financeiro",
+    "descricao": "",
+    "ativo": true
+  }
+},
+{
+  "model": "funcionarios.cargo",
+  "pk": 145,
+  "fields": {
+    "empresa": 16,
+    "nome": "Gerente de Presta??o de Contas",
+    "descricao": "",
+    "ativo": true
+  }
+},
+{
+  "model": "funcionarios.cargo",
+  "pk": 146,
+  "fields": {
+    "empresa": 16,
+    "nome": "Gerente de Qualidade",
+    "descricao": "",
+    "ativo": true
+  }
+},
+{
+  "model": "funcionarios.cargo",
+  "pk": 147,
+  "fields": {
+    "empresa": 16,
+    "nome": "Gerente Financeiro",
+    "descricao": "",
+    "ativo": true
+  }
+},
+{
+  "model": "funcionarios.cargo",
+  "pk": 148,
+  "fields": {
+    "empresa": 16,
+    "nome": "Gestor(a)",
+    "descricao": "",
+    "ativo": true
+  }
+},
+{
+  "model": "funcionarios.cargo",
+  "pk": 149,
+  "fields": {
+    "empresa": 16,
+    "nome": "Motorista",
+    "descricao": "",
+    "ativo": true
+  }
+},
+{
+  "model": "funcionarios.cargo",
+  "pk": 150,
+  "fields": {
+    "empresa": 16,
+    "nome": "Nutricionista",
+    "descricao": "",
+    "ativo": true
+  }
+},
+{
+  "model": "funcionarios.cargo",
+  "pk": 151,
+  "fields": {
+    "empresa": 16,
+    "nome": "Operador(a) de Manuten??o",
+    "descricao": "",
+    "ativo": true
+  }
+},
+{
+  "model": "funcionarios.cargo",
+  "pk": 152,
+  "fields": {
+    "empresa": 16,
+    "nome": "Pol?tico",
+    "descricao": "",
+    "ativo": true
+  }
+},
+{
+  "model": "funcionarios.cargo",
+  "pk": 153,
+  "fields": {
+    "empresa": 16,
+    "nome": "Saladeira(o)",
+    "descricao": "",
+    "ativo": true
+  }
+},
+{
+  "model": "funcionarios.cargo",
+  "pk": 154,
+  "fields": {
+    "empresa": 16,
+    "nome": "Supervisor(a) de Manuten??o",
+    "descricao": "",
+    "ativo": true
+  }
+},
+{
+  "model": "funcionarios.cargo",
+  "pk": 155,
+  "fields": {
+    "empresa": 16,
+    "nome": "Supervisor(a) de Servi?os Gerais",
+    "descricao": "",
+    "ativo": true
+  }
+},
+{
+  "model": "funcionarios.cargo",
+  "pk": 156,
+  "fields": {
+    "empresa": 16,
+    "nome": "T?cnico de Contabilidade",
+    "descricao": "",
+    "ativo": true
+  }
+},
+{
+  "model": "funcionarios.nivel",
+  "pk": 1,
+  "fields": {
+    "empresa": 16,
+    "nome": "I",
+    "descricao": "",
+    "ativo": true,
+    "ordem": 1
+  }
+},
+{
+  "model": "funcionarios.nivel",
+  "pk": 98,
+  "fields": {
+    "empresa": 16,
+    "nome": "II",
+    "descricao": "",
+    "ativo": true,
+    "ordem": 2
+  }
+},
+{
+  "model": "funcionarios.nivel",
+  "pk": 99,
+  "fields": {
+    "empresa": 16,
+    "nome": "III",
+    "descricao": "",
+    "ativo": true,
+    "ordem": 3
+  }
+},
+{
+  "model": "funcionarios.nivel",
+  "pk": 100,
+  "fields": {
+    "empresa": 16,
+    "nome": "IV",
+    "descricao": "",
+    "ativo": true,
+    "ordem": 4
+  }
+},
+{
+  "model": "funcionarios.nivel",
+  "pk": 101,
+  "fields": {
+    "empresa": 16,
+    "nome": "V",
+    "descricao": "",
+    "ativo": true,
+    "ordem": 5
+  }
+},
+{
+  "model": "funcionarios.nivel",
+  "pk": 102,
+  "fields": {
+    "empresa": 16,
+    "nome": "VI",
+    "descricao": "",
+    "ativo": true,
+    "ordem": 6
+  }
+},
+{
+  "model": "funcionarios.nivel",
+  "pk": 103,
+  "fields": {
+    "empresa": 16,
+    "nome": "VII",
+    "descricao": "",
+    "ativo": true,
+    "ordem": 7
+  }
+},
+{
+  "model": "funcionarios.nivel",
+  "pk": 104,
+  "fields": {
+    "empresa": 16,
+    "nome": "VIII",
+    "descricao": "",
+    "ativo": true,
+    "ordem": 8
+  }
+},
+{
+  "model": "funcionarios.nivel",
+  "pk": 105,
+  "fields": {
+    "empresa": 16,
+    "nome": "IX",
+    "descricao": "",
+    "ativo": true,
+    "ordem": 9
+  }
+},
+{
+  "model": "funcionarios.nivel",
+  "pk": 106,
+  "fields": {
+    "empresa": 16,
+    "nome": "X",
+    "descricao": "",
+    "ativo": true,
+    "ordem": 10
+  }
+},
+{
+  "model": "funcionarios.nivel",
+  "pk": 107,
+  "fields": {
+    "empresa": 16,
+    "nome": "XI",
+    "descricao": "",
+    "ativo": true,
+    "ordem": 11
+  }
+},
+{
+  "model": "funcionarios.nivel",
+  "pk": 108,
+  "fields": {
+    "empresa": 16,
+    "nome": "XII",
+    "descricao": "",
+    "ativo": true,
+    "ordem": 12
+  }
+},
+{
+  "model": "funcionarios.nivel",
+  "pk": 109,
+  "fields": {
+    "empresa": 16,
+    "nome": "DAM 01",
+    "descricao": "",
+    "ativo": true,
+    "ordem": 13
+  }
+},
+{
+  "model": "funcionarios.nivel",
+  "pk": 110,
+  "fields": {
+    "empresa": 16,
+    "nome": "DAM 02",
+    "descricao": "",
+    "ativo": true,
+    "ordem": 14
+  }
+},
+{
+  "model": "funcionarios.nivel",
+  "pk": 111,
+  "fields": {
+    "empresa": 16,
+    "nome": "DAM 03",
+    "descricao": "",
+    "ativo": true,
+    "ordem": 15
+  }
+},
+{
+  "model": "funcionarios.nivel",
+  "pk": 112,
+  "fields": {
+    "empresa": 16,
+    "nome": "DAM 04",
+    "descricao": "",
+    "ativo": true,
+    "ordem": 16
+  }
+},
+{
+  "model": "funcionarios.nivel",
+  "pk": 113,
+  "fields": {
+    "empresa": 16,
+    "nome": "DAM 05",
+    "descricao": "",
+    "ativo": true,
+    "ordem": 17
+  }
+},
+{
+  "model": "funcionarios.nivel",
+  "pk": 114,
+  "fields": {
+    "empresa": 16,
+    "nome": "DAM 06",
+    "descricao": "",
+    "ativo": true,
+    "ordem": 18
+  }
+},
+{
+  "model": "funcionarios.nivel",
+  "pk": 115,
+  "fields": {
+    "empresa": 16,
+    "nome": "DAM 07",
+    "descricao": "",
+    "ativo": true,
+    "ordem": 19
+  }
+},
+{
+  "model": "funcionarios.nivel",
+  "pk": 116,
+  "fields": {
+    "empresa": 16,
+    "nome": "DAM 08",
+    "descricao": "",
+    "ativo": true,
+    "ordem": 20
+  }
+},
+{
+  "model": "funcionarios.nivel",
+  "pk": 117,
+  "fields": {
+    "empresa": 16,
+    "nome": "DAM 09",
+    "descricao": "",
+    "ativo": true,
+    "ordem": 21
+  }
+},
+{
+  "model": "funcionarios.nivel",
+  "pk": 118,
+  "fields": {
+    "empresa": 16,
+    "nome": "DAM 10",
+    "descricao": "",
+    "ativo": true,
+    "ordem": 22
+  }
+},
+{
+  "model": "funcionarios.nivel",
+  "pk": 119,
+  "fields": {
+    "empresa": 16,
+    "nome": "DAM 11",
+    "descricao": "",
+    "ativo": true,
+    "ordem": 23
+  }
+},
+{
+  "model": "funcionarios.nivel",
+  "pk": 120,
+  "fields": {
+    "empresa": 16,
+    "nome": "DAM 12",
+    "descricao": "",
+    "ativo": true,
+    "ordem": 24
+  }
+},
+{
+  "model": "funcionarios.nivel",
+  "pk": 121,
+  "fields": {
+    "empresa": 16,
+    "nome": "DAM 13",
+    "descricao": "",
+    "ativo": true,
+    "ordem": 25
+  }
+},
+{
+  "model": "funcionarios.nivel",
+  "pk": 122,
+  "fields": {
+    "empresa": 16,
+    "nome": "DAM 14",
+    "descricao": "",
+    "ativo": true,
+    "ordem": 26
+  }
+},
+{
+  "model": "funcionarios.nivel",
+  "pk": 123,
+  "fields": {
+    "empresa": 16,
+    "nome": "DAM 15",
+    "descricao": "",
+    "ativo": true,
+    "ordem": 27
+  }
+},
+{
+  "model": "funcionarios.nivel",
+  "pk": 124,
+  "fields": {
+    "empresa": 16,
+    "nome": "DAM 16",
+    "descricao": "",
+    "ativo": true,
+    "ordem": 28
+  }
+},
+{
+  "model": "funcionarios.nivel",
+  "pk": 125,
+  "fields": {
+    "empresa": 16,
+    "nome": "DAM 17",
+    "descricao": "",
+    "ativo": true,
+    "ordem": 29
+  }
+},
+{
+  "model": "funcionarios.nivel",
+  "pk": 126,
+  "fields": {
+    "empresa": 16,
+    "nome": "DAM 18",
+    "descricao": "",
+    "ativo": true,
+    "ordem": 30
+  }
+},
+{
+  "model": "funcionarios.nivel",
+  "pk": 127,
+  "fields": {
+    "empresa": 16,
+    "nome": "DAM 19",
+    "descricao": "",
+    "ativo": true,
+    "ordem": 31
+  }
+},
+{
+  "model": "funcionarios.nivel",
+  "pk": 128,
+  "fields": {
+    "empresa": 16,
+    "nome": "DAM 20",
+    "descricao": "",
+    "ativo": true,
+    "ordem": 32
+  }
+},
+{
+  "model": "funcionarios.equipamento",
+  "pk": 1,
+  "fields": {
+    "empresa": 16,
+    "nome": "Restaurante Popular Nova Contagem",
+    "descricao": "",
+    "ativo": true
+  }
+},
+{
+  "model": "funcionarios.equipamento",
+  "pk": 17,
+  "fields": {
+    "empresa": 16,
+    "nome": "Cozinha Comunit?ria Nacional",
+    "descricao": "",
+    "ativo": true
+  }
+},
+{
+  "model": "funcionarios.equipamento",
+  "pk": 18,
+  "fields": {
+    "empresa": 16,
+    "nome": "Cozinha Comunit?ria Nova Contagem",
+    "descricao": "",
+    "ativo": true
+  }
+},
+{
+  "model": "funcionarios.equipamento",
+  "pk": 19,
+  "fields": {
+    "empresa": 16,
+    "nome": "Restaurante Popular Eldorado",
+    "descricao": "",
+    "ativo": true
+  }
+},
+{
+  "model": "funcionarios.equipamento",
+  "pk": 20,
+  "fields": {
+    "empresa": 16,
+    "nome": "Restaurante Popular Ressaca",
+    "descricao": "",
+    "ativo": true
+  }
+}
+]

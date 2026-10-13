@@ -370,6 +370,36 @@ SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
 SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=False, cast=bool) if not DEBUG else False
 
+SECURE_HSTS_SECONDS = (
+    config(
+        'SECURE_HSTS_SECONDS',
+        default=0,
+        cast=int,
+    )
+    if not DEBUG
+    else 0
+)
+
+SECURE_HSTS_INCLUDE_SUBDOMAINS = (
+    config(
+        'SECURE_HSTS_INCLUDE_SUBDOMAINS',
+        default=False,
+        cast=bool,
+    )
+    if SECURE_HSTS_SECONDS
+    else False
+)
+
+SECURE_HSTS_PRELOAD = (
+    config(
+        'SECURE_HSTS_PRELOAD',
+        default=False,
+        cast=bool,
+    )
+    if SECURE_HSTS_SECONDS
+    else False
+)
+
 LOG_DIR = os.path.join(PORTABLE_DATA_DIR or BASE_DIR, 'logs')
 os.makedirs(LOG_DIR, exist_ok=True)
 LOGGING = {

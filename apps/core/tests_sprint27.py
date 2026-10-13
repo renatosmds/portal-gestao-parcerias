@@ -26,8 +26,7 @@ class Sprint27ConsolidacaoTests(TestCase):
         resposta = self.client.get(reverse("diagnostico_portal"))
         self.assertEqual(resposta.status_code, 302)
 
-    def test_staff_acessa_diagnostico(self):
+    def test_staff_restrito_nao_acessa_diagnostico(self):
         self.client.force_login(self.staff)
         resposta = self.client.get(reverse("diagnostico_portal"))
-        self.assertEqual(resposta.status_code, 200)
-        self.assertContains(resposta, "Diagnóstico e homologação")
+        self.assertEqual(resposta.status_code, 403)
