@@ -3,7 +3,7 @@ import json
 from decimal import Decimal
 
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import login_required, permission_required
 from django.db.models import Q, Sum
 from django.http import FileResponse, Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -13,10 +13,6 @@ from apps.documentos.models import Documento
 from apps.termos.models import Termos
 from .forms import PublicacaoDocumentoForm, PublicacaoParceriaForm
 from .models import HistoricoPublicacao, PublicacaoDocumento, PublicacaoParceria
-
-
-def _administrador(user):
-    return user.is_authenticated and (user.is_staff or user.is_superuser)
 
 
 def _decimal(valor):
@@ -151,7 +147,10 @@ def dados_abertos_csv(request):
 
 
 @login_required
-@user_passes_test(_administrador)
+@permission_required(
+    "transparencia.view_publicacaoparceria",
+    raise_exception=True,
+)
 def painel_publicacao(request):
     termos = Termos.objects.select_related("empresa").order_by("numtermo", "termo")
     busca = request.GET.get("q", "").strip()
@@ -163,7 +162,10 @@ def painel_publicacao(request):
 
 
 @login_required
-@user_passes_test(_administrador)
+@permission_required(
+    "transparencia.change_publicacaoparceria",
+    raise_exception=True,
+)
 def editar_publicacao_parceria(request, termo_id):
     termo = get_object_or_404(Termos, pk=termo_id)
     obj, _ = PublicacaoParceria.objects.get_or_create(termo=termo)
@@ -187,7 +189,10 @@ def editar_publicacao_parceria(request, termo_id):
 
 
 @login_required
-@user_passes_test(_administrador)
+@permission_required(
+    "transparencia.view_publicacaodocumento",
+    raise_exception=True,
+)
 def painel_documentos(request):
     documentos = Documento.objects.select_related("empresa", "termo").order_by("descricao")
     busca = request.GET.get("q", "").strip()
@@ -199,7 +204,10 @@ def painel_documentos(request):
 
 
 @login_required
-@user_passes_test(_administrador)
+@permission_required(
+    "transparencia.change_publicacaodocumento",
+    raise_exception=True,
+)
 def editar_publicacao_documento(request, documento_id):
     documento = get_object_or_404(Documento, pk=documento_id)
     obj, _ = PublicacaoDocumento.objects.get_or_create(documento=documento)

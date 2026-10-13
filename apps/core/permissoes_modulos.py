@@ -1,4 +1,4 @@
-﻿from functools import wraps
+from functools import wraps
 
 from django.core.exceptions import PermissionDenied
 
@@ -19,6 +19,10 @@ MODULOS = {
     "pareceres": ("pareceres.view_parecertecnico",),
     "planos_trabalho": ("planos_trabalho.view_planotrabalho",),
     "assistente_ia": ("assistente_ia.view_processamentoassistido",),
+    "transparencia": (
+        "transparencia.view_publicacaoparceria",
+        "transparencia.view_publicacaodocumento",
+    ),
     "documentos": ("documentos.view_documento",),
     "lancamentos": ("lancamentos.view_lancamento",),
     "analises": ("analise.view_analise",),

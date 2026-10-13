@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Permission
 from django.test import TestCase
 from django.urls import reverse
 
@@ -24,12 +25,44 @@ class TransparenciaTests(TestCase):
         response = self.client.get(reverse("transparencia_publica"))
         self.assertNotContains(response, "OSC Teste")
 
-    def test_gestao_exige_usuario_staff(self):
-        response = self.client.get(reverse("transparencia_painel"))
-        self.assertEqual(response.status_code, 302)
-        self.client.login(username="admin24", password="teste123")
-        response = self.client.get(reverse("transparencia_painel"))
-        self.assertEqual(response.status_code, 200)
+    def test_gestao_exige_permissao(self):
+        response = self.client.get(
+            reverse("transparencia_painel")
+        )
+        self.assertEqual(
+            response.status_code,
+            302,
+        )
+
+        self.client.login(
+            username="admin24",
+            password="teste123",
+        )
+
+        response = self.client.get(
+            reverse("transparencia_painel")
+        )
+        self.assertEqual(
+            response.status_code,
+            403,
+        )
+
+        permissao = Permission.objects.get(
+            content_type__app_label="transparencia",
+            codename="view_publicacaoparceria",
+        )
+
+        self.staff.user_permissions.add(
+            permissao
+        )
+
+        response = self.client.get(
+            reverse("transparencia_painel")
+        )
+        self.assertEqual(
+            response.status_code,
+            200,
+        )
 
     def test_documento_restrito_nao_pode_ser_baixado(self):
         documento = Documento.objects.create(descricao="Documento restrito", arquivo="documentos/restrito.pdf", termo=self.termo)

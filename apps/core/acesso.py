@@ -9,6 +9,7 @@ GRUPOS_VISAO_GLOBAL = {
     'Consulta e Auditoria',
 }
 GRUPO_OSC = 'Usuário da OSC'
+GRUPO_ADMINISTRADOR_SISTEMA = 'Administrador do Sistema'
 
 
 def nomes_grupos(user):
@@ -19,6 +20,23 @@ def nomes_grupos(user):
 
 def usuario_eh_osc(user):
     return GRUPO_OSC in nomes_grupos(user)
+
+
+def usuario_eh_administrador_sistema(user):
+    if not getattr(
+        user,
+        'is_authenticated',
+        False,
+    ):
+        return False
+
+    if user.is_superuser:
+        return True
+
+    return (
+        GRUPO_ADMINISTRADOR_SISTEMA
+        in nomes_grupos(user)
+    )
 
 
 def usuario_pode_ver_todas_empresas(user):

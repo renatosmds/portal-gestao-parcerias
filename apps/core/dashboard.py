@@ -6,7 +6,6 @@ camada de leitura. Nenhuma migração é necessária.
 
 from __future__ import annotations
 
-from apps.core.acesso import usuario_pode_ver_todas_empresas
 
 from apps.core.dashboard_permissoes import modulos_dashboard_usuario
 from apps.core.dashboard_widgets_permissoes import widgets_dashboard_usuario
@@ -27,17 +26,15 @@ from apps.empresas.models import Empresa
 from apps.fornecedores.models import Fornecedores
 from apps.lancamentos.models import Lancamento
 from apps.prestacao.models import Prestacao
+from apps.core.acesso import (
+    empresa_do_usuario,
+    usuario_eh_osc,
+    usuario_pode_ver_todas_empresas,
+)
 from apps.parcerias.models import Parcerias
 from apps.termos.models import Termos
 from apps.metas.models import MetaExecucao
 
-OSC_GROUP_MARKERS = (
-    "osc",
-    "representante",
-    "contador",
-    "consultor",
-    "gestor financeiro",
-)
 
 MESES_PT = (
     "jan",
@@ -55,30 +52,6 @@ MESES_PT = (
 )
 
 
-def usuario_eh_osc(user) -> bool:
-    """Identifica a área padrão sem exigir alteração no modelo de usuário.
-
-    Superusuários e contas internas (staff) entram pela área do órgão público.
-    Usuários não staff e grupos explicitamente vinculados à OSC entram pela
-    área da organização. O superusuário pode alternar a visão no dashboard.
-    """
-    if not user or not user.is_authenticated or user.is_superuser:
-        return False
-
-    nomes_grupos = " ".join(
-        user.groups.values_list("name", flat=True)
-    ).casefold()
-    if any(marcador in nomes_grupos for marcador in OSC_GROUP_MARKERS):
-        return True
-
-    return not user.is_staff
-
-
-def empresa_do_usuario(user):
-    try:
-        return user.funcionario.empresa
-    except Exception:
-        return None
 
 
 def _normalizar_visao(request) -> str:
@@ -760,7 +733,8 @@ def montar_contexto_dashboard(request):
         "fim_filtro": fim,
         "periodo_ajustado": periodo_ajustado,
         "sem_empresa_vinculada": sem_empresa,
-        "escopo_todas_empresas": user.is_superuser and empresa_selecionada is None,
+        "escopo_todas_empresas": acesso_global and empresa_selecionada is None,
+        "acesso_global": acesso_global,
         "oscs_total": (
             1 if empresa_selecionada else empresas_disponiveis.count()
         ),

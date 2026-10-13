@@ -62,7 +62,7 @@
     <form method="get" class="pgp-filter-panel">
         <input type="hidden" name="visao" value="{{ visao_dashboard }}">
 
-        {% if user.is_superuser %}
+        {% if acesso_global %}
         <div class="pgp-filter-field pgp-filter-company">
             <label for="id_empresa">OSC</label>
             <select name="empresa" id="id_empresa" class="form-control">

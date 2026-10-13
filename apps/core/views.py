@@ -17,12 +17,12 @@ from django.http import HttpResponse
 from .tasks import send_relatorio
 from django.db.models import Sum
 from django.core.exceptions import PermissionDenied
-from django.contrib.admin.views.decorators import staff_member_required
 from django.db import connection
 from django.template.loader import get_template
 from django.urls import reverse
 
 from .dashboard import montar_contexto_dashboard
+from .acesso import usuario_eh_administrador_sistema
 
 
 @login_required
@@ -171,8 +171,12 @@ def analise(request):
     return self.Analise_set.all().count()
 
 
-@staff_member_required
+@login_required
 def diagnostico_portal(request):
+    if not usuario_eh_administrador_sistema(
+        request.user
+    ):
+        raise PermissionDenied
     """Painel simples de homologação para administradores."""
     verificacoes = []
 

@@ -1,6 +1,6 @@
 from apps.core.permissoes_modulos import modulos_liberados
 from django.conf import settings
-from .dashboard import usuario_eh_osc
+from .acesso import usuario_eh_osc
 
 
 def usuario_somente_estrutura(user):
