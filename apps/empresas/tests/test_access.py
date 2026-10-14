@@ -1,4 +1,4 @@
-from django.contrib.auth.models import Permission, User
+from django.contrib.auth.models import Group, Permission, User
 from django.test import TestCase
 from django.urls import reverse
 
@@ -32,6 +32,106 @@ class EmpresaAccessTests(TestCase):
         self.client.force_login(admin)
         response = self.client.get(reverse("list_empresas"))
         self.assertEqual(response.status_code, 200)
+
+    def test_gestor_municipal_visualiza_todas_as_empresas(self):
+        outra_empresa = Empresa.objects.create(
+            nome="Empresa Global Gestor"
+        )
+
+        gestor = User.objects.create_user(
+            username="gestor_empresas",
+            password="senha-teste-123",
+        )
+
+        grupo, _ = Group.objects.get_or_create(
+            name="Gestor Municipal"
+        )
+
+        gestor.groups.add(
+            grupo
+        )
+
+        permissao = Permission.objects.get(
+            content_type__app_label="empresas",
+            codename="view_empresa",
+        )
+
+        gestor.user_permissions.add(
+            permissao
+        )
+
+        self.client.force_login(
+            gestor
+        )
+
+        response = self.client.get(
+            reverse("list_empresas")
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200,
+        )
+
+        self.assertEqual(
+            response.context["total_empresas"],
+            2,
+        )
+
+        self.assertContains(
+            response,
+            self.empresa.nome,
+        )
+
+        self.assertContains(
+            response,
+            outra_empresa.nome,
+        )
+
+        self.assertTrue(
+            response.context[
+                "pode_ver_todas_empresas"
+            ]
+        )
+
+    def test_usuario_comum_sem_empresa_nao_recebe_visao_global(self):
+        usuario = User.objects.create_user(
+            username="usuario_empresas_restrito",
+            password="senha-teste-123",
+        )
+
+        permissao = Permission.objects.get(
+            content_type__app_label="empresas",
+            codename="view_empresa",
+        )
+
+        usuario.user_permissions.add(
+            permissao
+        )
+
+        self.client.force_login(
+            usuario
+        )
+
+        response = self.client.get(
+            reverse("list_empresas")
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200,
+        )
+
+        self.assertEqual(
+            response.context["total_empresas"],
+            0,
+        )
+
+        self.assertFalse(
+            response.context[
+                "pode_ver_todas_empresas"
+            ]
+        )
 
     def test_superuser_abre_detalhe(self):
         admin = User.objects.create_superuser(

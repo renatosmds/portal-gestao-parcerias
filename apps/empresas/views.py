@@ -2,6 +2,8 @@ from django.contrib import messages
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
+from apps.core.acesso import usuario_pode_ver_todas_empresas
+
 from .forms import EmpresaForm
 from .mixins import EmpresaEscopoMixin, EmpresaPermissaoMixin
 from .models import Empresa
@@ -32,6 +34,11 @@ class EmpresaList(EmpresaPermissaoMixin, EmpresaEscopoMixin, ListView):
         context = super().get_context_data(**kwargs)
         context["termo_busca"] = (self.request.GET.get("q") or "").strip()
         context["total_empresas"] = self.get_queryset().count()
+        context["pode_ver_todas_empresas"] = (
+            usuario_pode_ver_todas_empresas(
+                self.request.user
+            )
+        )
         return context
 
 

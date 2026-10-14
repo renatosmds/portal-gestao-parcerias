@@ -9,6 +9,8 @@ GRUPOS = {
 
     "Gestor Municipal": {
         "apps_completos": [
+            "lancamentos",
+            "importacoes",
             "parcerias",
             "termos",
             "prestacao",

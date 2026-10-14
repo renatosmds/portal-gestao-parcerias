@@ -2,6 +2,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMix
 from django.contrib.auth.views import redirect_to_login
 from django.core.exceptions import PermissionDenied
 
+from apps.core.acesso import filtrar_por_empresa
+
 from .models import Empresa
 
 
@@ -26,15 +28,12 @@ class EmpresaPermissaoMixin(LoginRequiredMixin, PermissionRequiredMixin):
 
 
 class EmpresaEscopoMixin(LoginRequiredMixin):
-    """Superusuários veem todas as OSCs; usuários comuns, apenas a vinculada."""
-
-    def get_empresa_usuario(self):
-        funcionario = getattr(self.request.user, "funcionario", None)
-        return getattr(funcionario, "empresa", None) if funcionario else None
+    """Aplica o escopo multiempresa definido pela politica central de acesso."""
 
     def get_queryset(self):
         queryset = Empresa.objects.all().order_by("nome")
-        if self.request.user.is_superuser:
-            return queryset
-        empresa = self.get_empresa_usuario()
-        return queryset.filter(pk=empresa.pk) if empresa else queryset.none()
+        return filtrar_por_empresa(
+            queryset,
+            self.request.user,
+            campo="pk",
+        )

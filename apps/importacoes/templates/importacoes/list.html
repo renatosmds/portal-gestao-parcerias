@@ -4,7 +4,7 @@
 {% block main %}
 <div class="sgm-page-header d-flex justify-content-between align-items-center mb-4">
   <div><h1 class="h3 mb-1">Central de Importações</h1><p class="text-muted mb-0">CSV e Excel com validação antes da gravação.</p></div>
-  {% if user.is_staff or user.is_superuser %}<a class="btn btn-primary" href="{% url 'create_importacao' %}"><i class="fa fa-upload mr-1"></i> Nova importação</a>{% endif %}
+  {% if perms.importacoes.add_importacao %}<a class="btn btn-primary" href="{% url 'create_importacao' %}"><i class="fa fa-upload mr-1"></i> Nova importação</a>{% endif %}
 </div>
 <div class="sgm-card p-0 overflow-hidden">
 <table class="table table-hover mb-0"><thead><tr><th>#</th><th>Tipo</th><th>Arquivo</th><th>Origem</th><th>Situação</th><th>Lidos</th><th>Erros</th><th></th></tr></thead><tbody>

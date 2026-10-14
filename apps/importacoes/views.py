@@ -11,7 +11,13 @@ from .services import confirmar_importacao, ler_arquivo, validar_linhas
 
 
 def pode_importar(user):
-    return user.is_authenticated and (user.is_staff or user.is_superuser or user.has_perm("importacoes.add_importacao"))
+    return (
+        user.is_authenticated
+        and (
+            user.is_superuser
+            or user.has_perm("importacoes.add_importacao")
+        )
+    )
 
 
 @login_required
@@ -21,6 +27,7 @@ def lista(request):
 
 
 @login_required
+@exigir_modulo("importacoes")
 @user_passes_test(pode_importar)
 def nova(request):
     if request.method == "POST":

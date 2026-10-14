@@ -42,7 +42,7 @@
             <div>
                 <small>Escopo de acesso</small>
                 <strong>
-                    {% if user.is_superuser %}Todas{% else %}Empresa vinculada{% endif %}
+                    {% if pode_ver_todas_empresas %}Todas as OSCs{% else %}Empresa vinculada{% endif %}
                 </strong>
             </div>
         </article>
