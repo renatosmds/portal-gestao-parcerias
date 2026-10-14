@@ -1,4 +1,4 @@
-﻿from django.contrib.auth.models import Group, Permission
+from django.contrib.auth.models import Group, Permission
 from django.core.management.base import BaseCommand
 
 
@@ -75,6 +75,7 @@ GRUPOS = {
 
     "Financeiro": {
         "apps_completos": [
+            "financeiro",
             "prestacao",
             "conciliacao",
             "documentos",
