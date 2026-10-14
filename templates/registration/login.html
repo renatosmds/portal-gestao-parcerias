@@ -107,11 +107,55 @@
             </form>
 
             <div class="sgm-auth-help">
-                <strong>Problemas para acessar?</strong>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <button
+        type="button"
+        id="toggle-password"
+        class="btn btn-link p-0"
+        onclick="togglePasswordVisibility()"
+        aria-label="Mostrar ou ocultar senha"
+    >
+        <i class="fa fa-eye mr-1"></i>
+        <span id="toggle-password-text">Ver senha</span>
+    </button>
+
+    <a href="{% url 'password_reset' %}">
+        Esqueci minha senha
+    </a>
+</div>
+
+<strong>Problemas para acessar?</strong>
                 <small>Solicite suporte ao administrador do sistema.</small>
             </div>
         </div>
     </section>
 </main>
+
+<script>
+function togglePasswordVisibility() {
+    const campo = document.getElementById("id_password");
+    const texto = document.getElementById("toggle-password-text");
+
+    if (!campo) {
+        return;
+    }
+
+    if (campo.type === "password") {
+        campo.type = "text";
+
+        if (texto) {
+            texto.textContent = "Ocultar senha";
+        }
+    } else {
+        campo.type = "password";
+
+        if (texto) {
+            texto.textContent = "Ver senha";
+        }
+    }
+}
+</script>
+
 </body>
 </html>
