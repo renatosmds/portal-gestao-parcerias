@@ -3,9 +3,144 @@
 {% block main %}<div class="container-fluid py-4">
 <div class="d-flex justify-content-between align-items-center mb-4"><div><h1 class="h3 mb-1">Central de Relatórios</h1><p class="text-muted mb-0">Consultas operacionais e exportações do Portal.</p></div></div>
 <div class="row">
-<div class="col-md-4 mb-3"><div class="card h-100"><div class="card-body"><h5>Diligências</h5><p class="display-4 mb-1">{{ qtd_diligencias }}</p><p class="text-muted">{{ qtd_diligencias_abertas }} em andamento</p><a class="btn btn-outline-primary" href="{% url 'relatorio_diligencias' %}">Abrir relatório</a></div></div></div>
-<div class="col-md-4 mb-3"><div class="card h-100"><div class="card-body"><h5>Glosas</h5><p class="display-4 mb-1">{{ qtd_glosas }}</p><p class="text-muted">R$ {{ valor_glosado|floatformat:2 }}</p><a class="btn btn-outline-primary" href="{% url 'relatorio_glosas' %}">Abrir demonstrativo</a></div></div></div>
-<div class="col-md-4 mb-3"><div class="card h-100"><div class="card-body"><h5>Funcionários e folha</h5><p class="display-4 mb-1">{{ qtd_funcionarios }}</p><p class="text-muted">{{ qtd_folhas_abertas }} folhas de ponto abertas</p><a class="btn btn-outline-primary mr-1" href="{% url 'relatorio_funcionarios' %}">Funcionários</a><a class="btn btn-outline-primary" href="{% url 'relatorio_folha' %}">Folha</a></div></div></div>
+
+{% if pode_diligencias %}
+<div class="col-md-4 mb-3">
+    <div class="card h-100">
+        <div class="card-body">
+            <h5>Diligências</h5>
+            <p class="display-4 mb-1">{{ qtd_diligencias }}</p>
+            <p class="text-muted">{{ qtd_diligencias_abertas }} em andamento</p>
+            <a class="btn btn-outline-primary"
+               href="{% url 'relatorio_diligencias' %}">
+                Abrir relatório
+            </a>
+        </div>
+    </div>
 </div>
+{% endif %}
+
+{% if pode_glosas %}
+<div class="col-md-4 mb-3">
+    <div class="card h-100">
+        <div class="card-body">
+            <h5>Glosas</h5>
+            <p class="display-4 mb-1">{{ qtd_glosas }}</p>
+            <p class="text-muted">
+                R$ {{ valor_glosado|floatformat:2 }}
+            </p>
+            <a class="btn btn-outline-primary"
+               href="{% url 'relatorio_glosas' %}">
+                Abrir demonstrativo
+            </a>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if pode_funcionarios or pode_folha %}
+<div class="col-md-4 mb-3">
+    <div class="card h-100">
+        <div class="card-body">
+            <h5>Funcionários e folha</h5>
+
+            {% if pode_funcionarios %}
+            <p class="display-4 mb-1">
+                {{ qtd_funcionarios }}
+            </p>
+            {% endif %}
+
+            {% if pode_folha %}
+            <p class="text-muted">
+                {{ qtd_folhas_abertas }} folhas de ponto abertas
+            </p>
+            {% endif %}
+
+            {% if pode_funcionarios %}
+            <a class="btn btn-outline-primary mr-1"
+               href="{% url 'relatorio_funcionarios' %}">
+                Funcionários
+            </a>
+            {% endif %}
+
+            {% if pode_folha %}
+            <a class="btn btn-outline-primary"
+               href="{% url 'relatorio_folha' %}">
+                Folha
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+</div>
+
+
+{% if grupos_relatorios %}
+
+<hr class="my-4">
+
+<div class="mb-4">
+    <h2 class="h4">
+        Relatórios por módulo
+    </h2>
+
+    <p class="text-muted">
+        São exibidos somente os relatórios
+        autorizados para o seu perfil.
+    </p>
+</div>
+
+{% for grupo, relatorios in grupos_relatorios.items %}
+
+<section class="mb-4">
+
+    <h3 class="h5 mb-3">
+        {{ grupo }}
+    </h3>
+
+    <div class="row">
+
+        {% for relatorio in relatorios %}
+
+        <div class="col-lg-4 col-md-6 mb-3">
+
+            <div class="card h-100">
+
+                <div class="card-body d-flex flex-column">
+
+                    <h4 class="h6">
+                        {{ relatorio.titulo }}
+                    </h4>
+
+                    <p class="text-muted small flex-grow-1">
+                        Consulta, filtros, CSV
+                        e impressão/PDF.
+                    </p>
+
+                    <a
+                        class="btn btn-outline-primary btn-sm"
+                        href="{% url 'relatorio_generico' relatorio.slug %}"
+                    >
+                        Abrir relatório
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</section>
+
+{% endfor %}
+
+{% endif %}
+
 </div>{% endblock %}
 {% block static %}{{ block.super }}<script>function imprimirRelatorio(){window.print();}</script>{% endblock %}

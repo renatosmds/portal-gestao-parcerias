@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from . import views_genericos
 
 urlpatterns = [
     path("", views.painel_relatorios, name="relatorios_painel"),
@@ -11,4 +12,14 @@ urlpatterns = [
     path("funcionarios.csv", views.relatorio_funcionarios_csv, name="relatorio_funcionarios_csv"),
     path("folha/", views.relatorio_folha, name="relatorio_folha"),
     path("folha.csv", views.relatorio_folha_csv, name="relatorio_folha_csv"),
+    path(
+        "<slug:slug>/",
+        views_genericos.relatorio_generico,
+        name="relatorio_generico",
+    ),
+    path(
+        "<slug:slug>.csv",
+        views_genericos.relatorio_generico_csv,
+        name="relatorio_generico_csv",
+    ),
 ]

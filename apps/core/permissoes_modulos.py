@@ -41,6 +41,35 @@ MODULOS = {
         "lancamentos.view_lancamento",
         "funcionarios.view_funcionario",
         "funcionarios.view_folhapagamento",
+
+        "empresas.view_empresa",
+        "parcerias.view_parcerias",
+        "termos.view_termos",
+        "planos_trabalho.view_planotrabalho",
+        "planos_trabalho.view_itemplanotrabalho",
+        "prestacao.view_prestacao",
+        "prestacao.view_competenciaprestacao",
+        "documentos.view_documento",
+        "metas.view_metaexecucao",
+        "pareceres.view_parecertecnico",
+
+        "financeiro.view_movimentacaofinanceira",
+        "financeiro.view_importacaoofx",
+        "financeiro.view_conciliacaofinanceira",
+        "conciliacao.view_conciliacao",
+        "conciliacao.view_ocorrenciaconciliacao",
+        "fornecedores.view_fornecedores",
+
+        "departamentos.view_departamento",
+        "funcionarios.view_folhaponto",
+        "registro_hora_extra.view_registrohoraextra",
+
+        "importacoes.view_importacao",
+        "transparencia.view_publicacaoparceria",
+        "transparencia.view_publicacaodocumento",
+        "suporte.view_chamadosuporte",
+        "treinamento.view_progressotreinamento",
+        "curso.view_curso",
     ),
 }
 
