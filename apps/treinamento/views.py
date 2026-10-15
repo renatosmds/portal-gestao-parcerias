@@ -3,17 +3,23 @@ from django.http import Http404, JsonResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
 
+from apps.core.acesso import (
+    usuario_eh_administrador_sistema,
+    usuario_eh_osc,
+)
+
 from .conteudo import FAQ, MODULOS, obter_modulo
 from .models import PreferenciaTour, ProgressoTreinamento
 
 
 def _perfil(user):
-    if user.is_superuser or user.is_staff:
+    if usuario_eh_administrador_sistema(user):
         return "administrador"
-    # Compatível com perfis existentes sem criar dependência rígida.
-    texto = " ".join(str(getattr(user, a, "")) for a in ("perfil", "tipo_usuario", "groups"))
-    texto = texto.lower()
-    return "osc" if "osc" in texto else "orgao"
+
+    if usuario_eh_osc(user):
+        return "osc"
+
+    return "orgao"
 
 
 def _visiveis(user):

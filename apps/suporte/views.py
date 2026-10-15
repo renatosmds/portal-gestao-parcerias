@@ -5,13 +5,36 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
+from apps.core.acesso import usuario_eh_administrador_sistema
+
 from .forms import ChamadoSuporteForm, InteracaoChamadoForm
 from .models import ArtigoConhecimento, ChamadoSuporte
 
 
+def _usuario_equipe_suporte(user):
+    """
+    A visao global de suporte e administrativa.
+
+    is_staff, isoladamente, nao amplia o escopo.
+    """
+    return (
+        usuario_eh_administrador_sistema(user)
+        or user.has_perm("suporte.view_chamadosuporte")
+    )
+
+
 def _chamados_visiveis(user):
-    qs = ChamadoSuporte.objects.select_related("solicitante", "responsavel")
-    return qs if (user.is_staff or user.is_superuser) else qs.filter(solicitante=user)
+    qs = ChamadoSuporte.objects.select_related(
+        "solicitante",
+        "responsavel",
+    )
+
+    if _usuario_equipe_suporte(user):
+        return qs
+
+    return qs.filter(
+        solicitante=user
+    )
 
 
 @login_required
@@ -49,7 +72,7 @@ def chamado_novo(request):
 def chamado_detalhe(request, pk):
     chamado = get_object_or_404(_chamados_visiveis(request.user), pk=pk)
     interacoes = chamado.interacoes.select_related("autor")
-    if not (request.user.is_staff or request.user.is_superuser):
+    if not _usuario_equipe_suporte(request.user):
         interacoes = interacoes.filter(interno=False)
     form = InteracaoChamadoForm()
     return render(request, "suporte/chamado_detalhe.html", {"chamado": chamado, "interacoes": interacoes, "form": form})

@@ -1,4 +1,5 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import permission_required
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 
@@ -11,7 +12,8 @@ CAMPOS_CURSO = [
 ]
 
 
-class CursoList(LoginRequiredMixin, ListView):
+class CursoList(LoginRequiredMixin, PermissionRequiredMixin, ListView):
+    permission_required = "curso.view_curso"
     model = Curso
     paginate_by = 20
 
@@ -21,23 +23,30 @@ class CursoList(LoginRequiredMixin, ListView):
         return Curso.objects.all().order_by("-anoCurso", "-mesCurso", "nomeCurso")
 
 
-class CursoUpdate(LoginRequiredMixin, UpdateView):
+class CursoUpdate(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
+    permission_required = "curso.change_curso"
     model = Curso
     fields = CAMPOS_CURSO
     success_url = reverse_lazy("list_curso")
 
 
-class CursoDelete(LoginRequiredMixin, DeleteView):
+class CursoDelete(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
+    permission_required = "curso.delete_curso"
     model = Curso
     success_url = reverse_lazy("list_curso")
 
 
-class CursoCreate(LoginRequiredMixin, CreateView):
+class CursoCreate(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
+    permission_required = "curso.add_curso"
     model = Curso
     fields = CAMPOS_CURSO
     success_url = reverse_lazy("list_curso")
 
 
+@permission_required(
+    "curso.view_curso",
+    raise_exception=True,
+)
 def relatorio_curso(request):
     from django.http import HttpResponse
     response = HttpResponse(content_type="text/plain; charset=utf-8")
