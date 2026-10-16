@@ -10,7 +10,10 @@ MODULOS = {
     "funcionarios": ("funcionarios.view_funcionario",),
     "folha_ponto": ("funcionarios.view_folhaponto",),
     "folha_pagamento": ("funcionarios.view_folhapagamento",),
-    "banco_horas": ("registro_hora_extra.view_registrohoraextra",),
+    "banco_horas": (
+        "funcionarios.view_movimentobancohoras",
+        "registro_hora_extra.view_registrohoraextra",
+    ),
     "financeiro": ("financeiro.view_movimentacaofinanceira",),
     "diligencias": ("diligencias.view_diligencia",),
     "importacoes": ("importacoes.view_importacao",),

@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Vínculo de Escala | PGP{% endblock %}
+
+{% block main %}
+<section>
+
+    <div class="d-flex justify-content-between align-items-start mb-4">
+
+        <div>
+            <span class="sgm-eyebrow">GESTÃO TRABALHISTA</span>
+
+            <h1>
+                {% if object %}
+                    Editar vínculo de escala
+                {% else %}
+                    Novo vínculo de escala
+                {% endif %}
+            </h1>
+        </div>
+
+        <a class="btn btn-outline-secondary"
+           href="{% url 'vinculos_escala_list' %}">
+            Voltar
+        </a>
+
+    </div>
+
+
+    <form method="post">
+
+        {% csrf_token %}
+
+        <div class="sgm-panel p-4">
+
+            {{ form.non_field_errors }}
+
+            <div class="row">
+
+                {% for field in form %}
+
+                <div class="col-md-4 mb-3">
+
+                    <label>
+                        <strong>{{ field.label }}</strong>
+                    </label>
+
+                    {{ field }}
+
+                    {% for error in field.errors %}
+                        <div class="text-danger">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+            <button class="btn btn-primary"
+                    type="submit">
+                Salvar vínculo
+            </button>
+
+        </div>
+
+    </form>
+
+</section>
+{% endblock %}

@@ -1,0 +1,297 @@
+{% extends "base.html" %}
+
+{% block title %}Regimes de Banco de Horas | PGP{% endblock %}
+
+{% block main %}
+
+<section>
+
+    <div
+        class="d-flex justify-content-between align-items-start mb-4">
+
+        <div>
+
+            <span class="sgm-eyebrow">
+                GEST?O TRABALHISTA
+            </span>
+
+            <h1>
+                Regimes de Banco de Horas
+            </h1>
+
+            <p class="text-muted mb-0">
+                Cadastre o instrumento aplic?vel a cada colaborador
+                antes de enviar cr?ditos ou d?bitos ao Banco de Horas.
+            </p>
+
+        </div>
+
+
+        <div class="d-flex" style="gap: 8px;">
+
+            <a
+                class="btn btn-outline-secondary"
+                href="{% url 'banco_horas_integrado' %}">
+                Banco de Horas
+            </a>
+
+            {% if pode_adicionar %}
+
+            <a
+                class="btn btn-primary"
+                href="{% url 'regime_banco_horas_create' %}">
+                + Novo regime
+            </a>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+
+    <div class="sgm-panel p-3 mb-4">
+
+        <form
+            method="get"
+            class="form-row align-items-end">
+
+            <div class="col-md-5 mb-2">
+
+                <label>
+                    <strong>Colaborador</strong>
+                </label>
+
+                <select
+                    name="funcionario"
+                    class="form-control">
+
+                    <option value="">
+                        Todos
+                    </option>
+
+                    {% for funcionario in funcionarios %}
+
+                    <option
+                        value="{{ funcionario.pk }}"
+                        {% if funcionario_selecionado == funcionario.pk|stringformat:"s" %}
+                            selected
+                        {% endif %}>
+
+                        {{ funcionario }}
+
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <div class="col-md-3 mb-2">
+
+                <label>
+                    <strong>Situa??o</strong>
+                </label>
+
+                <select
+                    name="situacao"
+                    class="form-control">
+
+                    <option value="">
+                        Todos
+                    </option>
+
+                    <option
+                        value="ativos"
+                        {% if situacao_selecionada == "ativos" %}
+                            selected
+                        {% endif %}>
+                        Ativos
+                    </option>
+
+                    <option
+                        value="inativos"
+                        {% if situacao_selecionada == "inativos" %}
+                            selected
+                        {% endif %}>
+                        Inativos
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="col-md-2 mb-2">
+
+                <button
+                    class="btn btn-primary btn-block"
+                    type="submit">
+                    Filtrar
+                </button>
+
+            </div>
+
+
+            <div class="col-md-2 mb-2">
+
+                <a
+                    class="btn btn-outline-secondary btn-block"
+                    href="{% url 'regimes_banco_horas_list' %}">
+                    Limpar
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+
+
+    <div class="sgm-panel table-responsive">
+
+        <table class="table table-hover mb-0">
+
+            <thead>
+
+                <tr>
+                    <th>Colaborador</th>
+                    <th>Modalidade</th>
+                    <th>Vig?ncia</th>
+                    <th>Prazo</th>
+                    <th>Vencimento</th>
+                    <th>Documento</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for regime in regimes %}
+
+                <tr>
+
+                    <td>
+                        <strong>
+                            {{ regime.funcionario }}
+                        </strong>
+
+                        <br>
+
+                        <small class="text-muted">
+                            {{ regime.funcionario.empresa }}
+                        </small>
+                    </td>
+
+
+                    <td>
+                        {{ regime.get_tipo_display }}
+                    </td>
+
+
+                    <td class="text-nowrap">
+
+                        {{ regime.data_inicio|date:"d/m/Y" }}
+
+                        at?
+
+                        {% if regime.data_fim %}
+                            {{ regime.data_fim|date:"d/m/Y" }}
+                        {% else %}
+                            sem data final
+                        {% endif %}
+
+                    </td>
+
+
+                    <td>
+
+                        {% if regime.prazo_compensacao_meses %}
+
+                            {{ regime.prazo_compensacao_meses }}
+                            m?s{{ regime.prazo_compensacao_meses|pluralize:"es" }}
+
+                        {% else %}
+                            ?
+                        {% endif %}
+
+                    </td>
+
+
+                    <td>
+                        {{ regime.get_tratamento_vencimento_display }}
+                    </td>
+
+
+                    <td>
+
+                        {% if regime.referencia_documento %}
+                            {{ regime.referencia_documento }}
+                        {% else %}
+                            ?
+                        {% endif %}
+
+                    </td>
+
+
+                    <td>
+
+                        {% if regime.ativo %}
+
+                            <span class="badge badge-success">
+                                Ativo
+                            </span>
+
+                        {% else %}
+
+                            <span class="badge badge-secondary">
+                                Inativo
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <td>
+
+                        {% if pode_editar %}
+
+                        <a
+                            class="btn btn-sm btn-outline-primary"
+                            href="{% url 'regime_banco_horas_update' regime.pk %}">
+                            Editar
+                        </a>
+
+                        {% endif %}
+
+                    </td>
+
+                </tr>
+
+                {% empty %}
+
+                <tr>
+
+                    <td colspan="8">
+                        Nenhum regime de Banco de Horas cadastrado.
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
+{% endblock %}

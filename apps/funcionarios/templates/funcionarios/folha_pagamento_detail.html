@@ -1,1 +1,187 @@
-{% extends "base.html" %}{% block title %}Contracheque | PGP{% endblock %}{% block main %}<section><div class="d-flex justify-content-between"><div><span class="sgm-eyebrow">CONTRACHEQUE</span><h1>{{ folha.funcionario }}</h1><p>Competência {{ folha.competencia|date:"m/Y" }}</p></div><div><a class="btn btn-outline-primary" href="{% url 'folha_pagamento_update' folha.pk %}">Editar</a> <button class="btn btn-outline-secondary" onclick="window.print()">Imprimir/PDF</button></div></div><div class="sgm-panel p-4"><table class="table"><tbody><tr><th>Salário-base</th><td>R$ {{ folha.salario_base }}</td></tr><tr><th>Horas extras</th><td>R$ {{ folha.valor_horas_extras }}</td></tr><tr><th>Outros proventos</th><td>R$ {{ folha.outras_verbas }}</td></tr><tr class="font-weight-bold"><th>Total de proventos</th><td>R$ {{ folha.total_proventos }}</td></tr><tr><th>Faltas e atrasos</th><td>R$ {{ folha.desconto_faltas_atrasos }}</td></tr><tr><th>INSS</th><td>R$ {{ folha.inss }}</td></tr><tr><th>IRRF</th><td>R$ {{ folha.irrf }}</td></tr><tr><th>Vale-transporte</th><td>R$ {{ folha.vale_transporte }}</td></tr><tr><th>Outros descontos</th><td>R$ {{ folha.outros_descontos }}</td></tr><tr class="font-weight-bold"><th>Total de descontos</th><td>R$ {{ folha.total_descontos }}</td></tr><tr class="h4"><th>Valor líquido</th><td>R$ {{ folha.valor_liquido }}</td></tr></tbody></table>{% if folha.status == 'rascunho' %}<form method="post" action="{% url 'folha_pagamento_fechar' folha.pk %}">{% csrf_token %}<button class="btn btn-success">Fechar folha</button></form>{% endif %}</div></section>{% endblock %}
+{% extends "base.html" %}
+
+{% block title %}Contracheque | PGP{% endblock %}
+
+{% block main %}
+<section>
+
+    <div class="d-flex justify-content-between align-items-start mb-4">
+
+        <div>
+            <span class="sgm-eyebrow">CONTRACHEQUE</span>
+
+            <h1>{{ folha.funcionario }}</h1>
+
+            <p class="text-muted">
+                Competência {{ folha.competencia|date:"m/Y" }}
+                ? {{ folha.get_status_display }}
+            </p>
+        </div>
+
+        <div>
+            <a class="btn btn-outline-secondary"
+               href="{% url 'folhas_pagamento_list' %}">
+                Voltar
+            </a>
+
+            <button
+                class="btn btn-outline-primary"
+                onclick="window.print()">
+                Imprimir / PDF
+            </button>
+        </div>
+
+    </div>
+
+
+    {% if folha.folha_ponto %}
+
+    <div class="row mb-4">
+
+        <div class="col-md-3 mb-3">
+            <div class="sgm-panel p-3 h-100">
+                <small>Horas extras apuradas</small>
+                <div class="h4">
+                    {{ folha.folha_ponto.horas_extras }} h
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="sgm-panel p-3 h-100">
+                <small>Horas extras pagas</small>
+                <div class="h4">
+                    {{ folha.folha_ponto.horas_extras_folha }} h
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="sgm-panel p-3 h-100">
+                <small>Horas extras para banco</small>
+                <div class="h4">
+                    {{ folha.folha_ponto.horas_extras_banco }} h
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="sgm-panel p-3 h-100">
+                <small>Faltas / atrasos</small>
+                <div class="h4">
+                    {{ folha.folha_ponto.horas_faltas_atrasos }} h
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    {% endif %}
+
+
+    <div class="sgm-panel p-4">
+
+        <h2 class="h5 mb-3">
+            Memória de c?lculo
+        </h2>
+
+        <table class="table">
+
+            <tbody>
+
+                <tr>
+                    <th>Salário-base</th>
+                    <td>R$ {{ folha.salario_base }}</td>
+                </tr>
+
+                <tr>
+                    <th>Horas extras pagas</th>
+                    <td>R$ {{ folha.valor_horas_extras }}</td>
+                </tr>
+
+                <tr>
+                    <th>Outros proventos</th>
+                    <td>R$ {{ folha.outras_verbas }}</td>
+                </tr>
+
+                <tr class="font-weight-bold">
+                    <th>Total de proventos</th>
+                    <td>R$ {{ folha.total_proventos }}</td>
+                </tr>
+
+                <tr>
+                    <th>Faltas e atrasos</th>
+                    <td>R$ {{ folha.desconto_faltas_atrasos }}</td>
+                </tr>
+
+                <tr>
+                    <th>INSS</th>
+                    <td>R$ {{ folha.inss }}</td>
+                </tr>
+
+                <tr>
+                    <th>IRRF</th>
+                    <td>R$ {{ folha.irrf }}</td>
+                </tr>
+
+                <tr>
+                    <th>Vale-transporte</th>
+                    <td>R$ {{ folha.vale_transporte }}</td>
+                </tr>
+
+                <tr>
+                    <th>Pensão</th>
+                    <td>R$ {{ folha.pensao }}</td>
+                </tr>
+
+                <tr>
+                    <th>Outros descontos</th>
+                    <td>R$ {{ folha.outros_descontos }}</td>
+                </tr>
+
+                <tr class="font-weight-bold">
+                    <th>Total de descontos</th>
+                    <td>R$ {{ folha.total_descontos }}</td>
+                </tr>
+
+                <tr class="h4">
+                    <th>Valor líquido</th>
+                    <td>R$ {{ folha.valor_liquido }}</td>
+                </tr>
+
+            </tbody>
+
+        </table>
+
+
+        {% if folha.folha_ponto %}
+
+            <a class="btn btn-outline-primary"
+               href="{% url 'folha_ponto_update' folha.folha_ponto.pk %}">
+                Abrir folha de ponto
+            </a>
+
+        {% endif %}
+
+
+        {% if folha.status == "rascunho" %}
+
+        <form
+            method="post"
+            action="{% url 'folha_pagamento_fechar' folha.pk %}"
+            class="d-inline">
+
+            {% csrf_token %}
+
+            <button class="btn btn-success">
+                Fechar folha
+            </button>
+
+        </form>
+
+        {% endif %}
+
+    </div>
+
+</section>
+{% endblock %}

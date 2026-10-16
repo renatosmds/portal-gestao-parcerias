@@ -1,1 +1,1470 @@
-{% extends "base.html" %}{% load static %}{% block title %}Folha de ponto | PGP{% endblock %}{% block main %}<section class="employees-page"><div class="sgm-panel p-4"><h1>Folha de ponto</h1><p class="text-muted">Registre a apuração mensal de jornada, horas extras e ocorrências.</p><form method="post" novalidate>{% csrf_token %}{% include "components/form_errors.html" with form=form %}<div class="employee-form-grid">{% for field in form %}<div class="employee-form-field"><label>{{ field.label }}</label>{{ field }}{% for error in field.errors %}<small class="text-danger">{{ error }}</small>{% endfor %}</div>{% endfor %}</div><div class="mt-4"><button class="btn btn-primary" type="submit">Salvar</button> <a class="btn btn-outline-secondary" href="{% url 'folhas_ponto_list' %}">Cancelar</a></div></form></div></section>{% endblock %}
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Folha de ponto | PGP{% endblock %}
+
+{% block main %}
+
+<style>
+    .pgp-point-summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+        gap: 14px;
+        margin-bottom: 24px;
+    }
+
+    .pgp-point-card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-left: 5px solid #cbd5e1;
+        border-radius: 14px;
+        padding: 16px 14px;
+        min-height: 88px;
+        transition: all .18s ease;
+    }
+
+    .pgp-point-card small {
+        display: block;
+        color: #64748b;
+        margin-bottom: 5px;
+        font-weight: 600;
+    }
+
+    .pgp-point-card strong {
+        font-size: 1.45rem;
+        color: #0f172a;
+    }
+
+    .pgp-card-neutral {
+        border-left-color: #94a3b8;
+    }
+
+    .pgp-card-info {
+        border-left-color: #3b82f6;
+        background: #eff6ff;
+    }
+
+    .pgp-card-purple {
+        border-left-color: #8b5cf6;
+        background: #f5f3ff;
+    }
+
+    .pgp-card-warning {
+        border-left-color: #f59e0b;
+        background: #fffbeb;
+    }
+
+    .pgp-card-cyan {
+        border-left-color: #06b6d4;
+        background: #ecfeff;
+    }
+
+    .pgp-card-danger {
+        border-left-color: #ef4444;
+        background: #fef2f2;
+    }
+
+    .pgp-card-positive {
+        border-left-color: #22c55e;
+        background: #f0fdf4;
+    }
+
+    .pgp-card-negative {
+        border-left-color: #ef4444;
+        background: #fef2f2;
+    }
+
+    .pgp-saldo-positive {
+        color: #15803d !important;
+        font-weight: 700;
+    }
+
+    .pgp-saldo-negative {
+        color: #b91c1c !important;
+        font-weight: 700;
+    }
+
+    .pgp-saldo-zero {
+        color: #475569;
+    }
+
+    .pgp-mark-positive {
+        background: #dcfce7 !important;
+        border-color: #22c55e !important;
+        color: #166534 !important;
+        font-weight: 700;
+    }
+
+    .pgp-mark-negative {
+        background: #fee2e2 !important;
+        border-color: #ef4444 !important;
+        color: #991b1b !important;
+        font-weight: 700;
+    }
+
+    .pgp-mark-different {
+        box-shadow: 0 0 0 2px rgba(245, 158, 11, .18);
+    }
+
+    .pgp-destino-badge {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 999px;
+        font-size: .75rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .pgp-destino-pendente {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .pgp-destino-folha {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .pgp-destino-banco {
+        background: #cffafe;
+        color: #155e75;
+    }
+
+    .pgp-destino-compensado {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .pgp-workflow-actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .pgp-workflow-hint {
+        margin-top: 14px;
+        padding: 10px 12px;
+        background: #f8fafc;
+        border-left: 4px solid #64748b;
+        border-radius: 6px;
+        color: #475569;
+    }
+
+    .pgp-point-table input[type="time"] {
+        min-width: 92px;
+        transition:
+            background-color .15s ease,
+            border-color .15s ease,
+            box-shadow .15s ease;
+    }
+
+    .pgp-point-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        margin-top: 10px;
+        font-size: .8rem;
+        color: #64748b;
+    }
+
+    .pgp-legend-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .pgp-legend-dot {
+        width: 11px;
+        height: 11px;
+        border-radius: 3px;
+        display: inline-block;
+    }
+
+    .pgp-legend-positive {
+        background: #86efac;
+    }
+
+    .pgp-legend-negative {
+        background: #fca5a5;
+    }
+</style>
+
+
+<section class="employees-page">
+
+    <div class="d-flex justify-content-between align-items-start mb-4">
+
+        <div>
+            <span class="sgm-eyebrow">
+                GESTÃO TRABALHISTA
+            </span>
+
+            <h1 class="mb-1">
+                {% if object %}
+                    Folha de ponto — {{ object.funcionario }}
+                {% else %}
+                    Nova folha de ponto
+                {% endif %}
+            </h1>
+
+            {% if object %}
+                <p class="text-muted mb-0">
+                    Competência
+                    {{ object.competencia|date:"m/Y" }}
+                    ·
+                    {{ object.get_status_display }}
+                </p>
+            {% else %}
+                <p class="text-muted mb-0">
+                    Selecione o colaborador e a competência.
+                    O calendário diário será gerado automaticamente.
+                </p>
+            {% endif %}
+        </div>
+
+        <a
+            class="btn btn-outline-secondary"
+            href="{% url 'folhas_ponto_list' %}">
+            Voltar
+        </a>
+
+    </div>
+
+
+    <form method="post" novalidate>
+
+        {% csrf_token %}
+
+        {% include "components/form_errors.html" with form=form %}
+
+
+        <div class="sgm-panel p-4 mb-4">
+
+            <div class="row">
+
+                <div class="col-md-4 mb-3">
+                    <label>
+                        <strong>Funcionário</strong>
+                    </label>
+
+                    {{ form.funcionario }}
+
+                    {% for error in form.funcionario.errors %}
+                        <small class="text-danger">
+                            {{ error }}
+                        </small>
+                    {% endfor %}
+                </div>
+
+
+                <div class="col-md-3 mb-3">
+                    <label>
+                        <strong>Competência</strong>
+                    </label>
+
+                    {{ form.competencia }}
+
+                    {% for error in form.competencia.errors %}
+                        <small class="text-danger">
+                            {{ error }}
+                        </small>
+                    {% endfor %}
+                </div>
+
+
+                <div class="col-md-5 mb-3">
+                    <label>
+                        <strong>Observações</strong>
+                    </label>
+
+                    {{ form.observacoes }}
+                </div>
+
+            </div>
+
+
+            {% if not object %}
+
+                <button
+                    class="btn btn-primary"
+                    type="submit">
+
+                    Criar e gerar calendário
+
+                </button>
+
+            {% endif %}
+
+        </div>
+
+
+        {% if object %}
+
+        <div class="pgp-point-summary">
+
+            <div
+                class="pgp-point-card pgp-card-neutral"
+                id="card-previstas">
+
+                <small>Previstas</small>
+
+                <strong
+                    id="resumo-previstas">
+                    0,00 h
+                </strong>
+
+            </div>
+
+
+            <div
+                class="pgp-point-card pgp-card-neutral"
+                id="card-trabalhadas">
+
+                <small>Trabalhadas</small>
+
+                <strong
+                    id="resumo-trabalhadas">
+                    0,00 h
+                </strong>
+
+            </div>
+
+
+            <div
+                class="pgp-point-card pgp-card-neutral"
+                id="card-abonadas">
+
+                <small>Abonadas</small>
+
+                <strong
+                    id="resumo-abonadas">
+                    0,00 h
+                </strong>
+
+            </div>
+
+
+            <div
+                class="pgp-point-card pgp-card-neutral"
+                id="card-extras-apuradas">
+
+                <small>HE apuradas</small>
+
+                <strong
+                    id="resumo-extras-apuradas">
+                    0,00 h
+                </strong>
+
+            </div>
+
+
+            <div
+                class="pgp-point-card pgp-card-neutral"
+                id="card-he-folha"
+                data-static-value="{{ object.horas_extras_folha }}">
+
+                <small>HE em folha</small>
+
+                <strong>
+                    {{ object.horas_extras_folha }} h
+                </strong>
+
+            </div>
+
+
+            <div
+                class="pgp-point-card pgp-card-neutral"
+                id="card-he-banco"
+                data-static-value="{{ object.horas_extras_banco }}">
+
+                <small>HE em banco</small>
+
+                <strong>
+                    {{ object.horas_extras_banco }} h
+                </strong>
+
+            </div>
+
+
+            <div
+                class="pgp-point-card pgp-card-neutral"
+                id="card-faltas">
+
+                <small>Faltas/atrasos</small>
+
+                <strong
+                    id="resumo-faltas">
+                    0,00 h
+                </strong>
+
+            </div>
+
+
+            <div
+                class="pgp-point-card pgp-card-neutral"
+                id="card-saldo">
+
+                <small>Saldo</small>
+
+                <strong
+                    id="resumo-saldo">
+                    0,00 h
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="sgm-panel mb-4">
+
+            <div class="p-3 border-bottom">
+
+                <h2 class="h5 mb-1">
+                    Calendário diário
+                </h2>
+
+                <p class="text-muted mb-0">
+                    Informe as marcações.
+                    Férias, afastamentos, licenças e descansos
+                    são classificados pelo sistema.
+                </p>
+
+                <div class="pgp-point-legend">
+
+                    <span class="pgp-legend-item">
+                        <span
+                            class="pgp-legend-dot pgp-legend-positive">
+                        </span>
+
+                        Marcação diferente do padrão
+                        com aumento do tempo trabalhado
+                    </span>
+
+                    <span class="pgp-legend-item">
+                        <span
+                            class="pgp-legend-dot pgp-legend-negative">
+                        </span>
+
+                        Marcação diferente do padrão
+                        com redução do tempo trabalhado
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            {{ dias_formset.management_form }}
+
+
+            {% if dias_formset.non_form_errors %}
+
+                <div class="alert alert-danger m-3">
+                    {{ dias_formset.non_form_errors }}
+                </div>
+
+            {% endif %}
+
+
+            <div class="table-responsive">
+
+                <table
+                    class="table table-sm table-hover mb-0 pgp-point-table">
+
+                    <thead>
+
+                        <tr>
+                            <th>Data</th>
+                            <th>Situação</th>
+                            <th>Prev.</th>
+                            <th>Abon.</th>
+                            <th>Entrada 1</th>
+                            <th>Saída 1</th>
+                            <th>Entrada 2</th>
+                            <th>Saída 2</th>
+                            <th>Trab.</th>
+                            <th>Extras</th>
+                            <th>Faltas</th>
+                            <th>Saldo</th>
+                            <th>Destino</th>
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                    {% for dia_form in dias_formset %}
+
+                        {% with dia=dia_form.instance %}
+
+                        <tr
+                            class="pgp-dia-row"
+                            data-tipo-dia="{{ dia.tipo_dia }}"
+                            data-previstas="{{ dia.horas_previstas }}"
+                            data-abonadas="{{ dia.horas_abonadas }}"
+                            data-trabalhadas="{{ dia.horas_trabalhadas }}"
+                            data-extras="{{ dia.horas_extras }}"
+                            data-faltas="{{ dia.horas_faltas_atrasos }}"
+                            data-saldo="{{ dia.saldo_banco_candidato }}"
+                            data-hora-entrada="{% if dia.jornada_escala and dia.jornada_escala.hora_entrada %}{{ dia.jornada_escala.hora_entrada|time:'H:i' }}{% endif %}"
+                            data-hora-saida="{% if dia.jornada_escala and dia.jornada_escala.hora_saida %}{{ dia.jornada_escala.hora_saida|time:'H:i' }}{% endif %}"
+                            data-intervalo="{% if dia.jornada_escala %}{{ dia.jornada_escala.intervalo_minutos }}{% else %}0{% endif %}"
+                            data-horas-jornada="{% if dia.jornada_escala %}{{ dia.jornada_escala.horas_previstas }}{% else %}0{% endif %}">
+
+                            <td class="text-nowrap">
+                                {{ dia.data|date:"d/m/Y" }}
+                                {{ dia_form.id }}
+                            </td>
+
+
+                            <td>
+                                {{ dia.get_tipo_dia_display }}
+                            </td>
+
+
+                            <td class="pgp-previstas">
+                                {{ dia.horas_previstas }}
+                            </td>
+
+
+                            <td class="pgp-abonadas">
+                                {{ dia.horas_abonadas }}
+                            </td>
+
+
+                            <td>
+                                {{ dia_form.entrada_1 }}
+                            </td>
+
+
+                            <td>
+                                {{ dia_form.saida_1 }}
+                            </td>
+
+
+                            <td>
+                                {{ dia_form.entrada_2 }}
+                            </td>
+
+
+                            <td>
+                                {{ dia_form.saida_2 }}
+                            </td>
+
+
+                            <td class="pgp-trabalhadas">
+                                {{ dia.horas_trabalhadas }}
+                            </td>
+
+
+                            <td class="pgp-extras">
+                                {{ dia.horas_extras }}
+                            </td>
+
+
+                            <td class="pgp-faltas">
+                                {{ dia.horas_faltas_atrasos }}
+                            </td>
+
+
+                            <td
+                                class="pgp-saldo"
+                                data-saldo="{{ dia.saldo_banco_candidato }}">
+
+                                {{ dia.saldo_banco_candidato }}
+
+                            </td>
+
+
+                            <td>
+
+                                <span
+                                    class="pgp-destino-badge pgp-destino-pendente">
+
+                                    {{ dia.get_tratamento_saldo_display }}
+
+                                </span>
+
+                            </td>
+
+                        </tr>
+
+
+                        {% if dia_form.errors %}
+
+                        <tr>
+                            <td colspan="13">
+
+                                <div
+                                    class="alert alert-danger py-2 mb-0">
+
+                                    {{ dia_form.errors }}
+
+                                </div>
+
+                            </td>
+                        </tr>
+
+                        {% endif %}
+
+                        {% endwith %}
+
+                    {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+
+        {% if object.status == "aberta" %}
+
+        <div class="sgm-panel p-4 mb-4">
+
+            <h2 class="h5">
+                Processamento da competência
+            </h2>
+
+
+            <div class="row align-items-end">
+
+                <div class="col-md-4 mb-3">
+
+                    <label for="destino_horas_extras">
+                        <strong>
+                            Destino das horas extras
+                        </strong>
+                    </label>
+
+
+                    <select
+                        name="destino_horas_extras"
+                        id="destino_horas_extras"
+                        class="form-control">
+
+                        <option value="folha">
+                            Pagar na folha
+                        </option>
+
+                        <option value="banco">
+                            Creditar no Banco de Horas
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="col-md-4 mb-3">
+
+                    <div class="form-check">
+
+                        <input
+                            type="checkbox"
+                            class="form-check-input"
+                            value="1"
+                            name="usar_banco_para_deficits"
+                            id="usar_banco_para_deficits">
+
+
+                        <label
+                            class="form-check-label"
+                            for="usar_banco_para_deficits">
+
+                            Compensar déficits no Banco de Horas
+
+                        </label>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="pgp-workflow-actions">
+
+                <button
+                    class="btn btn-secondary"
+                    type="submit"
+                    name="acao"
+                    value="preencher_padrao">
+
+                    Preencher jornada padrão
+
+                </button>
+
+
+                <button
+                    class="btn btn-outline-primary"
+                    type="submit"
+                    name="acao"
+                    value="salvar">
+
+                    Salvar marcações
+
+                </button>
+
+
+                <button
+                    class="btn btn-info"
+                    type="submit"
+                    name="acao"
+                    value="apurar">
+
+                    Apurar ponto
+
+                </button>
+
+
+                <button
+                    class="btn btn-success"
+                    type="submit"
+                    name="acao"
+                    value="processar">
+
+                    Processar competência
+
+                </button>
+
+            </div>
+
+
+            <div class="pgp-workflow-hint">
+
+                Use <strong>Preencher jornada padrão</strong>
+                para carregar automaticamente os horários previstos.
+
+                Ajuste apenas as exceções,
+                salve as marcações,
+                apure o ponto e depois processe a competência.
+
+            </div>
+
+        </div>
+
+        {% else %}
+
+            <div class="alert alert-secondary">
+                Esta folha está fechada e disponível
+                somente para consulta.
+            </div>
+
+        {% endif %}
+
+        {% endif %}
+
+    </form>
+
+</section>
+
+
+<script>
+(function () {
+
+    "use strict";
+
+
+    function numberValue(value) {
+
+        if (
+            value === null
+            || value === undefined
+            || value === ""
+        ) {
+            return 0;
+        }
+
+        var text = String(value)
+            .trim()
+            .replace(/\./g, "")
+            .replace(",", ".");
+
+        var result = Number(text);
+
+        return Number.isFinite(result)
+            ? result
+            : 0;
+    }
+
+
+    function formatHours(value, signed) {
+
+        var prefix = "";
+
+        if (
+            signed
+            && value > 0
+        ) {
+            prefix = "+";
+        }
+
+        return (
+            prefix
+            + value.toFixed(2).replace(".", ",")
+            + " h"
+        );
+    }
+
+
+    function timeToMinutes(value) {
+
+        if (
+            !value
+            || !value.includes(":")
+        ) {
+            return null;
+        }
+
+        var parts = value.split(":");
+
+        return (
+            Number(parts[0]) * 60
+            + Number(parts[1])
+        );
+    }
+
+
+    function minutesToTime(value) {
+
+        value = (
+            (value % 1440)
+            + 1440
+        ) % 1440;
+
+        var hours = Math.floor(
+            value / 60
+        );
+
+        var minutes = (
+            value % 60
+        );
+
+        return (
+            String(hours).padStart(2, "0")
+            + ":"
+            + String(minutes).padStart(2, "0")
+        );
+    }
+
+
+    function expectedMarks(row) {
+
+        if (
+            row.dataset.tipoDia !== "trabalho"
+        ) {
+            return null;
+        }
+
+        var start = timeToMinutes(
+            row.dataset.horaEntrada
+        );
+
+        var end = timeToMinutes(
+            row.dataset.horaSaida
+        );
+
+        var interval = Number(
+            row.dataset.intervalo || 0
+        );
+
+        var hours = numberValue(
+            row.dataset.horasJornada
+        );
+
+        if (
+            start === null
+            || end === null
+        ) {
+            return null;
+        }
+
+        if (interval <= 0) {
+
+            return {
+                entrada_1: minutesToTime(start),
+                saida_1: minutesToTime(end),
+                entrada_2: "",
+                saida_2: "",
+            };
+        }
+
+        var plannedMinutes = Math.round(
+            hours * 60
+        );
+
+        var firstPeriod = Math.floor(
+            plannedMinutes / 2
+        );
+
+        var lunchStart = (
+            start
+            + firstPeriod
+        );
+
+        var lunchEnd = (
+            lunchStart
+            + interval
+        );
+
+        return {
+            entrada_1: minutesToTime(start),
+            saida_1: minutesToTime(lunchStart),
+            entrada_2: minutesToTime(lunchEnd),
+            saida_2: minutesToTime(end),
+        };
+    }
+
+
+    function deviationEffect(
+        fieldName,
+        actualMinutes,
+        expectedMinutes
+    ) {
+
+        if (
+            actualMinutes === expectedMinutes
+        ) {
+            return 0;
+        }
+
+        var actualAddsWork = false;
+
+        if (fieldName === "entrada_1") {
+            actualAddsWork = (
+                actualMinutes
+                < expectedMinutes
+            );
+        }
+
+        else if (fieldName === "saida_1") {
+            actualAddsWork = (
+                actualMinutes
+                > expectedMinutes
+            );
+        }
+
+        else if (fieldName === "entrada_2") {
+            actualAddsWork = (
+                actualMinutes
+                < expectedMinutes
+            );
+        }
+
+        else if (fieldName === "saida_2") {
+            actualAddsWork = (
+                actualMinutes
+                > expectedMinutes
+            );
+        }
+
+        return actualAddsWork
+            ? 1
+            : -1;
+    }
+
+
+    function highlightMarkings() {
+
+        document
+            .querySelectorAll(
+                ".pgp-dia-row"
+            )
+            .forEach(function (row) {
+
+                var expected = (
+                    expectedMarks(row)
+                );
+
+                if (!expected) {
+                    return;
+                }
+
+                [
+                    "entrada_1",
+                    "saida_1",
+                    "entrada_2",
+                    "saida_2",
+                ].forEach(function (fieldName) {
+
+                    var input = row.querySelector(
+                        'input[name$="-'
+                        + fieldName
+                        + '"]'
+                    );
+
+                    if (!input) {
+                        return;
+                    }
+
+                    input.classList.remove(
+                        "pgp-mark-positive",
+                        "pgp-mark-negative",
+                        "pgp-mark-different"
+                    );
+
+                    input.removeAttribute(
+                        "title"
+                    );
+
+                    var actual = (
+                        input.value || ""
+                    );
+
+                    var standard = (
+                        expected[fieldName] || ""
+                    );
+
+                    if (
+                        !actual
+                        || !standard
+                        || actual === standard
+                    ) {
+                        return;
+                    }
+
+                    var actualMinutes = (
+                        timeToMinutes(actual)
+                    );
+
+                    var expectedMinutes = (
+                        timeToMinutes(standard)
+                    );
+
+                    if (
+                        actualMinutes === null
+                        || expectedMinutes === null
+                    ) {
+                        return;
+                    }
+
+                    var effect = (
+                        deviationEffect(
+                            fieldName,
+                            actualMinutes,
+                            expectedMinutes
+                        )
+                    );
+
+                    var difference = Math.abs(
+                        actualMinutes
+                        - expectedMinutes
+                    );
+
+                    input.classList.add(
+                        "pgp-mark-different"
+                    );
+
+                    if (effect > 0) {
+
+                        input.classList.add(
+                            "pgp-mark-positive"
+                        );
+
+                    } else {
+
+                        input.classList.add(
+                            "pgp-mark-negative"
+                        );
+                    }
+
+                    input.title = (
+                        "Horário padrão: "
+                        + standard
+                        + " · diferença: "
+                        + difference
+                        + " min"
+                    );
+
+                });
+
+            });
+    }
+
+
+    function styleSaldoCell(cell) {
+
+        var value = numberValue(
+            cell.dataset.saldo
+            || cell.textContent
+        );
+
+        cell.classList.remove(
+            "pgp-saldo-positive",
+            "pgp-saldo-negative",
+            "pgp-saldo-zero"
+        );
+
+        if (value > 0) {
+
+            cell.classList.add(
+                "pgp-saldo-positive"
+            );
+
+            cell.textContent = (
+                "+"
+                + value.toFixed(2)
+                    .replace(".", ",")
+            );
+
+        }
+
+        else if (value < 0) {
+
+            cell.classList.add(
+                "pgp-saldo-negative"
+            );
+
+            cell.textContent = (
+                value.toFixed(2)
+                    .replace(".", ",")
+            );
+
+        }
+
+        else {
+
+            cell.classList.add(
+                "pgp-saldo-zero"
+            );
+
+            cell.textContent = "0,00";
+        }
+    }
+
+
+    function setCardClass(
+        card,
+        className
+    ) {
+
+        [
+            "pgp-card-neutral",
+            "pgp-card-info",
+            "pgp-card-purple",
+            "pgp-card-warning",
+            "pgp-card-cyan",
+            "pgp-card-danger",
+            "pgp-card-positive",
+            "pgp-card-negative",
+        ].forEach(function (item) {
+
+            card.classList.remove(
+                item
+            );
+
+        });
+
+        card.classList.add(
+            className
+        );
+    }
+
+
+    function updateSummaryCards() {
+
+        var totals = {
+            previstas: 0,
+            trabalhadas: 0,
+            abonadas: 0,
+            extras: 0,
+            faltas: 0,
+            saldo: 0,
+        };
+
+
+        document
+            .querySelectorAll(
+                ".pgp-dia-row"
+            )
+            .forEach(function (row) {
+
+                totals.previstas += numberValue(
+                    row.dataset.previstas
+                );
+
+                totals.trabalhadas += numberValue(
+                    row.dataset.trabalhadas
+                );
+
+                totals.abonadas += numberValue(
+                    row.dataset.abonadas
+                );
+
+                totals.extras += numberValue(
+                    row.dataset.extras
+                );
+
+                totals.faltas += numberValue(
+                    row.dataset.faltas
+                );
+
+                totals.saldo += numberValue(
+                    row.dataset.saldo
+                );
+
+            });
+
+
+        document.getElementById(
+            "resumo-previstas"
+        ).textContent = formatHours(
+            totals.previstas
+        );
+
+
+        document.getElementById(
+            "resumo-trabalhadas"
+        ).textContent = formatHours(
+            totals.trabalhadas
+        );
+
+
+        document.getElementById(
+            "resumo-abonadas"
+        ).textContent = formatHours(
+            totals.abonadas
+        );
+
+
+        document.getElementById(
+            "resumo-extras-apuradas"
+        ).textContent = formatHours(
+            totals.extras
+        );
+
+
+        document.getElementById(
+            "resumo-faltas"
+        ).textContent = formatHours(
+            totals.faltas
+        );
+
+
+        document.getElementById(
+            "resumo-saldo"
+        ).textContent = formatHours(
+            totals.saldo,
+            true
+        );
+
+
+        setCardClass(
+            document.getElementById(
+                "card-previstas"
+            ),
+            "pgp-card-neutral"
+        );
+
+
+        setCardClass(
+            document.getElementById(
+                "card-trabalhadas"
+            ),
+            (
+                totals.trabalhadas > 0
+                ? "pgp-card-info"
+                : "pgp-card-neutral"
+            )
+        );
+
+
+        setCardClass(
+            document.getElementById(
+                "card-abonadas"
+            ),
+            (
+                totals.abonadas > 0
+                ? "pgp-card-purple"
+                : "pgp-card-neutral"
+            )
+        );
+
+
+        setCardClass(
+            document.getElementById(
+                "card-extras-apuradas"
+            ),
+            (
+                totals.extras > 0
+                ? "pgp-card-warning"
+                : "pgp-card-neutral"
+            )
+        );
+
+
+        setCardClass(
+            document.getElementById(
+                "card-faltas"
+            ),
+            (
+                totals.faltas > 0
+                ? "pgp-card-danger"
+                : "pgp-card-neutral"
+            )
+        );
+
+
+        setCardClass(
+            document.getElementById(
+                "card-saldo"
+            ),
+            (
+                totals.saldo > 0
+                ? "pgp-card-positive"
+                : (
+                    totals.saldo < 0
+                    ? "pgp-card-negative"
+                    : "pgp-card-neutral"
+                )
+            )
+        );
+
+
+        var folhaCard = (
+            document.getElementById(
+                "card-he-folha"
+            )
+        );
+
+        var folhaValue = numberValue(
+            folhaCard.dataset.staticValue
+        );
+
+        setCardClass(
+            folhaCard,
+            (
+                folhaValue > 0
+                ? "pgp-card-warning"
+                : "pgp-card-neutral"
+            )
+        );
+
+
+        var bancoCard = (
+            document.getElementById(
+                "card-he-banco"
+            )
+        );
+
+        var bancoValue = numberValue(
+            bancoCard.dataset.staticValue
+        );
+
+        setCardClass(
+            bancoCard,
+            (
+                bancoValue > 0
+                ? "pgp-card-cyan"
+                : "pgp-card-neutral"
+            )
+        );
+
+    }
+
+
+    function styleDestinos() {
+
+        document
+            .querySelectorAll(
+                ".pgp-destino-badge"
+            )
+            .forEach(function (badge) {
+
+                var text = (
+                    badge.textContent
+                    || ""
+                )
+                .trim()
+                .toLowerCase();
+
+                badge.classList.remove(
+                    "pgp-destino-pendente",
+                    "pgp-destino-folha",
+                    "pgp-destino-banco",
+                    "pgp-destino-compensado"
+                );
+
+                if (
+                    text.includes("banco")
+                ) {
+
+                    badge.classList.add(
+                        "pgp-destino-banco"
+                    );
+
+                }
+
+                else if (
+                    text.includes("folha")
+                ) {
+
+                    badge.classList.add(
+                        "pgp-destino-folha"
+                    );
+
+                }
+
+                else if (
+                    text.includes("compens")
+                ) {
+
+                    badge.classList.add(
+                        "pgp-destino-compensado"
+                    );
+
+                }
+
+                else {
+
+                    badge.classList.add(
+                        "pgp-destino-pendente"
+                    );
+                }
+
+            });
+    }
+
+
+    document
+        .querySelectorAll(
+            ".pgp-saldo"
+        )
+        .forEach(
+            styleSaldoCell
+        );
+
+
+    document
+        .querySelectorAll(
+            '.pgp-point-table input[type="time"]'
+        )
+        .forEach(function (input) {
+
+            input.addEventListener(
+                "change",
+                highlightMarkings
+            );
+
+            input.addEventListener(
+                "input",
+                highlightMarkings
+            );
+
+        });
+
+
+    highlightMarkings();
+    updateSummaryCards();
+    styleDestinos();
+
+})();
+</script>
+
+{% endblock %}

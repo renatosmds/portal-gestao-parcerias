@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}Escala | PGP{% endblock %}
+
+{% block main %}
+<section>
+
+    <div class="d-flex justify-content-between align-items-start mb-4">
+
+        <div>
+            <span class="sgm-eyebrow">GESTÃO TRABALHISTA</span>
+
+            <h1>
+                {% if object %}
+                    Editar escala
+                {% else %}
+                    Nova escala
+                {% endif %}
+            </h1>
+
+            <p class="text-muted">
+                Cadastre o ciclo e defina cada posição da jornada.
+            </p>
+        </div>
+
+        <a class="btn btn-outline-secondary"
+           href="{% url 'escalas_list' %}">
+            Voltar
+        </a>
+
+    </div>
+
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="sgm-panel p-4 mb-4">
+
+            {{ form.non_field_errors }}
+
+            <div class="row">
+
+                {% for field in form %}
+
+                <div class="col-md-4 mb-3">
+
+                    <label>
+                        <strong>{{ field.label }}</strong>
+                    </label>
+
+                    {{ field }}
+
+                    {% for error in field.errors %}
+                        <div class="text-danger">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+
+        <div class="sgm-panel mb-4">
+
+            <div class="p-3 border-bottom">
+
+                <h2 class="h5 mb-1">
+                    Ciclo da jornada
+                </h2>
+
+                <p class="text-muted mb-0">
+                    Para 5x2 utilize 7 posi??es:
+                    cinco de trabalho e duas de descanso.
+                </p>
+
+            </div>
+
+            {{ jornadas.management_form }}
+
+            <div class="table-responsive">
+
+                <table class="table table-sm mb-0">
+
+                    <thead>
+                        <tr>
+                            <th>Posição</th>
+                            <th>Trabalha</th>
+                            <th>Horas previstas</th>
+                            <th>Entrada</th>
+                            <th>Saída</th>
+                            <th>Intervalo (min)</th>
+                            <th>Descrição</th>
+                            <th>Excluir</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                    {% for j in jornadas %}
+
+                        <tr>
+
+                            <td>
+                                {{ j.id }}
+                                {{ j.posicao_ciclo }}
+                            </td>
+
+                            <td>{{ j.trabalha }}</td>
+                            <td>{{ j.horas_previstas }}</td>
+                            <td>{{ j.hora_entrada }}</td>
+                            <td>{{ j.hora_saida }}</td>
+                            <td>{{ j.intervalo_minutos }}</td>
+                            <td>{{ j.descricao }}</td>
+                            <td>{{ j.DELETE }}</td>
+
+                        </tr>
+
+                        {% if j.errors %}
+                        <tr>
+                            <td colspan="8"
+                                class="text-danger">
+                                {{ j.errors }}
+                            </td>
+                        </tr>
+                        {% endif %}
+
+                    {% endfor %}
+
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+
+        <button class="btn btn-primary"
+                type="submit">
+            Salvar escala e jornadas
+        </button>
+
+    </form>
+
+</section>
+{% endblock %}

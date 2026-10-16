@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Vínculos de Escala | PGP{% endblock %}
+
+{% block main %}
+<section>
+
+    <div class="d-flex justify-content-between align-items-start mb-4">
+
+        <div>
+            <span class="sgm-eyebrow">GESTÃO TRABALHISTA</span>
+            <h1>Vínculos de Escala</h1>
+            <p class="text-muted">
+                Associe cada colaborador à escala vigente.
+            </p>
+        </div>
+
+        <div>
+            <a class="btn btn-outline-primary"
+               href="{% url 'escalas_list' %}">
+                Escalas
+            </a>
+
+            <a class="btn btn-primary"
+               href="{% url 'vinculo_escala_create' %}">
+                + Novo vínculo
+            </a>
+        </div>
+
+    </div>
+
+
+    <div class="sgm-panel table-responsive">
+
+        <table class="table table-hover mb-0">
+
+            <thead>
+                <tr>
+                    <th>Funcionário</th>
+                    <th>Escala</th>
+                    <th>Início</th>
+                    <th>Fim</th>
+                    <th>Referência do ciclo</th>
+                    <th></th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+            {% for x in object_list %}
+
+                <tr>
+                    <td>{{ x.funcionario }}</td>
+                    <td>{{ x.escala }}</td>
+                    <td>{{ x.data_inicio|date:"d/m/Y" }}</td>
+                    <td>{{ x.data_fim|date:"d/m/Y"|default:"?" }}</td>
+                    <td>{{ x.data_referencia|date:"d/m/Y" }}</td>
+                    <td>
+                        <a class="btn btn-sm btn-outline-primary"
+                           href="{% url 'vinculo_escala_update' x.pk %}">
+                            Editar
+                        </a>
+                    </td>
+                </tr>
+
+            {% empty %}
+
+                <tr>
+                    <td colspan="6">
+                        Nenhum vínculo cadastrado.
+                    </td>
+                </tr>
+
+            {% endfor %}
+
+            </tbody>
+        </table>
+
+    </div>
+</section>
+{% endblock %}

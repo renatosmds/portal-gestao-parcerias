@@ -15,12 +15,39 @@ from django.views.generic import CreateView, DeleteView, ListView, TemplateView,
 from django.views.generic.base import View
 from reportlab.pdfgen import canvas
 
-from .forms import (FuncionarioForm, FolhaPontoForm, FolhaPagamentoForm, AcessoSistemaForm)
+from apps.core.acesso import filtrar_por_empresa
+from apps.core.permissoes_modulos import exigir_modulo
+
+from .forms import (
+    AcessoSistemaForm,
+    DiaFolhaPontoFormSet,
+    FolhaPagamentoForm,
+    FolhaPontoForm,
+    FolhaPontoOperacionalForm,
+    FuncionarioForm,
+    EscalaFuncionarioForm,
+    EscalaTrabalhoForm,
+    JornadaEscalaFormSet,
+    JornadaEscalaNovoFormSet,
+)
 from .mixins import EmpresaAtualMixin, FuncionarioPorEmpresaMixin, PermissaoFuncionarioMixin
-from .models import Funcionario, FolhaPonto, FolhaPagamento
-from .services import get_empresa_do_usuario
-
-
+from .models import (
+    FolhaPagamento,
+    FolhaPonto,
+    Funcionario,
+    MovimentoBancoHoras,
+    EscalaFuncionario,
+    EscalaTrabalho,
+    JornadaEscala,
+)
+from .services import (
+    apurar_dias_folha_ponto,
+    gerar_calendario_folha_ponto,
+    get_empresa_do_usuario,
+    processar_competencia_trabalhista,
+    preencher_jornada_padrao_folha,
+    saldo_banco_horas_funcionario,
+)
 class FuncionariosList(PermissaoFuncionarioMixin, FuncionarioPorEmpresaMixin, ListView):
     permission_required = "funcionarios.view_funcionario"
     model = Funcionario
@@ -311,48 +338,483 @@ def _exigir(request, perm):
         raise PermissionDenied
 
 def _funcionarios_queryset(request):
-    qs = Funcionario.objects.all()
-    empresa = _empresa(request)
-    return qs if request.user.is_superuser else qs.filter(empresa=empresa)
+    queryset = (
+        Funcionario.objects
+        .select_related("empresa")
+        .order_by("nome")
+    )
+
+    return filtrar_por_empresa(
+        queryset,
+        request.user,
+    )
+
 
 def _pontos_queryset(request):
-    qs = FolhaPonto.objects.select_related("funcionario")
-    empresa = _empresa(request)
-    return qs if request.user.is_superuser else qs.filter(funcionario__empresa=empresa)
+    queryset = (
+        FolhaPonto.objects
+        .select_related(
+            "funcionario",
+            "funcionario__empresa",
+        )
+        .order_by(
+            "-competencia",
+            "funcionario__nome",
+        )
+    )
+
+    return filtrar_por_empresa(
+        queryset,
+        request.user,
+        campo="funcionario__empresa",
+    )
+
 
 def _pagamentos_queryset(request):
-    qs = FolhaPagamento.objects.select_related("funcionario", "folha_ponto")
-    empresa = _empresa(request)
-    return qs if request.user.is_superuser else qs.filter(funcionario__empresa=empresa)
+    queryset = (
+        FolhaPagamento.objects
+        .select_related(
+            "funcionario",
+            "funcionario__empresa",
+            "folha_ponto",
+        )
+        .order_by(
+            "-competencia",
+            "funcionario__nome",
+        )
+    )
+
+    return filtrar_por_empresa(
+        queryset,
+        request.user,
+        campo="funcionario__empresa",
+    )
+
 
 @login_required
 def folhas_ponto_list(request):
-    _exigir(request, "funcionarios.view_folhaponto")
-    return render(request, "funcionarios/folha_ponto_list.html", {"object_list": _pontos_queryset(request)})
+    _exigir(
+        request,
+        "funcionarios.view_folhaponto",
+    )
+
+    return render(
+        request,
+        "funcionarios/folha_ponto_list.html",
+        {
+            "object_list": (
+                _pontos_queryset(request)
+            ),
+        },
+    )
+
 
 @login_required
-def folha_ponto_form(request, pk=None):
-    _exigir(request, "funcionarios.change_folhaponto" if pk else "funcionarios.add_folhaponto")
-    obj = get_object_or_404(_pontos_queryset(request), pk=pk) if pk else None
-    form = FolhaPontoForm(request.POST or None, instance=obj)
-    form.fields["funcionario"].queryset = _funcionarios_queryset(request).filter(ativo=True)
-    if form.is_valid():
-        form.save()
-        messages.success(request, "Folha de ponto salva com sucesso.")
-        return redirect("folhas_ponto_list")
-    return render(request, "funcionarios/folha_ponto_form.html", {"form": form, "object": obj})
+def folha_ponto_form(
+    request,
+    pk=None,
+):
+    _exigir(
+        request,
+        (
+            "funcionarios.change_folhaponto"
+            if pk
+            else "funcionarios.add_folhaponto"
+        ),
+    )
 
-@login_required
-def fechar_folha_ponto(request, pk):
-    _exigir(request, "funcionarios.change_folhaponto")
-    obj = get_object_or_404(_pontos_queryset(request), pk=pk)
+    obj = (
+        get_object_or_404(
+            _pontos_queryset(request),
+            pk=pk,
+        )
+        if pk
+        else None
+    )
+
+    # ------------------------------------------------------------
+    # CRIACAO
+    # ------------------------------------------------------------
+
+    if obj is None:
+
+        form = FolhaPontoOperacionalForm(
+            request.POST or None
+        )
+
+        form.fields[
+            "funcionario"
+        ].queryset = (
+            _funcionarios_queryset(request)
+            .filter(ativo=True)
+        )
+
+        if (
+            request.method == "POST"
+            and form.is_valid()
+        ):
+
+            folha = form.save()
+
+            gerar_calendario_folha_ponto(
+                folha
+            )
+
+            messages.success(
+                request,
+                (
+                    "Folha criada. "
+                    "O calendario diario foi "
+                    "gerado automaticamente."
+                ),
+            )
+
+            return redirect(
+                "folha_ponto_update",
+                pk=folha.pk,
+            )
+
+        return render(
+            request,
+            "funcionarios/folha_ponto_form.html",
+            {
+                "form": form,
+                "object": None,
+                "dias_formset": None,
+            },
+        )
+
+
+    # ------------------------------------------------------------
+    # EDICAO
+    # ------------------------------------------------------------
+
+    if obj.status == "aberta":
+        gerar_calendario_folha_ponto(
+            obj
+        )
+
+    form = FolhaPontoOperacionalForm(
+        request.POST or None,
+        instance=obj,
+    )
+
+    form.fields[
+        "funcionario"
+    ].queryset = (
+        _funcionarios_queryset(request)
+        .filter(ativo=True)
+    )
+
+    form.fields[
+        "funcionario"
+    ].disabled = True
+
+    form.fields[
+        "competencia"
+    ].disabled = True
+
+    dias_formset = DiaFolhaPontoFormSet(
+        request.POST or None,
+        instance=obj,
+        prefix="dias",
+        queryset=(
+            obj.dias
+            .select_related(
+                "escala",
+                "jornada_escala",
+                "ferias",
+                "afastamento",
+                "afastamento__tipo",
+            )
+            .order_by("data")
+        ),
+    )
+
     if request.method == "POST":
+
+        if obj.status != "aberta":
+
+            messages.error(
+                request,
+                (
+                    "A folha de ponto esta "
+                    "fechada e nao pode ser alterada."
+                ),
+            )
+
+            return redirect(
+                "folha_ponto_update",
+                pk=obj.pk,
+            )
+
+        if (
+            form.is_valid()
+            and dias_formset.is_valid()
+        ):
+
+            form.save()
+            dias_formset.save()
+
+            acao = (
+                request.POST.get(
+                    "acao",
+                    "salvar",
+                )
+                .strip()
+                .lower()
+            )
+
+            if acao == "preencher_padrao":
+
+                resultado = (
+                    preencher_jornada_padrao_folha(
+                        obj
+                    )
+                )
+
+                quantidade_inconsistencias = len(
+                    resultado[
+                        "inconsistencias"
+                    ]
+                )
+
+                if quantidade_inconsistencias:
+
+                    messages.warning(
+                        request,
+                        (
+                            "Jornada padrao preenchida "
+                            f"em {resultado['preenchidos']} "
+                            "dia(s), com "
+                            f"{quantidade_inconsistencias} "
+                            "inconsistencia(s)."
+                        ),
+                    )
+
+                else:
+
+                    messages.success(
+                        request,
+                        (
+                            "Jornada padrao preenchida "
+                            f"em {resultado['preenchidos']} "
+                            "dia(s). "
+                            f"{resultado['preservados']} "
+                            "dia(s) com marcacoes existentes "
+                            "foram preservados."
+                        ),
+                    )
+
+                return redirect(
+                    "folha_ponto_update",
+                    pk=obj.pk,
+                )
+
+            if acao == "preencher_padrao":
+
+                resultado = (
+                    preencher_jornada_padrao_folha(
+                        obj
+                    )
+                )
+
+                quantidade_inconsistencias = len(
+                    resultado[
+                        "inconsistencias"
+                    ]
+                )
+
+                if quantidade_inconsistencias:
+
+                    messages.warning(
+                        request,
+                        (
+                            "Jornada padrao preenchida "
+                            f"em {resultado['preenchidos']} "
+                            "dia(s), com "
+                            f"{quantidade_inconsistencias} "
+                            "inconsistencia(s)."
+                        ),
+                    )
+
+                else:
+
+                    messages.success(
+                        request,
+                        (
+                            "Jornada padrao preenchida "
+                            f"em {resultado['preenchidos']} "
+                            "dia(s). "
+                            f"{resultado['preservados']} "
+                            "dia(s) com marcacoes existentes "
+                            "foram preservados."
+                        ),
+                    )
+
+                return redirect(
+                    "folha_ponto_update",
+                    pk=obj.pk,
+                )
+
+            if acao == "apurar":
+
+                resultado = (
+                    apurar_dias_folha_ponto(
+                        obj
+                    )
+                )
+
+                if resultado[
+                    "inconsistencias"
+                ]:
+
+                    messages.warning(
+                        request,
+                        (
+                            "Apuracao concluida com "
+                            f"{resultado['inconsistencias']} "
+                            "inconsistencia(s)."
+                        ),
+                    )
+
+                else:
+
+                    messages.success(
+                        request,
+                        (
+                            "Apuracao diaria concluida "
+                            "sem inconsistencias."
+                        ),
+                    )
+
+                return redirect(
+                    "folha_ponto_update",
+                    pk=obj.pk,
+                )
+
+            if acao == "processar":
+
+                destino = (
+                    request.POST.get(
+                        "destino_horas_extras",
+                        "folha",
+                    )
+                )
+
+                usar_deficits = (
+                    request.POST.get(
+                        "usar_banco_para_deficits"
+                    )
+                    == "1"
+                )
+
+                try:
+
+                    resultado = (
+                        processar_competencia_trabalhista(
+                            obj,
+                            destino_horas_extras=(
+                                destino
+                            ),
+                            usar_banco_para_deficits=(
+                                usar_deficits
+                            ),
+                        )
+                    )
+
+                except Exception as exc:
+
+                    messages.error(
+                        request,
+                        str(exc),
+                    )
+
+                    return redirect(
+                        "folha_ponto_update",
+                        pk=obj.pk,
+                    )
+
+                folha_pagamento = (
+                    resultado[
+                        "folha_pagamento"
+                    ]
+                )
+
+                messages.success(
+                    request,
+                    (
+                        "Competencia processada. "
+                        "Folha de ponto consolidada e "
+                        "contracheque gerado/atualizado."
+                    ),
+                )
+
+                return redirect(
+                    "folha_pagamento_detail",
+                    pk=folha_pagamento.pk,
+                )
+
+            messages.success(
+                request,
+                "Marcacoes salvas.",
+            )
+
+            return redirect(
+                "folha_ponto_update",
+                pk=obj.pk,
+            )
+
+    return render(
+        request,
+        "funcionarios/folha_ponto_form.html",
+        {
+            "form": form,
+            "object": obj,
+            "dias_formset": dias_formset,
+        },
+    )
+
+
+@login_required
+def fechar_folha_ponto(
+    request,
+    pk,
+):
+    _exigir(
+        request,
+        "funcionarios.change_folhaponto",
+    )
+
+    obj = get_object_or_404(
+        _pontos_queryset(request),
+        pk=pk,
+    )
+
+    if request.method == "POST":
+
         obj.status = "fechada"
         obj.fechado_em = timezone.now()
         obj.fechado_por = request.user
-        obj.save(update_fields=["status", "fechado_em", "fechado_por", "atualizado_em"])
-        messages.success(request, "Folha de ponto fechada.")
-    return redirect("folhas_ponto_list")
+
+        obj.save(
+            update_fields=[
+                "status",
+                "fechado_em",
+                "fechado_por",
+                "atualizado_em",
+            ]
+        )
+
+        messages.success(
+            request,
+            "Folha de ponto fechada.",
+        )
+
+    return redirect(
+        "folhas_ponto_list"
+    )
+
 
 @login_required
 def folhas_pagamento_list(request):
@@ -391,3 +853,390 @@ def fechar_folha_pagamento(request, pk):
         messages.success(request, "Folha de pagamento fechada.")
     return redirect("folha_pagamento_detail", pk=obj.pk)
 
+
+
+@login_required
+@exigir_modulo("banco_horas")
+def banco_horas_integrado(request):
+
+    funcionarios = (
+        _funcionarios_queryset(request)
+        .filter(ativo=True)
+    )
+
+    movimentos = (
+        MovimentoBancoHoras.objects
+        .select_related(
+            "funcionario",
+            "funcionario__empresa",
+            "regime",
+        )
+        .order_by(
+            "-data",
+            "-pk",
+        )
+    )
+
+    movimentos = filtrar_por_empresa(
+        movimentos,
+        request.user,
+        campo="funcionario__empresa",
+    )
+
+    funcionario_id = (
+        request.GET.get(
+            "funcionario",
+            ""
+        )
+        .strip()
+    )
+
+    if funcionario_id.isdigit():
+
+        movimentos = movimentos.filter(
+            funcionario_id=int(
+                funcionario_id
+            )
+        )
+
+    saldos = []
+
+    for funcionario in funcionarios:
+
+        saldos.append(
+            {
+                "funcionario": funcionario,
+                "saldo": (
+                    saldo_banco_horas_funcionario(
+                        funcionario
+                    )
+                ),
+            }
+        )
+
+    return render(
+        request,
+        "funcionarios/banco_horas_integrado.html",
+        {
+            "movimentos": movimentos[:300],
+            "funcionarios": funcionarios,
+            "saldos": saldos,
+            "funcionario_selecionado": (
+                funcionario_id
+            ),
+        },
+    )
+
+
+
+# ============================================================
+# ESCALAS / JORNADAS
+# ============================================================
+
+
+@login_required
+def escalas_list(request):
+
+    _exigir(
+        request,
+        "funcionarios.view_escalatrabalho",
+    )
+
+    escalas = (
+        EscalaTrabalho.objects
+        .prefetch_related(
+            "jornadas_ciclo",
+            "funcionarios_vinculados",
+        )
+        .order_by(
+            "nome"
+        )
+    )
+
+    escalas = filtrar_por_empresa(
+        escalas,
+        request.user,
+    )
+
+    return render(
+        request,
+        "funcionarios/escalas_list.html",
+        {
+            "object_list": escalas,
+        },
+    )
+
+
+@login_required
+def escala_form(
+    request,
+    pk=None,
+):
+
+    _exigir(
+        request,
+        (
+            "funcionarios.change_escalatrabalho"
+            if pk
+            else "funcionarios.add_escalatrabalho"
+        ),
+    )
+
+    queryset = filtrar_por_empresa(
+        EscalaTrabalho.objects.all(),
+        request.user,
+    )
+
+    obj = (
+        get_object_or_404(
+            queryset,
+            pk=pk,
+        )
+        if pk
+        else None
+    )
+
+    form = EscalaTrabalhoForm(
+        request.POST or None,
+        instance=obj,
+    )
+
+    empresas_visiveis = (
+        _funcionarios_queryset(request)
+        .exclude(
+            empresa_id__isnull=True
+        )
+        .values_list(
+            "empresa_id",
+            flat=True,
+        )
+        .distinct()
+    )
+
+    form.fields[
+        "empresa"
+    ].queryset = (
+        form.fields[
+            "empresa"
+        ].queryset
+        .filter(
+            pk__in=empresas_visiveis
+        )
+        .order_by(
+            "nome"
+        )
+    )
+
+    FormSetJornadas = (
+        JornadaEscalaFormSet
+        if obj
+        else JornadaEscalaNovoFormSet
+    )
+
+    jornadas = FormSetJornadas(
+        request.POST or None,
+        instance=obj,
+        prefix="jornadas",
+    )
+
+    if (
+        request.method == "POST"
+        and form.is_valid()
+        and jornadas.is_valid()
+    ):
+
+        escala = form.save(
+            commit=False
+        )
+
+        escala.full_clean()
+        escala.save()
+
+        jornadas.instance = escala
+
+        jornadas.save()
+
+        messages.success(
+            request,
+            (
+                "Escala e jornadas "
+                "salvas com sucesso."
+            ),
+        )
+
+        return redirect(
+            "escala_update",
+            pk=escala.pk,
+        )
+
+    return render(
+        request,
+        "funcionarios/escala_form.html",
+        {
+            "form": form,
+            "jornadas": jornadas,
+            "object": obj,
+        },
+    )
+
+
+@login_required
+def vinculos_escala_list(request):
+
+    _exigir(
+        request,
+        "funcionarios.view_escalafuncionario",
+    )
+
+    queryset = (
+        EscalaFuncionario.objects
+        .select_related(
+            "funcionario",
+            "funcionario__empresa",
+            "escala",
+        )
+        .order_by(
+            "funcionario__nome",
+            "-data_inicio",
+        )
+    )
+
+    queryset = filtrar_por_empresa(
+        queryset,
+        request.user,
+        campo="funcionario__empresa",
+    )
+
+    return render(
+        request,
+        "funcionarios/vinculos_escala_list.html",
+        {
+            "object_list": queryset,
+        },
+    )
+
+
+@login_required
+def vinculo_escala_form(
+    request,
+    pk=None,
+):
+
+    _exigir(
+        request,
+        (
+            "funcionarios.change_escalafuncionario"
+            if pk
+            else "funcionarios.add_escalafuncionario"
+        ),
+    )
+
+    queryset = (
+        EscalaFuncionario.objects
+        .select_related(
+            "funcionario",
+            "funcionario__empresa",
+            "escala",
+        )
+    )
+
+    queryset = filtrar_por_empresa(
+        queryset,
+        request.user,
+        campo="funcionario__empresa",
+    )
+
+    obj = (
+        get_object_or_404(
+            queryset,
+            pk=pk,
+        )
+        if pk
+        else None
+    )
+
+    form = EscalaFuncionarioForm(
+        request.POST or None,
+        instance=obj,
+    )
+
+    funcionarios = (
+        _funcionarios_queryset(
+            request
+        )
+        .filter(
+            ativo=True
+        )
+    )
+
+    form.fields[
+        "funcionario"
+    ].queryset = funcionarios
+
+    escalas = (
+        EscalaTrabalho.objects
+        .filter(
+            ativo=True
+        )
+        .order_by(
+            "nome"
+        )
+    )
+
+    escalas = filtrar_por_empresa(
+        escalas,
+        request.user,
+    )
+
+    form.fields[
+        "escala"
+    ].queryset = escalas
+
+    if (
+        request.method == "POST"
+        and form.is_valid()
+    ):
+
+        vinculo = form.save(
+            commit=False
+        )
+
+        vinculo.full_clean()
+        vinculo.save()
+
+        # Regenera folhas abertas que atingem
+        # o periodo do novo vinculo.
+        folhas = (
+            FolhaPonto.objects
+            .filter(
+                funcionario=vinculo.funcionario,
+                status="aberta",
+            )
+        )
+
+        for folha in folhas:
+
+            gerar_calendario_folha_ponto(
+                folha
+            )
+
+        messages.success(
+            request,
+            (
+                "Escala vinculada ao colaborador. "
+                "Folhas abertas foram regeneradas."
+            ),
+        )
+
+        return redirect(
+            "vinculos_escala_list"
+        )
+
+    return render(
+        request,
+        "funcionarios/vinculo_escala_form.html",
+        {
+            "form": form,
+            "object": obj,
+        },
+    )

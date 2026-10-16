@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Escalas e Jornadas | PGP{% endblock %}
+
+{% block main %}
+<section>
+
+    <div class="d-flex justify-content-between align-items-start mb-4">
+        <div>
+            <span class="sgm-eyebrow">GESTÃO TRABALHISTA</span>
+            <h1>Escalas e Jornadas</h1>
+            <p class="text-muted">
+                Configure os ciclos de trabalho utilizados pelos colaboradores.
+            </p>
+        </div>
+
+        <div>
+            <a class="btn btn-outline-primary"
+               href="{% url 'vinculos_escala_list' %}">
+                Vínculos
+            </a>
+
+            <a class="btn btn-primary"
+               href="{% url 'escala_create' %}">
+                + Nova escala
+            </a>
+        </div>
+    </div>
+
+    <div class="sgm-panel table-responsive">
+
+        <table class="table table-hover mb-0">
+
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Tipo</th>
+                    <th>Ciclo</th>
+                    <th>Jornada semanal</th>
+                    <th>Vigência</th>
+                    <th>Jornadas</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+            {% for x in object_list %}
+
+                <tr>
+                    <td>{{ x.nome }}</td>
+                    <td>{{ x.get_tipo_display }}</td>
+                    <td>{{ x.ciclo_dias }} dias</td>
+                    <td>
+                        {{ x.jornada_semanal_referencia|default:"?" }}
+                    </td>
+                    <td>
+                        {{ x.data_inicio|date:"d/m/Y" }}
+                        {% if x.data_fim %}
+                            a {{ x.data_fim|date:"d/m/Y" }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        {{ x.jornadas_ciclo.count }}
+                    </td>
+                    <td>
+                        {% if x.ativo %}
+                            Ativa
+                        {% else %}
+                            Inativa
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a class="btn btn-sm btn-outline-primary"
+                           href="{% url 'escala_update' x.pk %}">
+                            Abrir
+                        </a>
+                    </td>
+                </tr>
+
+            {% empty %}
+
+                <tr>
+                    <td colspan="8">
+                        Nenhuma escala cadastrada.
+                    </td>
+                </tr>
+
+            {% endfor %}
+
+            </tbody>
+        </table>
+
+    </div>
+</section>
+{% endblock %}

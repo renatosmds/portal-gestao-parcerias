@@ -6,7 +6,7 @@ from apps.empresas.models import Empresa
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 
-from .models import Cargo, Equipamento, Funcionario, Nivel, FolhaPonto, FolhaPagamento
+from .models import Cargo, Equipamento, Funcionario, Nivel, FolhaPonto, FolhaPagamento, EscalaFuncionario, EscalaTrabalho, JornadaEscala
 
 
 class FuncionarioForm(forms.ModelForm):
@@ -336,6 +336,17 @@ class FuncionarioForm(forms.ModelForm):
 class DateInput(forms.DateInput):
     input_type = "date"
 
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault(
+            "format",
+            "%Y-%m-%d",
+        )
+
+        super().__init__(
+            *args,
+            **kwargs,
+        )
+
 
 class FolhaPontoForm(forms.ModelForm):
     class Meta:
@@ -356,6 +367,243 @@ class FolhaPagamentoForm(forms.ModelForm):
         ponto = cleaned.get("folha_ponto")
         if ponto and funcionario and ponto.funcionario_id != funcionario.id:
             self.add_error("folha_ponto", "A folha de ponto deve pertencer ao mesmo funcionário.")
+        return cleaned
+
+
+
+# ============================================================
+# INTERFACE TRABALHISTA INTEGRADA
+# ============================================================
+
+from django.forms import inlineformset_factory
+
+from .models import DiaFolhaPonto
+
+
+class FolhaPontoOperacionalForm(forms.ModelForm):
+    """
+    Na interface operacional, os totais mensais nao sao
+    digitados. Eles sao derivados do calendario diario.
+    """
+
+    class Meta:
+        model = FolhaPonto
+        fields = [
+            "funcionario",
+            "competencia",
+            "observacoes",
+        ]
+        widgets = {
+            "competencia": DateInput(format="%Y-%m-%d"),
+            "observacoes": forms.Textarea(
+                attrs={
+                    "rows": 3,
+                    "class": "form-control",
+                }
+            ),
+        }
+
+
+class DiaFolhaPontoForm(forms.ModelForm):
+
+    class Meta:
+        model = DiaFolhaPonto
+        fields = [
+            "entrada_1",
+            "saida_1",
+            "entrada_2",
+            "saida_2",
+        ]
+
+        widgets = {
+            "entrada_1": forms.TimeInput(
+                format="%H:%M",
+                attrs={
+                    "type": "time",
+                    "step": "60",
+                    "class": "form-control form-control-sm",
+                },
+            ),
+            "saida_1": forms.TimeInput(
+                format="%H:%M",
+                attrs={
+                    "type": "time",
+                    "step": "60",
+                    "class": "form-control form-control-sm",
+                },
+            ),
+            "entrada_2": forms.TimeInput(
+                format="%H:%M",
+                attrs={
+                    "type": "time",
+                    "step": "60",
+                    "class": "form-control form-control-sm",
+                },
+            ),
+            "saida_2": forms.TimeInput(
+                format="%H:%M",
+                attrs={
+                    "type": "time",
+                    "step": "60",
+                    "class": "form-control form-control-sm",
+                },
+            ),
+        }
+
+
+DiaFolhaPontoFormSet = inlineformset_factory(
+    FolhaPonto,
+    DiaFolhaPonto,
+    form=DiaFolhaPontoForm,
+    extra=0,
+    can_delete=False,
+)
+
+
+
+
+# ============================================================
+# ESCALAS / JORNADAS / VINCULOS
+# ============================================================
+
+
+class EscalaTrabalhoForm(forms.ModelForm):
+
+    class Meta:
+        model = EscalaTrabalho
+
+        fields = [
+            "empresa",
+            "nome",
+            "tipo",
+            "ciclo_dias",
+            "jornada_semanal_referencia",
+            "data_inicio",
+            "data_fim",
+            "fundamento",
+            "ativo",
+            "observacoes",
+        ]
+
+        widgets = {
+            "data_inicio": DateInput(),
+            "data_fim": DateInput(),
+            "fundamento": forms.Textarea(
+                attrs={
+                    "rows": 2,
+                }
+            ),
+            "observacoes": forms.Textarea(
+                attrs={
+                    "rows": 2,
+                }
+            ),
+        }
+
+
+class JornadaEscalaForm(forms.ModelForm):
+
+    class Meta:
+        model = JornadaEscala
+
+        fields = [
+            "posicao_ciclo",
+            "trabalha",
+            "horas_previstas",
+            "hora_entrada",
+            "hora_saida",
+            "intervalo_minutos",
+            "descricao",
+        ]
+
+        widgets = {
+            "hora_entrada": forms.TimeInput(
+                format="%H:%M",
+                attrs={
+                    "type": "time",
+                    "step": "60",
+                },
+            ),
+            "hora_saida": forms.TimeInput(
+                format="%H:%M",
+                attrs={
+                    "type": "time",
+                    "step": "60",
+                },
+            ),
+        }
+
+
+JornadaEscalaFormSet = inlineformset_factory(
+    EscalaTrabalho,
+    JornadaEscala,
+    form=JornadaEscalaForm,
+    extra=0,
+    can_delete=True,
+)
+
+
+JornadaEscalaNovoFormSet = inlineformset_factory(
+    EscalaTrabalho,
+    JornadaEscala,
+    form=JornadaEscalaForm,
+    extra=7,
+    can_delete=True,
+)
+
+
+class EscalaFuncionarioForm(forms.ModelForm):
+
+    class Meta:
+        model = EscalaFuncionario
+
+        fields = [
+            "funcionario",
+            "escala",
+            "data_inicio",
+            "data_fim",
+            "data_referencia",
+            "observacoes",
+        ]
+
+        widgets = {
+            "data_inicio": DateInput(),
+            "data_fim": DateInput(),
+            "data_referencia": DateInput(),
+            "observacoes": forms.Textarea(
+                attrs={
+                    "rows": 2,
+                }
+            ),
+        }
+
+    def clean(self):
+
+        cleaned = super().clean()
+
+        funcionario = cleaned.get(
+            "funcionario"
+        )
+
+        escala = cleaned.get(
+            "escala"
+        )
+
+        if (
+            funcionario
+            and escala
+            and funcionario.empresa_id
+            != escala.empresa_id
+        ):
+
+            self.add_error(
+                "escala",
+                (
+                    "A escala deve pertencer "
+                    "a mesma empresa do colaborador."
+                ),
+            )
+
         return cleaned
 
 class AcessoSistemaForm(UserCreationForm):

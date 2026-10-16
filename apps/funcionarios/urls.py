@@ -1,4 +1,17 @@
 from django.urls import path
+from .views_banco_horas import (
+    regime_banco_horas_create,
+    regime_banco_horas_update,
+    regimes_banco_horas_list,
+)
+
+from .views import (
+    banco_horas_integrado,
+    escala_form,
+    escalas_list,
+    vinculo_escala_form,
+    vinculos_escala_list,
+)
 from .views import (
     FuncionariosList,
     FuncionarioEdit,
@@ -28,6 +41,56 @@ from .views_cadastros import (
 
 
 urlpatterns = [
+    path(
+        "banco-horas/regimes/",
+        regimes_banco_horas_list,
+        name="regimes_banco_horas_list",
+    ),
+    path(
+        "banco-horas/regimes/novo/",
+        regime_banco_horas_create,
+        name="regime_banco_horas_create",
+    ),
+    path(
+        "banco-horas/regimes/<int:pk>/editar/",
+        regime_banco_horas_update,
+        name="regime_banco_horas_update",
+    ),
+    path(
+        "escalas/",
+        escalas_list,
+        name="escalas_list",
+    ),
+    path(
+        "escalas/nova/",
+        escala_form,
+        name="escala_create",
+    ),
+    path(
+        "escalas/<int:pk>/editar/",
+        escala_form,
+        name="escala_update",
+    ),
+    path(
+        "escalas/vinculos/",
+        vinculos_escala_list,
+        name="vinculos_escala_list",
+    ),
+    path(
+        "escalas/vinculos/novo/",
+        vinculo_escala_form,
+        name="vinculo_escala_create",
+    ),
+    path(
+        "escalas/vinculos/<int:pk>/editar/",
+        vinculo_escala_form,
+        name="vinculo_escala_update",
+    ),
+    path(
+        "banco-horas/",
+        banco_horas_integrado,
+        name="banco_horas_integrado",
+    ),
     path(
         "cargos/",
         CargoList.as_view(),

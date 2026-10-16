@@ -2545,3 +2545,224 @@ def processar_competencia_trabalhista(
             "folha_pagamento": folha_pagamento,
             "resumo": resumo,
         }
+
+
+# ============================================================
+# PREENCHIMENTO AUTOMATICO DA JORNADA PADRAO
+# ============================================================
+
+
+def _somar_minutos_horario(
+    horario,
+    minutos,
+):
+    """
+    Soma minutos a um horario e devolve apenas o time.
+    """
+    from datetime import date, datetime, timedelta
+
+    base = datetime.combine(
+        date(2000, 1, 1),
+        horario,
+    )
+
+    return (
+        base
+        + timedelta(
+            minutes=minutos
+        )
+    ).time()
+
+
+def preencher_jornada_padrao_folha(
+    folha_ponto,
+):
+    """
+    Preenche as marcacoes padrao dos dias de trabalho
+    usando a JornadaEscala vinculada ao calendario.
+
+    Protecoes:
+    - somente dias tipo 'trabalho';
+    - nao altera dias com qualquer marcacao existente;
+    - nao preenche descanso, ferias ou afastamentos;
+    - exige entrada/saida configuradas na jornada;
+    - intervalo e posicionado no centro da jornada liquida.
+
+    Exemplo:
+    08:00-17:00, 8h previstas, intervalo 60 min
+    => 08:00 / 12:00 / 13:00 / 17:00.
+    """
+
+    if folha_ponto.status != "aberta":
+
+        raise ValidationError(
+            "Somente folha de ponto aberta pode "
+            "receber jornada padrao."
+        )
+
+    gerar_calendario_folha_ponto(
+        folha_ponto
+    )
+
+    preenchidos = 0
+    preservados = 0
+    ignorados = 0
+    inconsistencias = []
+
+    dias = (
+        folha_ponto.dias
+        .select_related(
+            "jornada_escala",
+        )
+        .order_by(
+            "data"
+        )
+    )
+
+    for dia in dias:
+
+        if dia.tipo_dia != "trabalho":
+
+            ignorados += 1
+            continue
+
+        # Nunca sobrescrever marcacao manual.
+        if any(
+            [
+                dia.entrada_1,
+                dia.saida_1,
+                dia.entrada_2,
+                dia.saida_2,
+            ]
+        ):
+
+            preservados += 1
+            continue
+
+        jornada = dia.jornada_escala
+
+        if not jornada:
+
+            inconsistencias.append(
+                {
+                    "data": dia.data,
+                    "mensagem": (
+                        "Dia de trabalho sem "
+                        "jornada de escala vinculada."
+                    ),
+                }
+            )
+
+            continue
+
+        if (
+            not jornada.hora_entrada
+            or not jornada.hora_saida
+        ):
+
+            inconsistencias.append(
+                {
+                    "data": dia.data,
+                    "mensagem": (
+                        "Jornada sem horario de "
+                        "entrada/saida configurado."
+                    ),
+                }
+            )
+
+            continue
+
+        intervalo = (
+            jornada.intervalo_minutos
+            or 0
+        )
+
+        minutos_previstos = int(
+            (
+                jornada.horas_previstas
+                or ZERO_HORAS
+            )
+            * Decimal("60")
+        )
+
+        if intervalo <= 0:
+
+            dia.entrada_1 = (
+                jornada.hora_entrada
+            )
+
+            dia.saida_1 = (
+                jornada.hora_saida
+            )
+
+            dia.entrada_2 = None
+            dia.saida_2 = None
+
+        else:
+
+            if minutos_previstos <= 0:
+
+                inconsistencias.append(
+                    {
+                        "data": dia.data,
+                        "mensagem": (
+                            "Jornada com intervalo, "
+                            "mas sem horas previstas."
+                        ),
+                    }
+                )
+
+                continue
+
+            primeiro_periodo = (
+                minutos_previstos // 2
+            )
+
+            saida_intervalo = (
+                _somar_minutos_horario(
+                    jornada.hora_entrada,
+                    primeiro_periodo,
+                )
+            )
+
+            retorno_intervalo = (
+                _somar_minutos_horario(
+                    saida_intervalo,
+                    intervalo,
+                )
+            )
+
+            dia.entrada_1 = (
+                jornada.hora_entrada
+            )
+
+            dia.saida_1 = (
+                saida_intervalo
+            )
+
+            dia.entrada_2 = (
+                retorno_intervalo
+            )
+
+            dia.saida_2 = (
+                jornada.hora_saida
+            )
+
+        dia.save(
+            update_fields=[
+                "entrada_1",
+                "saida_1",
+                "entrada_2",
+                "saida_2",
+                "atualizado_em",
+            ]
+        )
+
+        preenchidos += 1
+
+    return {
+        "preenchidos": preenchidos,
+        "preservados": preservados,
+        "ignorados": ignorados,
+        "inconsistencias": inconsistencias,
+    }

@@ -1,0 +1,290 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if object %}
+        Editar regime de Banco de Horas
+    {% else %}
+        Novo regime de Banco de Horas
+    {% endif %}
+    | PGP
+{% endblock %}
+
+
+{% block main %}
+
+<section>
+
+    <div
+        class="d-flex justify-content-between align-items-start mb-4">
+
+        <div>
+
+            <span class="sgm-eyebrow">
+                GEST?O TRABALHISTA
+            </span>
+
+
+            <h1>
+
+                {% if object %}
+                    Editar regime de Banco de Horas
+                {% else %}
+                    Novo regime de Banco de Horas
+                {% endif %}
+
+            </h1>
+
+
+            <p class="text-muted mb-0">
+                Defina o instrumento, a vigência e as regras
+                aplicáveis ? compensação de jornada.
+            </p>
+
+        </div>
+
+
+        <a
+            class="btn btn-outline-secondary"
+            href="{% url 'regimes_banco_horas_list' %}">
+            Voltar
+        </a>
+
+    </div>
+
+
+    <form method="post" novalidate>
+
+        {% csrf_token %}
+
+
+        {% if form.non_field_errors %}
+
+        <div class="alert alert-danger">
+
+            {% for erro in form.non_field_errors %}
+                <div>{{ erro }}</div>
+            {% endfor %}
+
+        </div>
+
+        {% endif %}
+
+
+        <div class="sgm-panel p-4 mb-4">
+
+            <div class="row">
+
+
+                <div class="col-md-6 mb-3">
+
+                    <label>
+                        <strong>
+                            {{ form.funcionario.label }}
+                        </strong>
+                    </label>
+
+                    {{ form.funcionario }}
+
+                    {% for erro in form.funcionario.errors %}
+                        <small class="text-danger d-block">
+                            {{ erro }}
+                        </small>
+                    {% endfor %}
+
+                </div>
+
+
+                <div class="col-md-6 mb-3">
+
+                    <label>
+                        <strong>
+                            {{ form.tipo.label }}
+                        </strong>
+                    </label>
+
+                    {{ form.tipo }}
+
+                    {% for erro in form.tipo.errors %}
+                        <small class="text-danger d-block">
+                            {{ erro }}
+                        </small>
+                    {% endfor %}
+
+                </div>
+
+
+                <div class="col-md-4 mb-3">
+
+                    <label>
+                        <strong>
+                            {{ form.data_inicio.label }}
+                        </strong>
+                    </label>
+
+                    {{ form.data_inicio }}
+
+                    {% for erro in form.data_inicio.errors %}
+                        <small class="text-danger d-block">
+                            {{ erro }}
+                        </small>
+                    {% endfor %}
+
+                </div>
+
+
+                <div class="col-md-4 mb-3">
+
+                    <label>
+                        <strong>
+                            {{ form.data_fim.label }}
+                        </strong>
+                    </label>
+
+                    {{ form.data_fim }}
+
+                    {% for erro in form.data_fim.errors %}
+                        <small class="text-danger d-block">
+                            {{ erro }}
+                        </small>
+                    {% endfor %}
+
+                </div>
+
+
+                <div class="col-md-4 mb-3">
+
+                    <label>
+                        <strong>
+                            {{ form.prazo_compensacao_meses.label }}
+                        </strong>
+                    </label>
+
+                    {{ form.prazo_compensacao_meses }}
+
+                    {% for erro in form.prazo_compensacao_meses.errors %}
+                        <small class="text-danger d-block">
+                            {{ erro }}
+                        </small>
+                    {% endfor %}
+
+                </div>
+
+
+                <div class="col-md-6 mb-3">
+
+                    <label>
+                        <strong>
+                            {{ form.tratamento_vencimento.label }}
+                        </strong>
+                    </label>
+
+                    {{ form.tratamento_vencimento }}
+
+                    {% for erro in form.tratamento_vencimento.errors %}
+                        <small class="text-danger d-block">
+                            {{ erro }}
+                        </small>
+                    {% endfor %}
+
+                </div>
+
+
+                <div class="col-md-6 mb-3">
+
+                    <label>
+                        <strong>
+                            {{ form.referencia_documento.label }}
+                        </strong>
+                    </label>
+
+                    {{ form.referencia_documento }}
+
+                    {% for erro in form.referencia_documento.errors %}
+                        <small class="text-danger d-block">
+                            {{ erro }}
+                        </small>
+                    {% endfor %}
+
+                </div>
+
+
+                <div class="col-12 mb-3">
+
+                    <label>
+                        <strong>
+                            {{ form.fundamento.label }}
+                        </strong>
+                    </label>
+
+                    {{ form.fundamento }}
+
+                    {% for erro in form.fundamento.errors %}
+                        <small class="text-danger d-block">
+                            {{ erro }}
+                        </small>
+                    {% endfor %}
+
+                </div>
+
+
+                <div class="col-12 mb-3">
+
+                    <div class="form-check">
+
+                        {{ form.ativo }}
+
+                        <label
+                            class="form-check-label"
+                            for="{{ form.ativo.id_for_label }}">
+
+                            {{ form.ativo.label }}
+
+                        </label>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="alert alert-light border">
+
+                <strong>Atenção:</strong>
+
+                o cadastro do regime não cria horas automaticamente.
+                Ele apenas habilita e disciplina o processamento
+                das horas que forem efetivamente apuradas na
+                Folha de Ponto.
+
+            </div>
+
+
+            <button
+                class="btn btn-primary"
+                type="submit">
+
+                {% if object %}
+                    Salvar altera??es
+                {% else %}
+                    Salvar regime
+                {% endif %}
+
+            </button>
+
+
+            <a
+                class="btn btn-outline-secondary"
+                href="{% url 'regimes_banco_horas_list' %}">
+
+                Cancelar
+
+            </a>
+
+        </div>
+
+    </form>
+
+</section>
+
+{% endblock %}
