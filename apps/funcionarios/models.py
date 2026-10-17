@@ -2083,7 +2083,12 @@ class DiaFolhaPonto(models.Model):
             "sem_configuracao",
             "Sem configuracao de jornada",
         ),
-    )
+            ("feriado", "Feriado"),
+        (
+            "ponto_facultativo",
+            "Ponto facultativo",
+        ),
+)
 
     folha_ponto = models.ForeignKey(
         FolhaPonto,
@@ -2136,6 +2141,15 @@ class DiaFolhaPonto(models.Model):
         related_name="dias_folha_ponto",
     )
 
+    feriado = models.ForeignKey(
+        "Feriado",
+        on_delete=models.PROTECT,
+        related_name="dias_folha_ponto",
+        blank=True,
+        null=True,
+    )
+
+
     horas_previstas = models.DecimalField(
         max_digits=7,
         decimal_places=2,
@@ -2159,6 +2173,19 @@ class DiaFolhaPonto(models.Model):
         decimal_places=2,
         default=Decimal("0.00"),
     )
+
+    horas_feriado = models.DecimalField(
+        max_digits=7,
+        decimal_places=2,
+        default=Decimal("0.00"),
+        help_text=(
+            "Horas efetivamente trabalhadas "
+            "em feriado. O registro nao implica "
+            "automaticamente pagamento em dobro, "
+            "compensacao ou banco de horas."
+        ),
+    )
+
 
     horas_faltas_atrasos = models.DecimalField(
         max_digits=7,
@@ -2322,3 +2349,757 @@ class DiaFolhaPonto(models.Model):
             f"{self.data:%d/%m/%Y} - "
             f"{self.get_tipo_dia_display()}"
         )
+# === ETAPA 8.6B - PROVISOES TRABALHISTAS ===
+
+
+class ParametroTrabalhista(models.Model):
+
+    TIPO_CHOICES = [
+        (
+            "ferias",
+            "Férias",
+        ),
+        (
+            "terco_ferias",
+            "1/3 constitucional de férias",
+        ),
+        (
+            "decimo_terceiro",
+            "13º salário",
+        ),
+        (
+            "fgts",
+            "FGTS",
+        ),
+        (
+            "multa_fgts",
+            "Multa rescisória do FGTS",
+        ),
+        (
+            "inss_patronal",
+            "INSS patronal",
+        ),
+        (
+            "outro",
+            "Outro",
+        ),
+    ]
+
+    codigo = models.CharField(
+        max_length=40,
+        choices=TIPO_CHOICES,
+    )
+
+    nome = models.CharField(
+        max_length=150,
+    )
+
+    percentual = models.DecimalField(
+        max_digits=9,
+        decimal_places=6,
+        blank=True,
+        null=True,
+        help_text=(
+            "Percentual aplicável no período. "
+            "Não representa regra legal fixa no código."
+        ),
+    )
+
+    vigencia_inicio = models.DateField()
+
+    vigencia_fim = models.DateField(
+        blank=True,
+        null=True,
+    )
+
+    fundamento = models.CharField(
+        max_length=255,
+        blank=True,
+    )
+
+    fonte = models.CharField(
+        max_length=500,
+        blank=True,
+    )
+
+    observacoes = models.TextField(
+        blank=True,
+    )
+
+    ativo = models.BooleanField(
+        default=True,
+    )
+
+    criado_em = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    atualizado_em = models.DateTimeField(
+        auto_now=True,
+    )
+
+    class Meta:
+        ordering = [
+            "codigo",
+            "-vigencia_inicio",
+        ]
+        verbose_name = (
+            "Parâmetro trabalhista"
+        )
+        verbose_name_plural = (
+            "Parâmetros trabalhistas"
+        )
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    "codigo",
+                    "vigencia_inicio",
+                ],
+                name=(
+                    "uniq_param_trab_"
+                    "codigo_inicio"
+                ),
+            ),
+        ]
+
+    def __str__(self):
+        return (
+            f"{self.get_codigo_display()} "
+            f"- {self.vigencia_inicio:%d/%m/%Y}"
+        )
+
+    def clean(self):
+
+        super().clean()
+
+        if (
+            self.vigencia_fim
+            and self.vigencia_fim
+            < self.vigencia_inicio
+        ):
+            raise ValidationError(
+                {
+                    "vigencia_fim": (
+                        "A vigência final não pode "
+                        "ser anterior ? vigência inicial."
+                    ),
+                }
+            )
+
+        if (
+            self.percentual is not None
+            and self.percentual < 0
+        ):
+            raise ValidationError(
+                {
+                    "percentual": (
+                        "O percentual não pode ser negativo."
+                    ),
+                }
+            )
+
+
+class ProvisaoTrabalhista(models.Model):
+
+    TIPO_CHOICES = [
+        (
+            "ferias",
+            "Férias",
+        ),
+        (
+            "terco_ferias",
+            "1/3 constitucional de férias",
+        ),
+        (
+            "decimo_terceiro",
+            "13º salário",
+        ),
+        (
+            "fgts",
+            "FGTS",
+        ),
+        (
+            "multa_fgts",
+            "Multa rescisória do FGTS",
+        ),
+        (
+            "inss_patronal",
+            "INSS patronal",
+        ),
+        (
+            "aviso_previo",
+            "Aviso prévio",
+        ),
+        (
+            "rescisao_outros",
+            "Outras verbas rescisórias",
+        ),
+    ]
+
+    STATUS_CHOICES = [
+        (
+            "estimada",
+            "Estimada",
+        ),
+        (
+            "constituida",
+            "Constituída",
+        ),
+        (
+            "realizada",
+            "Realizada",
+        ),
+        (
+            "revertida",
+            "Revertida",
+        ),
+    ]
+
+    ORIGEM_CHOICES = [
+        (
+            "automatica",
+            "Automática",
+        ),
+        (
+            "manual",
+            "Manual",
+        ),
+        (
+            "importada",
+            "Importada",
+        ),
+    ]
+
+    funcionario = models.ForeignKey(
+        "Funcionario",
+        on_delete=models.PROTECT,
+        related_name="provisoes_trabalhistas",
+    )
+
+    vinculo_parceria = models.ForeignKey(
+        "VinculoParceria",
+        on_delete=models.PROTECT,
+        related_name="provisoes_trabalhistas",
+        blank=True,
+        null=True,
+    )
+
+    competencia = models.DateField(
+        help_text=(
+            "Competência de referência. "
+            "Usar preferencialmente o primeiro dia do mês."
+        ),
+    )
+
+    tipo = models.CharField(
+        max_length=30,
+        choices=TIPO_CHOICES,
+    )
+
+    base_calculo = models.DecimalField(
+        max_digits=14,
+        decimal_places=2,
+        default=Decimal("0.00"),
+    )
+
+    percentual = models.DecimalField(
+        max_digits=9,
+        decimal_places=6,
+        blank=True,
+        null=True,
+    )
+
+    quantidade_avos = models.DecimalField(
+        max_digits=6,
+        decimal_places=2,
+        blank=True,
+        null=True,
+    )
+
+    valor = models.DecimalField(
+        max_digits=14,
+        decimal_places=2,
+        default=Decimal("0.00"),
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="estimada",
+    )
+
+    origem = models.CharField(
+        max_length=20,
+        choices=ORIGEM_CHOICES,
+        default="automatica",
+    )
+
+    parametro = models.ForeignKey(
+        "ParametroTrabalhista",
+        on_delete=models.PROTECT,
+        related_name="provisoes",
+        blank=True,
+        null=True,
+    )
+
+    fundamento = models.CharField(
+        max_length=255,
+        blank=True,
+    )
+
+    memoria_calculo = models.TextField(
+        blank=True,
+    )
+
+    observacoes = models.TextField(
+        blank=True,
+    )
+
+    criado_em = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    atualizado_em = models.DateTimeField(
+        auto_now=True,
+    )
+
+    class Meta:
+        ordering = [
+            "-competencia",
+            "funcionario__nome",
+            "tipo",
+        ]
+        verbose_name = (
+            "Provisão trabalhista"
+        )
+        verbose_name_plural = (
+            "Provisões trabalhistas"
+        )
+        indexes = [
+            models.Index(
+                fields=[
+                    "funcionario",
+                    "competencia",
+                ],
+                name="idx_prov_func_comp",
+            ),
+            models.Index(
+                fields=[
+                    "tipo",
+                    "competencia",
+                ],
+                name="idx_prov_tipo_comp",
+            ),
+        ]
+
+    def __str__(self):
+        return (
+            f"{self.funcionario} - "
+            f"{self.get_tipo_display()} - "
+            f"{self.competencia:%m/%Y}"
+        )
+
+    def clean(self):
+
+        super().clean()
+
+        if (
+            self.competencia
+            and self.competencia.day != 1
+        ):
+            raise ValidationError(
+                {
+                    "competencia": (
+                        "A competência deve utilizar "
+                        "o primeiro dia do mês."
+                    ),
+                }
+            )
+
+        if self.base_calculo < 0:
+            raise ValidationError(
+                {
+                    "base_calculo": (
+                        "A base de cálculo não pode "
+                        "ser negativa."
+                    ),
+                }
+            )
+
+        if self.valor < 0:
+            raise ValidationError(
+                {
+                    "valor": (
+                        "O valor provisionado não pode "
+                        "ser negativo."
+                    ),
+                }
+            )
+
+        if (
+            self.vinculo_parceria_id
+            and self.vinculo_parceria.funcionario_id
+            != self.funcionario_id
+        ):
+            raise ValidationError(
+                {
+                    "vinculo_parceria": (
+                        "O vínculo da parceria deve "
+                        "pertencer ao mesmo colaborador."
+                    ),
+                }
+            )
+# === ETAPA 8.6B.1 - CALENDARIO LABORAL ===
+
+
+class CalendarioLaboral(models.Model):
+
+    empresa = models.ForeignKey(
+        "empresas.Empresa",
+        on_delete=models.PROTECT,
+        related_name="calendarios_laborais",
+    )
+
+    departamento = models.ForeignKey(
+        "departamentos.Departamento",
+        on_delete=models.PROTECT,
+        related_name="calendarios_laborais",
+        blank=True,
+        null=True,
+        help_text=(
+            "Quando vazio, o calendário ? geral "
+            "para a empresa."
+        ),
+    )
+
+    nome = models.CharField(
+        max_length=150,
+    )
+
+    uf = models.CharField(
+        max_length=2,
+        blank=True,
+        help_text=(
+            "UF da localidade de trabalho."
+        ),
+    )
+
+    municipio = models.CharField(
+        max_length=120,
+        blank=True,
+        help_text=(
+            "Município da localidade de trabalho."
+        ),
+    )
+
+    vigencia_inicio = models.DateField()
+
+    vigencia_fim = models.DateField(
+        blank=True,
+        null=True,
+    )
+
+    considera_ponto_facultativo = (
+        models.BooleanField(
+            default=False,
+            help_text=(
+                "Ponto facultativo não ? tratado "
+                "automaticamente como feriado. "
+                "Marque somente quando houver decisão "
+                "formal aplicável àquela unidade."
+            ),
+        )
+    )
+
+    prioridade = models.PositiveSmallIntegerField(
+        default=0,
+        help_text=(
+            "Maior valor tem preferência quando "
+            "mais de um calendário for aplicável."
+        ),
+    )
+
+    ativo = models.BooleanField(
+        default=True,
+    )
+
+    observacoes = models.TextField(
+        blank=True,
+    )
+
+    criado_em = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    atualizado_em = models.DateTimeField(
+        auto_now=True,
+    )
+
+    class Meta:
+        ordering = [
+            "empresa__nome",
+            "-prioridade",
+            "nome",
+        ]
+
+        verbose_name = (
+            "Calendário laboral"
+        )
+
+        verbose_name_plural = (
+            "Calendários laborais"
+        )
+
+    def __str__(self):
+
+        local = self.uf or "Nacional"
+
+        if self.municipio:
+            local = (
+                f"{self.municipio}/{self.uf}"
+            )
+
+        return (
+            f"{self.nome} - {local}"
+        )
+
+    def clean(self):
+
+        super().clean()
+
+        if (
+            self.vigencia_fim
+            and self.vigencia_fim
+            < self.vigencia_inicio
+        ):
+            raise ValidationError(
+                {
+                    "vigencia_fim": (
+                        "A vigência final não pode ser "
+                        "anterior ? vigência inicial."
+                    ),
+                }
+            )
+
+        if (
+            self.departamento_id
+            and self.empresa_id
+            and self.departamento.empresa_id
+            != self.empresa_id
+        ):
+            raise ValidationError(
+                {
+                    "departamento": (
+                        "A lotação deve pertencer "
+                        "à mesma empresa do calendário."
+                    ),
+                }
+            )
+
+        self.uf = (
+            (self.uf or "")
+            .strip()
+            .upper()
+        )
+
+        self.municipio = (
+            (self.municipio or "")
+            .strip()
+        )
+
+
+class Feriado(models.Model):
+
+    NATUREZA_CHOICES = [
+        (
+            "feriado",
+            "Feriado",
+        ),
+        (
+            "ponto_facultativo",
+            "Ponto facultativo",
+        ),
+    ]
+
+    ABRANGENCIA_CHOICES = [
+        (
+            "nacional",
+            "Nacional",
+        ),
+        (
+            "estadual",
+            "Estadual",
+        ),
+        (
+            "municipal",
+            "Municipal",
+        ),
+    ]
+
+    nome = models.CharField(
+        max_length=180,
+    )
+
+    data = models.DateField()
+
+    natureza = models.CharField(
+        max_length=25,
+        choices=NATUREZA_CHOICES,
+        default="feriado",
+    )
+
+    abrangencia = models.CharField(
+        max_length=15,
+        choices=ABRANGENCIA_CHOICES,
+        default="nacional",
+    )
+
+    uf = models.CharField(
+        max_length=2,
+        blank=True,
+    )
+
+    municipio = models.CharField(
+        max_length=120,
+        blank=True,
+    )
+
+    fundamento = models.CharField(
+        max_length=255,
+        blank=True,
+    )
+
+    fonte = models.CharField(
+        max_length=500,
+        blank=True,
+        help_text=(
+            "Preferencialmente fonte oficial."
+        ),
+    )
+
+    observacoes = models.TextField(
+        blank=True,
+    )
+
+    ativo = models.BooleanField(
+        default=True,
+    )
+
+    criado_em = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    atualizado_em = models.DateTimeField(
+        auto_now=True,
+    )
+
+    class Meta:
+        ordering = [
+            "data",
+            "nome",
+        ]
+
+        verbose_name = "Feriado"
+
+        verbose_name_plural = (
+            "Feriados e pontos facultativos"
+        )
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    "data",
+                    "nome",
+                    "natureza",
+                    "abrangencia",
+                    "uf",
+                    "municipio",
+                ],
+                name=(
+                    "uniq_feriado_data_local"
+                ),
+            ),
+        ]
+
+    def __str__(self):
+
+        local = self.get_abrangencia_display()
+
+        if self.abrangencia == "estadual":
+            local = self.uf
+
+        elif self.abrangencia == "municipal":
+            local = (
+                f"{self.municipio}/{self.uf}"
+            )
+
+        return (
+            f"{self.nome} - "
+            f"{self.data:%d/%m/%Y} - "
+            f"{local}"
+        )
+
+    def clean(self):
+
+        super().clean()
+
+        self.uf = (
+            (self.uf or "")
+            .strip()
+            .upper()
+        )
+
+        self.municipio = (
+            (self.municipio or "")
+            .strip()
+        )
+
+        erros = {}
+
+        if self.abrangencia == "nacional":
+
+            if self.uf or self.municipio:
+                erros[
+                    "abrangencia"
+                ] = (
+                    "Feriado nacional não deve "
+                    "possuir UF ou município."
+                )
+
+        elif self.abrangencia == "estadual":
+
+            if not self.uf:
+                erros[
+                    "uf"
+                ] = (
+                    "Informe a UF do feriado estadual."
+                )
+
+            if self.municipio:
+                erros[
+                    "municipio"
+                ] = (
+                    "Feriado estadual não deve "
+                    "ser limitado a um município."
+                )
+
+        elif self.abrangencia == "municipal":
+
+            if not self.uf:
+                erros[
+                    "uf"
+                ] = (
+                    "Informe a UF do feriado municipal."
+                )
+
+            if not self.municipio:
+                erros[
+                    "municipio"
+                ] = (
+                    "Informe o município."
+                )
+
+        if erros:
+            raise ValidationError(
+                erros
+            )

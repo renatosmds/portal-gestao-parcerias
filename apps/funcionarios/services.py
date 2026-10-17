@@ -1022,9 +1022,10 @@ def classificar_dia_folha_ponto(
     1. fora do vinculo;
     2. ferias;
     3. afastamento/licenca;
-    4. descanso;
-    5. trabalho;
-    6. falta de configuracao.
+    4. feriado/ponto facultativo aplicavel;
+    5. descanso;
+    6. trabalho;
+    7. falta de configuracao.
 
     Ferias ou afastamento nao sao transformados
     automaticamente em falta.
@@ -1097,6 +1098,45 @@ def classificar_dia_folha_ponto(
             "jornada_escala": jornada["jornada"],
             "ferias": None,
             "afastamento": afastamento,
+        }
+
+
+    from .services_calendario import (
+        evento_calendario_aplicavel_data,
+    )
+
+    evento_calendario = (
+        evento_calendario_aplicavel_data(
+            funcionario,
+            data,
+        )
+    )
+
+    if evento_calendario:
+
+        return {
+            "tipo_dia": (
+                evento_calendario[
+                    "tipo"
+                ]
+            ),
+            "horas_previstas": (
+                horas_previstas
+            ),
+            "horas_abonadas": (
+                horas_previstas
+            ),
+            "escala": jornada["escala"],
+            "jornada_escala": (
+                jornada["jornada"]
+            ),
+            "ferias": None,
+            "afastamento": None,
+            "feriado": (
+                evento_calendario[
+                    "feriado"
+                ]
+            ),
         }
 
     if not jornada["configurada"]:
@@ -1203,6 +1243,9 @@ def gerar_calendario_folha_ponto(
                             "afastamento"
                         ]
                     ),
+                    "feriado": classificacao.get(
+                        "feriado"
+                    ),
                     "horas_previstas": (
                         classificacao[
                             "horas_previstas"
@@ -1255,6 +1298,12 @@ def gerar_calendario_folha_ponto(
                 ]
             )
 
+            dia.feriado = (
+                classificacao.get(
+                    "feriado"
+                )
+            )
+
             dia.horas_previstas = (
                 classificacao[
                     "horas_previstas"
@@ -1277,6 +1326,7 @@ def gerar_calendario_folha_ponto(
                     "jornada_escala",
                     "ferias",
                     "afastamento",
+                    "feriado",
                     "horas_previstas",
                     "horas_abonadas",
                     "atualizado_em",
@@ -1444,6 +1494,7 @@ def apurar_dia_folha_ponto(
         "status": "",
         "horas_trabalhadas": zero,
         "horas_extras": zero,
+        "horas_feriado": zero,
         "horas_faltas_atrasos": zero,
         "saldo_banco_candidato": zero,
         "mensagem": "",
@@ -1517,6 +1568,75 @@ def apurar_dia_folha_ponto(
             "Afastamento/licenca identificado. "
             "Nao classificado como falta injustificada."
         )
+
+    # --------------------------------------------------------
+    # Feriado / ponto facultativo
+    # --------------------------------------------------------
+
+    elif dia.tipo_dia in {
+        "feriado",
+        "ponto_facultativo",
+    }:
+
+        if minutos is None:
+
+            resultado[
+                "status"
+            ] = dia.tipo_dia
+
+            resultado[
+                "mensagem"
+            ] = (
+                "Dia especial do calendario laboral "
+                "sem marcacoes."
+            )
+
+        else:
+
+            horas_efetivas = (
+                _minutos_para_horas(
+                    minutos
+                )
+            )
+
+            resultado[
+                "horas_trabalhadas"
+            ] = horas_efetivas
+
+            if dia.tipo_dia == "feriado":
+
+                resultado[
+                    "horas_feriado"
+                ] = horas_efetivas
+
+                resultado[
+                    "status"
+                ] = "feriado_trabalhado"
+
+                resultado[
+                    "mensagem"
+                ] = (
+                    "Trabalho em feriado identificado. "
+                    "A remuneracao, compensacao ou banco "
+                    "sera definida pelo motor de regras "
+                    "aplicavel."
+                )
+
+            else:
+
+                resultado[
+                    "status"
+                ] = (
+                    "ponto_facultativo_trabalhado"
+                )
+
+                resultado[
+                    "mensagem"
+                ] = (
+                    "Trabalho em ponto facultativo "
+                    "identificado. Nenhum adicional "
+                    "foi presumido automaticamente."
+                )
 
     # --------------------------------------------------------
     # Sem configuracao
@@ -1687,6 +1807,10 @@ def apurar_dia_folha_ponto(
             "horas_extras"
         ]
 
+        dia.horas_feriado = resultado[
+            "horas_feriado"
+        ]
+
         dia.horas_faltas_atrasos = resultado[
             "horas_faltas_atrasos"
         ]
@@ -1699,6 +1823,7 @@ def apurar_dia_folha_ponto(
             update_fields=[
                 "horas_trabalhadas",
                 "horas_extras",
+                "horas_feriado",
                 "horas_faltas_atrasos",
                 "saldo_banco_candidato",
                 "atualizado_em",
