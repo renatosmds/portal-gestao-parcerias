@@ -2162,6 +2162,17 @@ class DiaFolhaPonto(models.Model):
         default=Decimal("0.00"),
     )
 
+    horas_compensacao_autorizada = models.DecimalField(
+        max_digits=7,
+        decimal_places=2,
+        default=0,
+        help_text=(
+            "Horas de deficit cuja compensacao foi "
+            "expressamente autorizada."
+        ),
+    )
+
+
     horas_trabalhadas = models.DecimalField(
         max_digits=7,
         decimal_places=2,
@@ -2481,7 +2492,7 @@ class ParametroTrabalhista(models.Model):
                 {
                     "vigencia_fim": (
                         "A vigência final não pode "
-                        "ser anterior ? vigência inicial."
+                        "ser anterior à vigência inicial."
                     ),
                 }
             )
@@ -2876,7 +2887,7 @@ class CalendarioLaboral(models.Model):
                 {
                     "vigencia_fim": (
                         "A vigência final não pode ser "
-                        "anterior ? vigência inicial."
+                        "anterior à vigência inicial."
                     ),
                 }
             )
@@ -3103,3 +3114,730 @@ class Feriado(models.Model):
             raise ValidationError(
                 erros
             )
+
+
+# ============================================================
+# ETAPA 8.6B.2 - JUSTIFICATIVAS, ABONOS E DECISOES
+# ============================================================
+
+
+class TipoJustificativa(models.Model):
+
+    FUNDAMENTO_TIPO_CHOICES = [
+        (
+            "legal",
+            "Legal",
+        ),
+        (
+            "act_cct",
+            "ACT/CCT",
+        ),
+        (
+            "regulamento_interno",
+            "Regulamento interno",
+        ),
+        (
+            "administrativo_excepcional",
+            "Decisão administrativa excepcional",
+        ),
+        (
+            "judicial",
+            "Decisão/ordem judicial",
+        ),
+        (
+            "outro",
+            "Outro",
+        ),
+    ]
+
+    codigo = models.SlugField(
+        max_length=80,
+    )
+
+    nome = models.CharField(
+        max_length=160,
+    )
+
+    descricao = models.TextField(
+        blank=True,
+    )
+
+    fundamento_tipo = models.CharField(
+        max_length=40,
+        choices=FUNDAMENTO_TIPO_CHOICES,
+    )
+
+    fundamento = models.TextField(
+        blank=True,
+        help_text=(
+            "Base normativa ou administrativa da regra."
+        ),
+    )
+
+    dispositivo = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text=(
+            "Artigo, cláusula, item ou outro dispositivo."
+        ),
+    )
+
+    fonte = models.CharField(
+        max_length=500,
+        blank=True,
+        help_text=(
+            "Fonte oficial, documento ou referência verificável."
+        ),
+    )
+
+    vigencia_inicio = models.DateField()
+
+    vigencia_fim = models.DateField(
+        null=True,
+        blank=True,
+    )
+
+    exige_documento = models.BooleanField(
+        default=False,
+    )
+
+    documento_sensivel = models.BooleanField(
+        default=False,
+        help_text=(
+            "Indica que o documento comprobatório pode conter "
+            "dados pessoais sensíveis e requer acesso restrito."
+        ),
+    )
+
+    permite_abono_parcial = models.BooleanField(
+        default=True,
+    )
+
+    permite_compensacao = models.BooleanField(
+        default=False,
+    )
+
+    ativo = models.BooleanField(
+        default=True,
+    )
+
+    criado_em = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    atualizado_em = models.DateTimeField(
+        auto_now=True,
+    )
+
+    class Meta:
+
+        verbose_name = "Tipo de justificativa"
+
+        verbose_name_plural = (
+            "Tipos de justificativa"
+        )
+
+        ordering = [
+            "nome",
+            "-vigencia_inicio",
+        ]
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    "codigo",
+                    "vigencia_inicio",
+                ],
+                name="uniq_tipo_just_codigo_vig",
+            ),
+        ]
+
+    def clean(self):
+
+        super().clean()
+
+        erros = {}
+
+        if (
+            self.vigencia_fim
+            and self.vigencia_fim
+            < self.vigencia_inicio
+        ):
+
+            erros[
+                "vigencia_fim"
+            ] = (
+                "A vigência final não pode ser "
+                "anterior à vigência inicial."
+            )
+
+        if erros:
+            raise ValidationError(erros)
+
+    def __str__(self):
+
+        return (
+            f"{self.nome} "
+            f"({self.vigencia_inicio:%d/%m/%Y})"
+        )
+
+
+class JustificativaPonto(models.Model):
+
+    OCORRENCIA_CHOICES = [
+        (
+            "falta_integral",
+            "Falta integral",
+        ),
+        (
+            "atraso",
+            "Atraso",
+        ),
+        (
+            "saida_antecipada",
+            "Saída antecipada",
+        ),
+        (
+            "ausencia_parcial",
+            "Ausência parcial",
+        ),
+    ]
+
+    STATUS_CHOICES = [
+        (
+            "pendente",
+            "Pendente",
+        ),
+        (
+            "em_analise",
+            "Em análise",
+        ),
+        (
+            "deferida",
+            "Deferida",
+        ),
+        (
+            "deferida_parcial",
+            "Deferida parcialmente",
+        ),
+        (
+            "indeferida",
+            "Indeferida",
+        ),
+        (
+            "compensacao",
+            "Compensação autorizada",
+        ),
+    ]
+
+    funcionario = models.ForeignKey(
+        Funcionario,
+        on_delete=models.PROTECT,
+        related_name="justificativas_ponto",
+    )
+
+    dia_folha_ponto = models.ForeignKey(
+        DiaFolhaPonto,
+        on_delete=models.PROTECT,
+        related_name="justificativas",
+    )
+
+    tipo = models.ForeignKey(
+        TipoJustificativa,
+        on_delete=models.PROTECT,
+        related_name="justificativas",
+    )
+
+    ocorrencia = models.CharField(
+        max_length=30,
+        choices=OCORRENCIA_CHOICES,
+    )
+
+    motivo = models.TextField()
+
+    inicio = models.TimeField(
+        null=True,
+        blank=True,
+    )
+
+    fim = models.TimeField(
+        null=True,
+        blank=True,
+    )
+
+    minutos_solicitados = models.PositiveIntegerField(
+        help_text=(
+            "Quantidade exata de minutos cuja "
+            "regularização foi solicitada."
+        ),
+    )
+
+    referencia_documento = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text=(
+            "Referência ao documento comprobatório. "
+            "O arquivo sensível não é armazenado aqui."
+        ),
+    )
+
+    status = models.CharField(
+        max_length=30,
+        choices=STATUS_CHOICES,
+        default="pendente",
+    )
+
+    solicitado_por = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="justificativas_ponto_solicitadas",
+    )
+
+    solicitado_em = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    criado_em = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    atualizado_em = models.DateTimeField(
+        auto_now=True,
+    )
+
+    class Meta:
+
+        verbose_name = "Justificativa de ponto"
+
+        verbose_name_plural = (
+            "Justificativas de ponto"
+        )
+
+        ordering = [
+            "-dia_folha_ponto__data",
+            "-criado_em",
+        ]
+
+        indexes = [
+            models.Index(
+                fields=[
+                    "funcionario",
+                    "status",
+                ],
+                name="func_just_func_status",
+            ),
+        ]
+
+    def clean(self):
+
+        super().clean()
+
+        erros = {}
+
+        if (
+            self.dia_folha_ponto_id
+            and self.funcionario_id
+            and (
+                self.dia_folha_ponto.funcionario_id
+                != self.funcionario_id
+            )
+        ):
+
+            erros[
+                "funcionario"
+            ] = (
+                "O colaborador da justificativa deve "
+                "ser o mesmo do dia da folha de ponto."
+            )
+
+        if self.minutos_solicitados <= 0:
+
+            erros[
+                "minutos_solicitados"
+            ] = (
+                "A quantidade solicitada deve ser "
+                "maior que zero."
+            )
+
+        if (
+            self.tipo_id
+            and self.tipo.exige_documento
+            and not (
+                self.referencia_documento
+                or ""
+            ).strip()
+        ):
+
+            erros[
+                "referencia_documento"
+            ] = (
+                "Este tipo de justificativa exige "
+                "referência ao documento comprobatório."
+            )
+
+        if (
+            self.dia_folha_ponto_id
+            and self.tipo_id
+        ):
+
+            data = (
+                self.dia_folha_ponto.data
+            )
+
+            if (
+                data
+                < self.tipo.vigencia_inicio
+            ):
+
+                erros[
+                    "tipo"
+                ] = (
+                    "O tipo de justificativa ainda "
+                    "não estava vigente nessa data."
+                )
+
+            if (
+                self.tipo.vigencia_fim
+                and data
+                > self.tipo.vigencia_fim
+            ):
+
+                erros[
+                    "tipo"
+                ] = (
+                    "O tipo de justificativa não estava "
+                    "mais vigente nessa data."
+                )
+
+        if (
+            self.dia_folha_ponto_id
+            and self.minutos_solicitados
+            and self.dia_folha_ponto.horas_previstas
+        ):
+
+            previstos = int(
+                (
+                    self.dia_folha_ponto.horas_previstas
+                    * Decimal("60")
+                ).quantize(
+                    Decimal("1"),
+                    rounding=ROUND_HALF_UP,
+                )
+            )
+
+            if (
+                previstos > 0
+                and self.minutos_solicitados
+                > previstos
+            ):
+
+                erros[
+                    "minutos_solicitados"
+                ] = (
+                    "Os minutos solicitados não podem "
+                    "superar a jornada prevista do dia."
+                )
+
+        if erros:
+            raise ValidationError(erros)
+
+    def __str__(self):
+
+        return (
+            f"{self.funcionario} - "
+            f"{self.dia_folha_ponto.data:%d/%m/%Y} - "
+            f"{self.get_ocorrencia_display()}"
+        )
+
+
+class DecisaoJustificativa(models.Model):
+
+    DECISAO_CHOICES = [
+        (
+            "abono_integral",
+            "Abono integral",
+        ),
+        (
+            "abono_parcial",
+            "Abono parcial",
+        ),
+        (
+            "indeferido",
+            "Indeferido",
+        ),
+        (
+            "compensacao",
+            "Compensação",
+        ),
+    ]
+
+    FUNDAMENTO_TIPO_CHOICES = (
+        TipoJustificativa
+        .FUNDAMENTO_TIPO_CHOICES
+    )
+
+    justificativa = models.ForeignKey(
+        JustificativaPonto,
+        on_delete=models.PROTECT,
+        related_name="decisoes",
+    )
+
+    decisao = models.CharField(
+        max_length=30,
+        choices=DECISAO_CHOICES,
+    )
+
+    minutos_abonados = models.PositiveIntegerField(
+        default=0,
+    )
+
+    minutos_compensar = models.PositiveIntegerField(
+        default=0,
+    )
+
+    fundamento_tipo = models.CharField(
+        max_length=40,
+        choices=FUNDAMENTO_TIPO_CHOICES,
+    )
+
+    fundamento = models.TextField(
+        help_text=(
+            "Fundamento normativo ou administrativo "
+            "utilizado na decisão."
+        ),
+    )
+
+    dispositivo = models.CharField(
+        max_length=255,
+        blank=True,
+    )
+
+    fonte = models.CharField(
+        max_length=500,
+        blank=True,
+    )
+
+    motivacao = models.TextField(
+        help_text=(
+            "Motivação específica do caso concreto."
+        ),
+    )
+
+    snapshot_regra = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text=(
+            "Cópia dos dados essenciais da regra "
+            "utilizada no momento da decisão."
+        ),
+    )
+
+    decidido_por = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        related_name="decisoes_justificativas",
+    )
+
+    decidido_em = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    ativo = models.BooleanField(
+        default=True,
+    )
+
+    substitui = models.ForeignKey(
+        "self",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="substituida_por",
+    )
+
+    class Meta:
+
+        verbose_name = (
+            "Decisão de justificativa"
+        )
+
+        verbose_name_plural = (
+            "Decisões de justificativas"
+        )
+
+        ordering = [
+            "-decidido_em",
+        ]
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    "justificativa",
+                ],
+                condition=models.Q(
+                    ativo=True,
+                ),
+                name="uniq_decisao_just_ativa",
+            ),
+        ]
+
+    def clean(self):
+
+        super().clean()
+
+        erros = {}
+
+        solicitado = (
+            self.justificativa.minutos_solicitados
+            if self.justificativa_id
+            else 0
+        )
+
+        if not (
+            self.fundamento
+            or ""
+        ).strip():
+
+            erros[
+                "fundamento"
+            ] = (
+                "Informe o fundamento da decisão."
+            )
+
+        if not (
+            self.motivacao
+            or ""
+        ).strip():
+
+            erros[
+                "motivacao"
+            ] = (
+                "Informe a motivação da decisão."
+            )
+
+        total_destinado = (
+            self.minutos_abonados
+            + self.minutos_compensar
+        )
+
+        if (
+            solicitado
+            and total_destinado
+            > solicitado
+        ):
+
+            erros[
+                "minutos_abonados"
+            ] = (
+                "A decisão não pode destinar mais "
+                "minutos do que os solicitados."
+            )
+
+        if (
+            self.decisao
+            == "abono_integral"
+        ):
+
+            if (
+                self.minutos_abonados
+                != solicitado
+                or self.minutos_compensar
+                != 0
+            ):
+
+                erros[
+                    "minutos_abonados"
+                ] = (
+                    "Abono integral deve corresponder "
+                    "a todos os minutos solicitados."
+                )
+
+        elif (
+            self.decisao
+            == "abono_parcial"
+        ):
+
+            if not (
+                0
+                < self.minutos_abonados
+                < solicitado
+            ):
+
+                erros[
+                    "minutos_abonados"
+                ] = (
+                    "Abono parcial deve ser maior que "
+                    "zero e menor que o solicitado."
+                )
+
+            if (
+                self.justificativa_id
+                and not (
+                    self.justificativa.tipo
+                    .permite_abono_parcial
+                )
+            ):
+
+                erros[
+                    "decisao"
+                ] = (
+                    "Este tipo de justificativa não "
+                    "permite abono parcial."
+                )
+
+        elif (
+            self.decisao
+            == "indeferido"
+        ):
+
+            if total_destinado != 0:
+
+                erros[
+                    "decisao"
+                ] = (
+                    "Decisão indeferida não pode "
+                    "abonar ou compensar minutos."
+                )
+
+        elif (
+            self.decisao
+            == "compensacao"
+        ):
+
+            if (
+                self.minutos_abonados != 0
+                or self.minutos_compensar <= 0
+            ):
+
+                erros[
+                    "minutos_compensar"
+                ] = (
+                    "Compensação deve possuir minutos "
+                    "a compensar e nenhum minuto abonado."
+                )
+
+            if (
+                self.justificativa_id
+                and not (
+                    self.justificativa.tipo
+                    .permite_compensacao
+                )
+            ):
+
+                erros[
+                    "decisao"
+                ] = (
+                    "Este tipo de justificativa não "
+                    "permite compensação."
+                )
+
+        if erros:
+            raise ValidationError(erros)
+
+    def __str__(self):
+
+        return (
+            f"{self.justificativa} - "
+            f"{self.get_decisao_display()}"
+        )

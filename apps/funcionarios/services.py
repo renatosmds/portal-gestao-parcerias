@@ -1495,6 +1495,11 @@ def apurar_dia_folha_ponto(
         "horas_trabalhadas": zero,
         "horas_extras": zero,
         "horas_feriado": zero,
+        "horas_abonadas": (
+            dia.horas_abonadas
+            or zero
+        ),
+        "horas_compensacao_autorizada": zero,
         "horas_faltas_atrasos": zero,
         "saldo_banco_candidato": zero,
         "mensagem": "",
@@ -1797,6 +1802,18 @@ def apurar_dia_folha_ponto(
             f"{dia.tipo_dia}."
         )
 
+
+    from .services_justificativas import (
+        aplicar_decisoes_justificativas_apuracao,
+    )
+
+    resultado = (
+        aplicar_decisoes_justificativas_apuracao(
+            dia,
+            resultado,
+        )
+    )
+
     if salvar:
 
         dia.horas_trabalhadas = resultado[
@@ -1809,6 +1826,14 @@ def apurar_dia_folha_ponto(
 
         dia.horas_feriado = resultado[
             "horas_feriado"
+        ]
+
+        dia.horas_abonadas = resultado[
+            "horas_abonadas"
+        ]
+
+        dia.horas_compensacao_autorizada = resultado[
+            "horas_compensacao_autorizada"
         ]
 
         dia.horas_faltas_atrasos = resultado[
@@ -1824,6 +1849,8 @@ def apurar_dia_folha_ponto(
                 "horas_trabalhadas",
                 "horas_extras",
                 "horas_feriado",
+                "horas_abonadas",
+                "horas_compensacao_autorizada",
                 "horas_faltas_atrasos",
                 "saldo_banco_candidato",
                 "atualizado_em",
@@ -1997,23 +2024,36 @@ def _referencia_movimento_ponto(
 
 def _movimentar_banco_horas_dia(
     dia,
+    saldo_override=None,
 ):
     """
-    Converte saldo candidato diario em movimento
-    auditavel de Banco de Horas.
+    Converte saldo diario em movimento auditavel.
 
-    Positivo = credito.
-    Negativo = debito.
+    saldo_override permite movimentar somente a parcela
+    expressamente autorizada para compensacao.
     """
+
     from .models import MovimentoBancoHoras
 
     saldo = (
-        dia.saldo_banco_candidato
-        or ZERO_HORAS
+        saldo_override
+        if saldo_override is not None
+        else (
+            dia.saldo_banco_candidato
+            or ZERO_HORAS
+        )
+    )
+
+    saldo = Decimal(
+        saldo
+    ).quantize(
+        Decimal("0.01")
     )
 
     if saldo == ZERO_HORAS:
+
         dia.tratamento_saldo = "sem_saldo"
+
         dia.save(
             update_fields=[
                 "tratamento_saldo",
@@ -2029,6 +2069,7 @@ def _movimentar_banco_horas_dia(
     )
 
     if not regime:
+
         raise ValidationError(
             "Nao existe regime de Banco de Horas "
             "vigente para "
@@ -2074,6 +2115,7 @@ def _movimentar_banco_horas_dia(
             or movimento.horas
             != horas
         ):
+
             raise ValidationError(
                 "Ja existe movimento de Banco de Horas "
                 "para o dia, mas o valor/origem mudou. "
@@ -2086,7 +2128,9 @@ def _movimentar_banco_horas_dia(
             funcionario=dia.funcionario,
             regime=regime,
             data=dia.data,
-            competencia=dia.folha_ponto.competencia,
+            competencia=(
+                dia.folha_ponto.competencia
+            ),
             tipo=tipo,
             origem="ponto",
             horas=horas,
@@ -2111,28 +2155,22 @@ def _movimentar_banco_horas_dia(
 
     return movimento
 
-
 def tratar_saldo_dia(
     dia,
     destino_horas_extras="folha",
     usar_banco_para_deficits=False,
 ):
     """
-    Define o destino financeiro/compensatorio
-    do saldo apurado no dia.
+    Define o destino do saldo diario.
 
-    Horas positivas:
-    - folha -> pagamento;
-    - banco -> credito.
-
-    Horas negativas:
-    - por padrao permanecem como falta/atraso;
-    - opcionalmente podem virar debito no Banco
-      quando o regime permitir essa operacao.
-
-    A mesma hora nunca e destinada simultaneamente
-    ao Banco e a Folha.
+    Para saldo negativo:
+    1. decisao expressa de compensacao tem prioridade
+       e movimenta somente a parcela autorizada;
+    2. sem decisao expressa, preserva-se o comportamento
+       legado opcional de Banco de Horas;
+    3. o saldo nao destinado ao banco permanece para folha.
     """
+
     saldo = (
         dia.saldo_banco_candidato
         or ZERO_HORAS
@@ -2153,6 +2191,10 @@ def tratar_saldo_dia(
             "destino": "sem_saldo",
             "movimento": None,
         }
+
+    # -----------------------------------------------------
+    # SALDO POSITIVO
+    # -----------------------------------------------------
 
     if saldo > ZERO_HORAS:
 
@@ -2190,7 +2232,50 @@ def tratar_saldo_dia(
             "Use 'folha' ou 'banco'."
         )
 
-    # Saldo negativo
+    # -----------------------------------------------------
+    # SALDO NEGATIVO - COMPENSACAO EXPRESSA
+    # -----------------------------------------------------
+
+    autorizada = (
+        dia.horas_compensacao_autorizada
+        or ZERO_HORAS
+    )
+
+    if autorizada > ZERO_HORAS:
+
+        parcela = min(
+            abs(saldo),
+            autorizada,
+        ).quantize(
+            Decimal("0.01")
+        )
+
+        movimento = (
+            _movimentar_banco_horas_dia(
+                dia,
+                saldo_override=-parcela,
+            )
+        )
+
+        return {
+            "destino": "banco",
+            "movimento": movimento,
+            "horas_banco": parcela,
+            "horas_folha": max(
+                (
+                    dia.horas_faltas_atrasos
+                    or ZERO_HORAS
+                )
+                - parcela,
+                ZERO_HORAS,
+            ).quantize(
+                Decimal("0.01")
+            ),
+        }
+
+    # -----------------------------------------------------
+    # COMPORTAMENTO LEGADO OPCIONAL
+    # -----------------------------------------------------
 
     if (
         destino_horas_extras == "banco"
@@ -2221,7 +2306,6 @@ def tratar_saldo_dia(
         "destino": "folha",
         "movimento": None,
     }
-
 
 def validar_competencia_pronta_para_fechamento(
     folha_ponto,
@@ -2274,6 +2358,53 @@ def validar_competencia_pronta_para_fechamento(
             )
 
     return pendencias
+
+
+def horas_falta_para_folha_dia(
+    dia,
+):
+    """
+    Retorna somente a parcela do deficit que deve
+    permanecer como falta/atraso financeiro na folha.
+    """
+
+    deficit = (
+        dia.horas_faltas_atrasos
+        or ZERO_HORAS
+    )
+
+    if deficit <= ZERO_HORAS:
+
+        return ZERO_HORAS
+
+    if (
+        dia.tratamento_saldo
+        != "banco"
+        or dia.saldo_banco_candidato
+        >= ZERO_HORAS
+    ):
+
+        return deficit.quantize(
+            Decimal("0.01")
+        )
+
+    autorizada = (
+        dia.horas_compensacao_autorizada
+        or ZERO_HORAS
+    )
+
+    # Movimento legado sem decisao especifica:
+    # todo o deficit foi destinado ao banco.
+    if autorizada <= ZERO_HORAS:
+
+        return ZERO_HORAS
+
+    return max(
+        deficit - autorizada,
+        ZERO_HORAS,
+    ).quantize(
+        Decimal("0.01")
+    )
 
 
 def consolidar_folha_ponto(
@@ -2401,21 +2532,11 @@ def consolidar_folha_ponto(
                     or ZERO_HORAS
                 )
 
-        if (
-            dia.horas_faltas_atrasos
-            and dia.horas_faltas_atrasos
-            > ZERO_HORAS
-        ):
-
-            if not (
-                dia.tratamento_saldo
-                == "banco"
-                and dia.saldo_banco_candidato
-                < ZERO_HORAS
-            ):
-                horas_faltas_folha += (
-                    dia.horas_faltas_atrasos
-                )
+        horas_faltas_folha += (
+            horas_falta_para_folha_dia(
+                dia
+            )
+        )
 
     folha_ponto.horas_previstas = (
         horas_previstas.quantize(
